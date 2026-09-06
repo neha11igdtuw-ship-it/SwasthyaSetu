@@ -1,9 +1,13 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 export interface NavItem {
-  label: string;
+  labelKey: string;
+  defaultLabel: string;
   href: string;
   icon: React.ElementType;
 }
@@ -14,6 +18,7 @@ interface SidebarProps {
 
 export function Sidebar({ items }: SidebarProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-slate-200/80 bg-white min-h-[calc(100vh-61px)] p-4 shrink-0">
@@ -24,6 +29,7 @@ export function Sidebar({ items }: SidebarProps) {
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
+          const label = t(item.labelKey) || item.defaultLabel;
 
           return (
             <Link
@@ -40,7 +46,7 @@ export function Sidebar({ items }: SidebarProps) {
                   isActive ? "text-teal-700" : "text-slate-400"
                 }`}
               />
-              <span>{item.label}</span>
+              <span>{label}</span>
             </Link>
           );
         })}

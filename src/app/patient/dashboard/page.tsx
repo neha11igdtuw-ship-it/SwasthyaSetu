@@ -11,6 +11,7 @@ import { FollowUpCard } from "@/components/care/FollowUpCard";
 import { VoiceAssistantCard } from "@/components/patient/VoiceAssistantCard";
 import { QuickActionCard } from "@/components/patient/QuickActionCard";
 import { EmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import {
   Mic,
   Calendar,
@@ -24,6 +25,7 @@ import {
 
 export default function PatientDashboardPage() {
   const p = priyaPatientMock;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -70,11 +72,11 @@ export default function PatientDashboardPage() {
           <div className="flex items-center gap-2">
             <ShareIcon className="w-5 h-5 text-teal-700" />
             <h3 className="font-extrabold text-slate-900 text-base">
-              Active Care Request Progress
+              {t("activeCareRequestProgress")}
             </h3>
           </div>
           <span className="text-xs font-semibold px-2.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-            Step 2: Hospital Accepted
+            {t("stepAccepted")}
           </span>
         </div>
 
@@ -84,58 +86,58 @@ export default function PatientDashboardPage() {
       {/* Quick Actions Grid */}
       <div className="space-y-3">
         <h3 className="font-extrabold text-slate-900 text-lg">
-          Quick Healthcare Actions
+          {t("quickActionsHeading")}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           <QuickActionCard
-            title="Voice Assistance"
-            subtitle="Speak symptoms in Hindi"
+            title={t("voiceAssistance")}
+            subtitle={t("askVoiceAssistant")}
             href="/patient/voice-assistant"
             icon={Mic}
             badgeText="Voice"
             accentColor="amber"
           />
           <QuickActionCard
-            title="Book Appointment"
+            title={t("bookAppointment")}
             subtitle="Schedule doctor visit"
             href="/patient/appointments"
             icon={Calendar}
             accentColor="teal"
           />
           <QuickActionCard
-            title="Upload Report"
+            title={t("uploadReport")}
             subtitle="Scan lab tests or ANC card"
             href="/patient/documents"
             icon={Upload}
             accentColor="indigo"
           />
           <QuickActionCard
-            title="View Care Request"
+            title={t("viewCareRequest")}
             subtitle="Check hospital progress"
             href="/patient/referrals"
             icon={Share2}
             accentColor="teal"
           />
           <QuickActionCard
-            title="View Lab Tests"
+            title={t("viewLabTests")}
             subtitle="Recommended health tests"
             href="/patient/diagnostics"
             icon={Stethoscope}
             accentColor="teal"
           />
           <QuickActionCard
-            title="View Medicines"
+            title={t("viewMedicines")}
             subtitle="Dosage & nearby stock"
             href="/patient/medicines"
             icon={Pill}
             accentColor="teal"
           />
           <QuickActionCard
-            title="Emergency Help"
+            title={t("emergencyHelp")}
             subtitle="Immediate high-risk alert"
             href="/patient/emergency-help"
             icon={AlertOctagon}
-            badgeText="Urgent"
+            badgeText={t("highRisk")}
             accentColor="rose"
           />
         </div>
@@ -144,7 +146,7 @@ export default function PatientDashboardPage() {
       {/* Upcoming Follow-up Card */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
         <h3 className="font-extrabold text-slate-900 text-base">
-          Upcoming Follow-up Priority
+          {t("upcomingFollowUpPriority")}
         </h3>
         <FollowUpCard item={p.followUps[0]} />
       </div>

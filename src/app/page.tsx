@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   User,
@@ -11,6 +13,8 @@ import {
   Activity,
 } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/languageContext";
+import { LanguageSelector } from "@/components/shared/LanguageSelector";
 
 interface RoleCardProps {
   title: string;
@@ -68,44 +72,46 @@ function RoleCard({
 }
 
 export default function LandingPage() {
+  const { t } = useLanguage();
+
   const roles: RoleCardProps[] = [
     {
-      roleTag: "User Role 1",
-      title: "Patient",
+      roleTag: "Role 1",
+      title: t("patient"),
       description:
         "Tell your symptoms using voice or text in your language, view health records, receive visit reminders, and track your care request.",
       icon: User,
-      primaryActionLabel: "Open Overview",
+      primaryActionLabel: t("openOverview"),
       href: "/patient/dashboard",
       badgeText: "Voice & Text",
     },
     {
-      roleTag: "User Role 2",
-      title: "Health Worker",
+      roleTag: "Role 2",
+      title: t("healthWorker"),
       description:
         "ASHA/ANM patient registration, vitals & pregnancy screening, high-risk tracking, care request creation, and device record management.",
       icon: HeartPulse,
-      primaryActionLabel: "Open Overview",
+      primaryActionLabel: t("openOverview"),
       href: "/hw/dashboard",
-      badgeText: "Saved on Device",
+      badgeText: t("savedOnThisDevice"),
     },
     {
-      roleTag: "User Role 3",
-      title: "Doctor",
+      roleTag: "Role 3",
+      title: t("doctor"),
       description:
         "Review assistant-prepared summaries, confirm risk levels, issue teleconsultations, prescribe medicines, and direct care pathways.",
       icon: Stethoscope,
-      primaryActionLabel: "Open Overview",
+      primaryActionLabel: t("openOverview"),
       href: "/doctor/dashboard",
       badgeText: "Clinical Review",
     },
     {
-      roleTag: "User Role 4",
-      title: "Healthcare Facility / Hospital",
+      roleTag: "Role 4",
+      title: t("healthcareFacility"),
       description:
         "Facility dashboard to accept incoming care requests, confirm patient arrival, manage doctor duty schedules, and update bed and medicine availability.",
       icon: Building2,
-      primaryActionLabel: "Open Overview",
+      primaryActionLabel: t("openOverview"),
       href: "/facility/dashboard",
       badgeText: "Care Desk",
     },
@@ -122,17 +128,22 @@ export default function LandingPage() {
             </div>
             <div>
               <span className="font-extrabold text-xl tracking-tight text-slate-900 block leading-none">
-                SwasthyaSetu
+                {t("appName")}
               </span>
               <span className="text-[10px] text-teal-700 font-semibold tracking-wide uppercase">
-                Continuity of Care Platform
+                {t("platformSubtitle")}
               </span>
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold">
-            <WifiOff className="w-3.5 h-3.5 text-teal-700" />
-            <span>Information saved on this device</span>
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold">
+              <WifiOff className="w-3.5 h-3.5 text-teal-700" />
+              <span>{t("savedOnThisDevice")}</span>
+            </div>
+
+            {/* Language Selector in Top Right Header */}
+            <LanguageSelector />
           </div>
         </div>
       </header>
@@ -147,26 +158,24 @@ export default function LandingPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            SwasthyaSetu
+            {t("appName")}
           </h1>
 
           <p className="text-xl sm:text-2xl font-semibold text-teal-800 italic">
-            “Care should continue, even when connectivity does not.”
+            “{t("tagline")}”
           </p>
 
           <p className="text-slate-600 text-base sm:text-lg leading-relaxed pt-2">
-            SwasthyaSetu connects rural patients, frontline health workers,
-            doctors and healthcare facilities through one coordinated care
-            journey—even in low-connectivity areas.
+            {t("landingHeroDescription")}
           </p>
 
           {/* Core USP Banner */}
           <div className="mt-6 p-4 rounded-2xl bg-teal-900 text-white shadow-md text-left sm:text-center flex flex-col sm:flex-row items-center justify-center gap-3 border border-teal-800">
             <span className="px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 text-xs font-extrabold uppercase tracking-wide shrink-0">
-              Core Purpose
+              {t("corePurposeTag")}
             </span>
             <p className="text-sm sm:text-base font-medium text-teal-50">
-              “From first symptom to completed care request and follow-up visit.”
+              “{t("corePurposeStatement")}”
             </p>
           </div>
         </div>
@@ -179,14 +188,14 @@ export default function LandingPage() {
                 id="roles-heading"
                 className="text-xl font-bold text-slate-900"
               >
-                Four Healthcare Stakeholders
+                {t("fourStakeholders")}
               </h2>
               <p className="text-xs text-slate-500">
-                Select a role to view the intended workflow responsibilities
+                {t("selectRoleSub")}
               </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200/70 text-slate-700 w-fit">
-              Demonstration Pathway: High-Risk Maternal Care
+              {t("demoPathwayTag")}
             </span>
           </div>
 
@@ -205,12 +214,10 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-base mb-1">
-                Saved on This Device
+                {t("savedOnThisDevice")}
               </h3>
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                Essential patient and care request details are saved on this phone
-                and sent automatically when internet returns. Frontline workers in
-                remote sub-centres never lose health records.
+                {t("informationSavedOnThisDevice")}
               </p>
             </div>
           </div>
@@ -221,12 +228,10 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-base mb-1">
-                Clinical Safety & Human Validation
+                {t("importantSafetyNotice")}
               </h3>
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                AI provides preliminary assistance only. Final clinical decisions,
-                prescriptions, and care requests remain with qualified health workers and
-                doctors.
+                {t("aiPreliminaryNotice")}
               </p>
             </div>
           </div>
