@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "next/link";
 import {
   User,
   HeartPulse,
@@ -11,6 +10,7 @@ import {
   CheckCircle2,
   Activity,
 } from "lucide-react";
+import Link from "next/link";
 
 interface RoleCardProps {
   title: string;
@@ -56,7 +56,7 @@ function RoleCard({
       <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
         <Link
           href={href}
-          aria-label={`Open ${title} demo dashboard`}
+          aria-label={`Open ${title} overview`}
           className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-sm font-semibold transition-colors shadow-sm"
         >
           <span>{primaryActionLabel}</span>
@@ -73,9 +73,9 @@ export default function LandingPage() {
       roleTag: "User Role 1",
       title: "Patient",
       description:
-        "Submit symptoms using voice or text in your language, upload records, receive reminders, and track your referral status.",
+        "Tell your symptoms using voice or text in your language, view health records, receive visit reminders, and track your care request.",
       icon: User,
-      primaryActionLabel: "Open Demo Dashboard",
+      primaryActionLabel: "Open Overview",
       href: "/patient/dashboard",
       badgeText: "Voice & Text",
     },
@@ -83,19 +83,19 @@ export default function LandingPage() {
       roleTag: "User Role 2",
       title: "Health Worker",
       description:
-        "ASHA/ANM offline patient registration, vitals & pregnancy screening, high-risk tracking, referral creation, and offline sync.",
+        "ASHA/ANM patient registration, vitals & pregnancy screening, high-risk tracking, care request creation, and device record management.",
       icon: HeartPulse,
-      primaryActionLabel: "Open Demo Dashboard",
+      primaryActionLabel: "Open Overview",
       href: "/hw/dashboard",
-      badgeText: "Offline First",
+      badgeText: "Saved on Device",
     },
     {
       roleTag: "User Role 3",
       title: "Doctor",
       description:
-        "Review AI draft summaries, validate risk levels, issue teleconsultations, prescribe medicines, and direct care pathways.",
+        "Review assistant-prepared summaries, confirm risk levels, issue teleconsultations, prescribe medicines, and direct care pathways.",
       icon: Stethoscope,
-      primaryActionLabel: "Open Demo Dashboard",
+      primaryActionLabel: "Open Overview",
       href: "/doctor/dashboard",
       badgeText: "Clinical Review",
     },
@@ -103,11 +103,11 @@ export default function LandingPage() {
       roleTag: "User Role 4",
       title: "Healthcare Facility / Hospital",
       description:
-        "Facility admin dashboard to accept incoming referrals, confirm patient arrival, manage doctor duty schedules, and update bed/medicine stock.",
+        "Facility dashboard to accept incoming care requests, confirm patient arrival, manage doctor duty schedules, and update bed and medicine availability.",
       icon: Building2,
-      primaryActionLabel: "Open Demo Dashboard",
+      primaryActionLabel: "Open Overview",
       href: "/facility/dashboard",
-      badgeText: "Referral Desk",
+      badgeText: "Care Desk",
     },
   ];
 
@@ -132,7 +132,7 @@ export default function LandingPage() {
 
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold">
             <WifiOff className="w-3.5 h-3.5 text-teal-700" />
-            <span>Offline-first care support</span>
+            <span>Information saved on this device</span>
           </div>
         </div>
       </header>
@@ -163,10 +163,10 @@ export default function LandingPage() {
           {/* Core USP Banner */}
           <div className="mt-6 p-4 rounded-2xl bg-teal-900 text-white shadow-md text-left sm:text-center flex flex-col sm:flex-row items-center justify-center gap-3 border border-teal-800">
             <span className="px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 text-xs font-extrabold uppercase tracking-wide shrink-0">
-              Core USP
+              Core Purpose
             </span>
             <p className="text-sm sm:text-base font-medium text-teal-50">
-              “From first symptom to completed referral and follow-up.”
+              “From first symptom to completed care request and follow-up visit.”
             </p>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function LandingPage() {
                 id="roles-heading"
                 className="text-xl font-bold text-slate-900"
               >
-                Four Ecosystem Stakeholders
+                Four Healthcare Stakeholders
               </h2>
               <p className="text-xs text-slate-500">
                 Select a role to view the intended workflow responsibilities
@@ -205,12 +205,12 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-base mb-1">
-                Offline-First Architecture
+                Saved on This Device
               </h3>
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                Essential patient and referral information can be captured offline
-                and synchronised when connectivity returns. Frontline workers in
-                remote sub-centres never lose clinical records due to network drops.
+                Essential patient and care request details are saved on this phone
+                and sent automatically when internet returns. Frontline workers in
+                remote sub-centres never lose health records.
               </p>
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function LandingPage() {
               </h3>
               <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
                 AI provides preliminary assistance only. Final clinical decisions,
-                prescriptions, and referrals remain with qualified health workers and
+                prescriptions, and care requests remain with qualified health workers and
                 doctors.
               </p>
             </div>
