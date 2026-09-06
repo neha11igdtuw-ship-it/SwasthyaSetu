@@ -24,7 +24,7 @@ export function LanguageSelector() {
   const options: { id: LanguageOption; buttonLabel: string; label: string; sublabel?: string }[] = [
     { id: "en", buttonLabel: "English ▾", label: "English" },
     { id: "hi", buttonLabel: "हिंदी ▾", label: "हिंदी", sublabel: "Hindi" },
-    { id: "local", buttonLabel: "बहुभाषी ▾", label: "Multilingual / Local language", sublabel: "Local mode" },
+    { id: "mr", buttonLabel: "मराठी ▾", label: "मराठी", sublabel: "Marathi" },
   ];
 
   const currentOption =
@@ -41,7 +41,7 @@ export function LanguageSelector() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Change language"
-        title="Change language / भाषा बदलें"
+        title="Change language / भाषा बदलें / भाषा बदला"
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold transition-all shadow-sm hover:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 shrink-0"
       >
         <Globe className="w-4 h-4 text-teal-700 shrink-0" />
@@ -51,7 +51,7 @@ export function LanguageSelector() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-2 space-y-1 text-xs z-50">
           <div className="px-3 py-1.5 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Select Language / भाषा चुनें
+            Select Language / भाषा चुनें / भाषा निवडा
           </div>
 
           {options.map((opt) => (

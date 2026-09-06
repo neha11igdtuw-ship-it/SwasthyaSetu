@@ -1,10 +1,19 @@
+"use client";
+
 import React from "react";
 import { Mic, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/languageContext";
 
 export function VoiceAssistantCard() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+
+  const activeLangName =
+    language === "hi"
+      ? t("languageHindi")
+      : language === "mr"
+      ? t("languageMarathi")
+      : t("languageEnglish");
 
   return (
     <div className="bg-gradient-to-br from-teal-900 to-teal-950 text-white rounded-2xl p-6 shadow-md space-y-4 border border-teal-800">
@@ -23,7 +32,7 @@ export function VoiceAssistantCard() {
           </div>
         </div>
         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-400 text-slate-950">
-          {t("languageHindi")} / {t("localMode")}
+          {activeLangName}
         </span>
       </div>
 

@@ -15,14 +15,14 @@ import {
 } from "lucide-react";
 
 const hwNavItems: NavItem[] = [
-  { labelKey: "hwDashboard", defaultLabel: "Overview", href: "/hw/dashboard", icon: LayoutDashboard },
-  { labelKey: "hwRegister", defaultLabel: "Register Person", href: "/hw/patients/register", icon: UserPlus },
-  { labelKey: "hwTriage", defaultLabel: "Initial Health Check", href: "/hw/screening/P-7821", icon: Stethoscope },
-  { labelKey: "hwRecords", defaultLabel: "People Records", href: "/hw/patients", icon: Users },
-  { labelKey: "hwReferrals", defaultLabel: "Care Requests", href: "/hw/referrals", icon: Share2 },
-  { labelKey: "hwHighRisk", defaultLabel: "High Priority Cases", href: "/hw/high-risk", icon: AlertTriangle },
-  { labelKey: "followUps", defaultLabel: "Next Visits", href: "/hw/follow-ups", icon: Clock },
-  { labelKey: "hwSync", defaultLabel: "Device Records", href: "/hw/sync", icon: RefreshCw },
+  { labelKey: "hwDashboard", defaultLabel: "Dashboard", href: "/hw/dashboard", icon: LayoutDashboard },
+  { labelKey: "hwPatients", defaultLabel: "My patients", href: "/hw/patients", icon: Users },
+  { labelKey: "hwRegister", defaultLabel: "Register patient", href: "/hw/patients/register", icon: UserPlus },
+  { labelKey: "hwScreening", defaultLabel: "Health check", href: "/hw/screening/P-7821", icon: Stethoscope },
+  { labelKey: "hwHighRisk", defaultLabel: "Patients needing urgent attention", href: "/hw/high-risk", icon: AlertTriangle },
+  { labelKey: "hwReferrals", defaultLabel: "New care requests", href: "/hw/referrals", icon: Share2 },
+  { labelKey: "hwFollowUps", defaultLabel: "Visits due & missed", href: "/hw/follow-ups", icon: Clock },
+  { labelKey: "hwUpdateInfo", defaultLabel: "Update information", href: "/hw/sync", icon: RefreshCw },
 ];
 
 export default function HealthWorkerLayout({

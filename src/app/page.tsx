@@ -78,8 +78,7 @@ export default function LandingPage() {
     {
       roleTag: "Role 1",
       title: t("patient"),
-      description:
-        "Tell your symptoms using voice or text in your language, view health records, receive visit reminders, and track your care request.",
+      description: t("patientRoleDesc"),
       icon: User,
       primaryActionLabel: t("openOverview"),
       href: "/patient/dashboard",
@@ -88,8 +87,7 @@ export default function LandingPage() {
     {
       roleTag: "Role 2",
       title: t("healthWorker"),
-      description:
-        "ASHA/ANM patient registration, vitals & pregnancy screening, high-risk tracking, care request creation, and device record management.",
+      description: t("healthWorkerRoleDesc"),
       icon: HeartPulse,
       primaryActionLabel: t("openOverview"),
       href: "/hw/dashboard",
@@ -98,8 +96,7 @@ export default function LandingPage() {
     {
       roleTag: "Role 3",
       title: t("doctor"),
-      description:
-        "Review assistant-prepared summaries, confirm risk levels, issue teleconsultations, prescribe medicines, and direct care pathways.",
+      description: t("doctorRoleDesc"),
       icon: Stethoscope,
       primaryActionLabel: t("openOverview"),
       href: "/doctor/dashboard",
@@ -108,8 +105,7 @@ export default function LandingPage() {
     {
       roleTag: "Role 4",
       title: t("healthcareFacility"),
-      description:
-        "Facility dashboard to accept incoming care requests, confirm patient arrival, manage doctor duty schedules, and update bed and medicine availability.",
+      description: t("facilityRoleDesc"),
       icon: Building2,
       primaryActionLabel: t("openOverview"),
       href: "/facility/dashboard",
