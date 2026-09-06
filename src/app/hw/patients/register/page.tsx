@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { CheckCircle2, UserPlus, ArrowLeft } from "lucide-react";
 
 export default function HWRegisterPatientPage() {
-  const [submitted, setRequested] = useState(false);
+  const { t } = useLanguage();
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "Anita Devi",
     age: "24",
@@ -15,7 +17,6 @@ export default function HWRegisterPatientPage() {
     phone: "+91 98765 11223",
     village: "Rampur",
     preferredLanguage: "Hindi",
-    emergencyContact: "+91 98765 99887",
     carePathway: "Maternal Care",
     pregnancyWeek: "24",
     edd: "2026-12-15",
@@ -26,14 +27,14 @@ export default function HWRegisterPatientPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setRequested(true);
+    setSubmitted(true);
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Register Person"
-        subtitle="ASHA/ANM offline-first person intake and registration form"
+        title={t("registerPatientTitle")}
+        subtitle={t("registerPatientSubtitle")}
         roleBadge={<RoleBadge role="Health Worker" />}
         action={
           <Link
@@ -41,7 +42,7 @@ export default function HWRegisterPatientPage() {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to People List</span>
+            <span>{t("backToPeopleList")}</span>
           </Link>
         }
       />
@@ -52,10 +53,10 @@ export default function HWRegisterPatientPage() {
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <h2 className="text-xl font-extrabold text-slate-900">
-            Person Successfully Registered!
+            {t("personSuccessfullyRegistered")}
           </h2>
           <p className="text-xs text-slate-600 max-w-md mx-auto">
-            {formData.fullName} ({formData.village}) has been registered and saved on this phone. Record will send automatically when connected.
+            {formData.fullName} ({formData.village}) - {t("personRegisteredSuccessMsg")}
           </p>
 
           <div className="pt-4 flex justify-center gap-3">
@@ -63,28 +64,28 @@ export default function HWRegisterPatientPage() {
               href="/hw/patients"
               className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors"
             >
-              View All People Records
+              {t("viewAllPeopleRecords")}
             </Link>
             <button
               type="button"
-              onClick={() => setRequested(false)}
+              onClick={() => setSubmitted(false)}
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
             >
-              Register Another Person
+              {t("registerAnotherPerson")}
             </button>
           </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
-          {/* Section 1: Basic Demographics */}
+          {/* Section 1: Basic Personal Details */}
           <div className="space-y-3">
             <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-2">
-              1. Basic Personal Details
+              {t("sectionBasicDetails")}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Full Name:</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("fullNameLabel")}</label>
                 <input
                   type="text"
                   required
@@ -95,7 +96,7 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Age (Years):</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("ageLabel")}</label>
                 <input
                   type="number"
                   required
@@ -106,7 +107,7 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Phone Number:</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("phoneLabelFull")}</label>
                 <input
                   type="text"
                   required
@@ -117,7 +118,7 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Assigned Village:</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("villageLabelFull")}</label>
                 <input
                   type="text"
                   required
@@ -128,7 +129,7 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Preferred Spoken Language:</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("preferredLanguageLabelFull")}</label>
                 <select
                   value={formData.preferredLanguage}
                   onChange={(e) => setFormData({ ...formData, preferredLanguage: e.target.value })}
@@ -142,16 +143,15 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Care Pathway:</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("carePathwayLabelFull")}</label>
                 <select
                   value={formData.carePathway}
                   onChange={(e) => setFormData({ ...formData, carePathway: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500 font-semibold text-teal-800"
                 >
-                  <option>Maternal Care</option>
-                  <option>Hypertension</option>
-                  <option>Diabetes</option>
-                  <option>General Primary Care</option>
+                  <option value="Maternal Care">{t("maternalCare")}</option>
+                  <option value="Hypertension">{t("hypertension")}</option>
+                  <option value="Diabetes">{t("diabetes")}</option>
                 </select>
               </div>
             </div>
@@ -161,12 +161,12 @@ export default function HWRegisterPatientPage() {
           {formData.carePathway === "Maternal Care" && (
             <div className="space-y-3 pt-2 border-t border-slate-100">
               <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-2">
-                2. Antenatal Care (ANC) Details
+                {t("sectionMaternalDetails")}
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Pregnancy Month / Week:</label>
+                  <label className="font-bold text-slate-700 block mb-1">{t("pregnancyWeekInputLabel")}</label>
                   <input
                     type="number"
                     value={formData.pregnancyWeek}
@@ -176,7 +176,7 @@ export default function HWRegisterPatientPage() {
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Expected Delivery Date (EDD):</label>
+                  <label className="font-bold text-slate-700 block mb-1">{t("eddLabel")}</label>
                   <input
                     type="date"
                     value={formData.edd}
@@ -191,12 +191,12 @@ export default function HWRegisterPatientPage() {
           {/* Section 3: Baseline Vitals */}
           <div className="space-y-3 pt-2 border-t border-slate-100">
             <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-2">
-              3. Baseline Health Vitals
+              {t("sectionBaselineVitals")}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Systolic BP (mmHg):</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("systolicBpLabel")}</label>
                 <input
                   type="number"
                   value={formData.systolicBp}
@@ -206,7 +206,7 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Diastolic BP (mmHg):</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("diastolicBpLabel")}</label>
                 <input
                   type="number"
                   value={formData.diastolicBp}
@@ -216,7 +216,7 @@ export default function HWRegisterPatientPage() {
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Pulse (bpm):</label>
+                <label className="font-bold text-slate-700 block mb-1">{t("pulseLabel")}</label>
                 <input
                   type="number"
                   value={formData.pulse}
@@ -232,7 +232,7 @@ export default function HWRegisterPatientPage() {
             className="w-full py-3.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-sm transition-colors inline-flex items-center justify-center gap-2 shadow-sm"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Complete Person Registration</span>
+            <span>{t("completeRegistrationBtn")}</span>
           </button>
         </form>
       )}
