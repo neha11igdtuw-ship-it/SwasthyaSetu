@@ -2,6 +2,7 @@ import React from "react";
 import { FollowUpItem } from "@/lib/mockData";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Calendar, CheckCircle2, Clock } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface FollowUpCardProps {
   item: FollowUpItem;
@@ -9,6 +10,7 @@ interface FollowUpCardProps {
 }
 
 export function FollowUpCard({ item, onMarkCompleted }: FollowUpCardProps) {
+  const { t } = useLanguage();
   const isCompleted = item.status === "Completed";
 
   return (
@@ -41,7 +43,7 @@ export function FollowUpCard({ item, onMarkCompleted }: FollowUpCardProps) {
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
         <div className="flex items-center gap-1.5 text-slate-500 font-medium">
           <Clock className="w-3.5 h-3.5 text-teal-700" />
-          <span>Due: <strong>{item.dueDate}</strong></span>
+          <span>{t("nextFollowUp")}: <strong>{item.dueDate}</strong></span>
         </div>
 
         {!isCompleted && (
@@ -51,7 +53,7 @@ export function FollowUpCard({ item, onMarkCompleted }: FollowUpCardProps) {
             className="px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-xs font-bold transition-colors inline-flex items-center gap-1 shadow-xs"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Mark as Completed</span>
+            <span>{t("markCompleted")}</span>
           </button>
         )}
       </div>

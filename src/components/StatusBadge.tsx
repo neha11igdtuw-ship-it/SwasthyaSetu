@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 export type StatusType =
   | "High Risk"
@@ -20,6 +21,8 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
+  const { t } = useLanguage();
+
   let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
 
   switch (status) {
@@ -43,11 +46,15 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
       break;
   }
 
-  // Display user-friendly plain text for status
+  // Map status key if available in dictionary
   let displayStatus = status;
-  if (status === "Pending Acceptance") {
-    displayStatus = "Waiting for action";
-  }
+  if (status === "High Risk") displayStatus = t("highRisk");
+  else if (status === "Watch / Moderate") displayStatus = t("mediumRisk");
+  else if (status === "Low Risk") displayStatus = t("lowRisk");
+  else if (status === "Normal") displayStatus = t("normal");
+  else if (status === "Waiting for action" || status === "Pending Acceptance") displayStatus = t("waitingForAction");
+  else if (status === "Accepted") displayStatus = t("accepted");
+  else if (status === "Completed") displayStatus = t("closed");
 
   return (
     <span

@@ -1,6 +1,7 @@
 import React from "react";
 import { ReferralStep } from "@/lib/mockData";
 import { Check } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface StepItem {
   name: ReferralStep;
@@ -13,6 +14,29 @@ interface ReferralStatusStepperProps {
 }
 
 export function ReferralStatusStepper({ steps }: ReferralStatusStepperProps) {
+  const { t } = useLanguage();
+
+  const mapStepName = (stepName: ReferralStep) => {
+    switch (stepName) {
+      case "Created":
+        return t("created");
+      case "Accepted":
+        return t("accepted");
+      case "Patient Visit":
+        return t("patientVisit");
+      case "Test Completed":
+        return t("testCompleted");
+      case "Treatment Started":
+        return t("treatmentStarted");
+      case "Follow-up Due":
+        return t("followUpDue");
+      case "Closed":
+        return t("closed");
+      default:
+        return stepName;
+    }
+  };
+
   return (
     <div className="w-full py-4 overflow-x-auto">
       <div className="min-w-[620px] flex items-center justify-between relative">
@@ -47,7 +71,7 @@ export function ReferralStatusStepper({ steps }: ReferralStatusStepperProps) {
                       : "text-slate-400"
                   }`}
                 >
-                  {step.name}
+                  {mapStepName(step.name)}
                 </span>
                 {step.date && (
                   <span className="text-[10px] text-slate-500 font-mono block mt-0.5">

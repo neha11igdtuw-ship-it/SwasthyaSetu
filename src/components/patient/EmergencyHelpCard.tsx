@@ -1,11 +1,14 @@
 import React from "react";
 import { AlertOctagon, PhoneCall, ShieldAlert, MapPin } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface EmergencyHelpCardProps {
   ashaPhone: string;
 }
 
 export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="bg-rose-950 text-white rounded-2xl p-6 shadow-md space-y-4 border border-rose-800">
       <div className="flex items-center gap-3 border-b border-rose-800 pb-3">
@@ -14,16 +17,16 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
         </div>
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-rose-300 block">
-            Emergency Warning Protocol
+            {t("emergencyProtocolTitle")}
           </span>
           <h3 className="font-extrabold text-lg text-white">
-            High-Risk Maternal Emergency Assistance
+            {t("maternalDangerSignsTitle")}
           </h3>
         </div>
       </div>
 
       <p className="text-xs text-rose-100 leading-relaxed">
-        If you experience severe vaginal bleeding, sudden severe headache, blurred vision, or severe abdominal pain, seek immediate emergency help.
+        {t("aiPreliminaryNotice")}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
@@ -32,7 +35,7 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
           className="p-3 rounded-xl bg-rose-800 hover:bg-rose-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 border border-rose-600 transition-colors"
         >
           <PhoneCall className="w-4 h-4" />
-          <span>Call ASHA ({ashaPhone})</span>
+          <span>{t("callASHA")} ({ashaPhone})</span>
         </a>
 
         <a
@@ -48,7 +51,7 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
           className="p-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center justify-center gap-2 border border-slate-700 transition-colors"
         >
           <MapPin className="w-4 h-4 text-rose-400" />
-          <span>Find Hospital</span>
+          <span>{t("viewHospitalDetails")}</span>
         </a>
       </div>
 

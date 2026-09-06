@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface QuickActionCardProps {
   title: string;
@@ -19,6 +20,8 @@ export function QuickActionCard({
   badgeText,
   accentColor = "teal",
 }: QuickActionCardProps) {
+  const { t } = useLanguage();
+
   const colorStyles = {
     teal: "bg-teal-50 border-teal-100 text-teal-700 group-hover:bg-teal-700 group-hover:text-white",
     amber: "bg-amber-50 border-amber-100 text-amber-700 group-hover:bg-amber-600 group-hover:text-white",
@@ -53,7 +56,7 @@ export function QuickActionCard({
       </div>
 
       <div className="mt-4 pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-700 group-hover:text-teal-900">
-        <span>Open</span>
+        <span>{t("viewDetails")}</span>
         <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
       </div>
     </Link>

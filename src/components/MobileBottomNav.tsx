@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavItem } from "./Sidebar";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface MobileBottomNavProps {
   items: NavItem[];
@@ -9,12 +12,14 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ items }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 px-2 py-1.5 flex items-center justify-around shadow-lg">
       {items.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
+        const label = t(item.labelKey) || item.defaultLabel;
 
         return (
           <Link
@@ -29,7 +34,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
                 isActive ? "text-teal-700" : "text-slate-400"
               }`}
             />
-            <span>{item.label}</span>
+            <span className="truncate max-w-[64px]">{label}</span>
           </Link>
         );
       })}

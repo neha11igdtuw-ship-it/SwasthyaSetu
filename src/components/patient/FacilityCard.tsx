@@ -1,12 +1,14 @@
 import React from "react";
 import { NearbyFacility } from "@/lib/mockData";
 import { Building2, MapPin, CheckCircle, Clock } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface FacilityCardProps {
   facility: NearbyFacility;
 }
 
 export function FacilityCard({ facility }: FacilityCardProps) {
+  const { t } = useLanguage();
   const isAvailable = facility.status === "Available";
 
   return (
@@ -28,26 +30,26 @@ export function FacilityCard({ facility }: FacilityCardProps) {
               : "bg-rose-50 text-rose-800 border-rose-200"
           }`}
         >
-          {isAvailable ? "Available" : "Unavailable"}
+          {isAvailable ? t("available") : t("unavailable")}
         </span>
       </div>
 
       <div className="space-y-2 text-xs text-slate-600">
         <div className="flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-          <span>Distance: <strong>{facility.distance}</strong> from village</span>
+          <span>{t("distance")}: <strong>{facility.distance}</strong></span>
         </div>
 
         <div>
           <span className="font-bold text-slate-800 block mb-1">
-            Doctor & Staff Availability:
+            {t("doctorAvailability")}
           </span>
           <p className="text-slate-600">{facility.doctorAvailability}</p>
         </div>
 
         <div>
           <span className="font-bold text-slate-800 block mb-1">
-            Services Available:
+            {t("servicesAvailable")}
           </span>
           <div className="flex flex-wrap gap-1">
             {facility.availableServices.map((srv, idx) => (
@@ -65,7 +67,7 @@ export function FacilityCard({ facility }: FacilityCardProps) {
 
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
         <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" /> Updated: {facility.lastUpdated}
+          <Clock className="w-3 h-3" /> {t("updated")}: {facility.lastUpdated}
         </span>
       </div>
     </div>
