@@ -1,9 +1,10 @@
+"use client";
+
 import React from "react";
 import { RoleType } from "./RoleBadge";
 import { TopBar } from "./TopBar";
 import { Sidebar, NavItem } from "./Sidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { LanguageProvider } from "@/lib/i18n/languageContext";
 
 interface AppShellProps {
   role: RoleType;
@@ -23,24 +24,22 @@ export function AppShell({
   showMobileNav = true,
 }: AppShellProps) {
   return (
-    <LanguageProvider>
-      <div className="min-h-screen flex flex-col bg-[#f6fafa]">
-        <TopBar
-          role={role}
-          userName={userName}
-          facilityOrLocation={facilityOrLocation}
-        />
+    <div className="min-h-screen flex flex-col bg-[#f6fafa]">
+      <TopBar
+        role={role}
+        userName={userName}
+        facilityOrLocation={facilityOrLocation}
+      />
 
-        <div className="flex-1 flex max-w-7xl w-full mx-auto">
-          <Sidebar items={navItems} />
+      <div className="flex-1 flex max-w-7xl w-full mx-auto">
+        <Sidebar items={navItems} />
 
-          <main className={`flex-1 p-4 sm:p-8 ${showMobileNav ? "pb-20 md:pb-8" : ""}`}>
-            {children}
-          </main>
-        </div>
-
-        {showMobileNav && <MobileBottomNav items={navItems} />}
+        <main className={`flex-1 p-4 sm:p-8 ${showMobileNav ? "pb-20 md:pb-8" : ""}`}>
+          {children}
+        </main>
       </div>
-    </LanguageProvider>
+
+      {showMobileNav && <MobileBottomNav items={navItems} />}
+    </div>
   );
 }

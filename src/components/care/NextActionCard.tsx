@@ -1,5 +1,6 @@
 import React from "react";
 import { Building2, Clock, CheckCircle, Info } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface NextActionCardProps {
   recommendedAction: string;
@@ -21,6 +22,8 @@ export function NextActionCard({
   doctorAvailability,
   lastUpdated,
 }: NextActionCardProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-teal-500/60 shadow-sm space-y-4 ring-1 ring-teal-500/20">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -30,7 +33,7 @@ export function NextActionCard({
           </div>
           <div>
             <span className="text-[10px] font-extrabold text-teal-800 uppercase tracking-wide block">
-              What You Should Do Next
+              {t("whatYouShouldDoNext")}
             </span>
             <h3 className="font-bold text-slate-900 text-sm sm:text-base">
               {recommendedAction}
@@ -44,14 +47,14 @@ export function NextActionCard({
           <div className="flex items-start justify-between gap-2">
             <div>
               <span className="text-[11px] font-semibold text-slate-500 block">
-                Recommended Hospital / Health Center
+                {t("recommendedHospital")}
               </span>
               <p className="text-sm font-bold text-slate-900">
                 {recommendedFacility}
               </p>
             </div>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-teal-100 text-teal-900 shrink-0">
-              {distance} away
+              {distance} {t("distanceAway")}
             </span>
           </div>
 
@@ -65,7 +68,7 @@ export function NextActionCard({
 
         <div>
           <span className="text-xs font-bold text-slate-700 block mb-1">
-            Doctor Availability:
+            {t("doctorAvailability")}
           </span>
           <p className="text-xs text-slate-600 font-medium">
             {doctorAvailability}
@@ -74,7 +77,7 @@ export function NextActionCard({
 
         <div>
           <span className="text-xs font-bold text-slate-700 block mb-1">
-            Services Available:
+            {t("servicesAvailable")}
           </span>
           <div className="flex flex-wrap gap-1.5">
             {availableServices.map((srv, idx) => (
@@ -93,11 +96,11 @@ export function NextActionCard({
       <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
         <div className="flex items-center gap-1">
           <Clock className="w-3.5 h-3.5 text-slate-400" />
-          <span>Updated: {lastUpdated}</span>
+          <span>{t("lastUpdated")}: {lastUpdated}</span>
         </div>
         <div className="flex items-center gap-1 text-slate-400 font-medium italic">
           <Info className="w-3 h-3" />
-          <span>Saved information</span>
+          <span>{t("savedInformation")}</span>
         </div>
       </div>
     </div>

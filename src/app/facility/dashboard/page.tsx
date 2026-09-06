@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
