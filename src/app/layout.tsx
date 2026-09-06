@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/i18n/languageContext";
 
 export const metadata: Metadata = {
   title: "SwasthyaSetu | Rural Healthcare & Continuity of Care Platform",
@@ -15,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-[#f6fafa] text-[#0d252c] min-h-screen flex flex-col">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

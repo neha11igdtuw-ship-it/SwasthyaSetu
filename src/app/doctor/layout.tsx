@@ -5,18 +5,18 @@ import { AppShell } from "@/components/AppShell";
 import { NavItem } from "@/components/Sidebar";
 import {
   LayoutDashboard,
-  ClipboardList,
+  Stethoscope,
   Users,
   Share2,
-  CalendarCheck,
+  Clock,
 } from "lucide-react";
 
 const doctorNavItems: NavItem[] = [
-  { label: "Dashboard", href: "/doctor/dashboard", icon: LayoutDashboard },
-  { label: "Cases", href: "/doctor/cases", icon: ClipboardList },
-  { label: "Patients", href: "/doctor/patients", icon: Users },
-  { label: "Referrals", href: "/doctor/referrals", icon: Share2 },
-  { label: "Follow-ups", href: "/doctor/follow-ups", icon: CalendarCheck },
+  { labelKey: "overview", defaultLabel: "Overview", href: "/doctor/dashboard", icon: LayoutDashboard },
+  { labelKey: "hwTriage", defaultLabel: "Patients to Review", href: "/doctor/dashboard", icon: Stethoscope },
+  { labelKey: "records", defaultLabel: "People Records", href: "/hw/patients", icon: Users },
+  { labelKey: "referrals", defaultLabel: "Care Requests", href: "/hw/referrals", icon: Share2 },
+  { labelKey: "followUps", defaultLabel: "Today's Schedule", href: "/hw/follow-ups", icon: Clock },
 ];
 
 export default function DoctorLayout({
@@ -28,9 +28,8 @@ export default function DoctorLayout({
     <AppShell
       role="Doctor"
       userName="Dr. Ananya Rao"
-      facilityOrLocation="District Civil Hospital • Medical Unit 2"
+      facilityOrLocation="District Civil Hospital"
       navItems={doctorNavItems}
-      showMobileNav={true}
     >
       {children}
     </AppShell>
