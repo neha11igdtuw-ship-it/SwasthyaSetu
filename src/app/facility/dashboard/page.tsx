@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
@@ -31,31 +33,31 @@ export default function FacilityDashboardPage() {
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <DashboardCard
-          title="Incoming Referrals"
+          title="New Care Requests"
           value={fac.incomingReferralsCount}
-          subtitle="From sub-centres & ASHAs"
+          subtitle="From health workers"
           icon={Inbox}
           highlight
         />
 
         <DashboardCard
-          title="Accepted Referrals"
+          title="Accepted Requests"
           value={fac.acceptedReferralsCount}
           subtitle="Ready for arrival"
           icon={CheckCircle2}
         />
 
         <DashboardCard
-          title="Expected Today"
+          title="People Expected Today"
           value={fac.patientsExpectedToday}
-          subtitle="Patient transit in progress"
+          subtitle="Transit in progress"
           icon={Users}
         />
 
         <DashboardCard
           title="Pending Responses"
           value={fac.pendingFacilityResponsesCount}
-          subtitle="Awaiting desk action"
+          subtitle="Awaiting desk review"
           icon={Clock}
         />
 
@@ -67,21 +69,21 @@ export default function FacilityDashboardPage() {
         />
       </div>
 
-      {/* Incoming Referrals Desk & Medicine/Service Availability Grid */}
+      {/* Incoming Care Requests Desk & Medicine/Service Availability Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Incoming Referrals Management */}
+        {/* Incoming Care Requests Management */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <h2 className="font-extrabold text-slate-900 text-lg">
-                Incoming Referral Management
+                New Care Requests Desk
               </h2>
               <p className="text-xs text-slate-500">
-                Accept, redirect, or acknowledge incoming patient transfers
+                Accept, redirect, or send feedback on incoming patient transfers
               </p>
             </div>
             <span className="text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200 px-3 py-1 rounded-full w-fit">
-              {fac.pendingFacilityResponsesCount} Pending Facility Responses
+              {fac.pendingFacilityResponsesCount} Pending Responses
             </span>
           </div>
 
@@ -119,7 +121,7 @@ export default function FacilityDashboardPage() {
                       type="button"
                       className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1"
                     >
-                      <Check className="w-3.5 h-3.5" /> Accept Referral
+                      <Check className="w-3.5 h-3.5" /> Accept Care Request
                     </button>
                     <button
                       type="button"
@@ -131,7 +133,7 @@ export default function FacilityDashboardPage() {
                       type="button"
                       className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-colors inline-flex items-center gap-1"
                     >
-                      <X className="w-3.5 h-3.5" /> Reject
+                      <X className="w-3.5 h-3.5" /> Send Back to Health Worker
                     </button>
                   </div>
                 )}
@@ -140,14 +142,14 @@ export default function FacilityDashboardPage() {
           </div>
         </div>
 
-        {/* Available Services & Stock Placeholder Card */}
+        {/* Available Services & Stock Card */}
         <div className="space-y-6">
           {/* Services Availability */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <Activity className="w-5 h-5 text-teal-700" />
               <h3 className="font-bold text-slate-900 text-base">
-                Available Facility Services
+                Services Available
               </h3>
             </div>
 
@@ -171,12 +173,12 @@ export default function FacilityDashboardPage() {
             </div>
           </div>
 
-          {/* Diagnostic & Medicine Availability Placeholder */}
+          {/* Medicine & Lab Availability */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-3">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <PackageCheck className="w-5 h-5 text-teal-700" />
               <h3 className="font-bold text-slate-900 text-base">
-                Diagnostic & Medicine Stock
+                Medicine & Diagnostic Stock
               </h3>
             </div>
 

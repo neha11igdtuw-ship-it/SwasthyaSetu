@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { RoleType } from "./RoleBadge";
 import { TopBar } from "./TopBar";
