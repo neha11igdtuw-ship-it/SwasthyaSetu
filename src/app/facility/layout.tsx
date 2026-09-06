@@ -8,17 +8,15 @@ import {
   Inbox,
   Users,
   Activity,
-  Package,
-  FileBarChart,
+  PackageCheck,
 } from "lucide-react";
 
 const facilityNavItems: NavItem[] = [
-  { label: "Dashboard", href: "/facility/dashboard", icon: LayoutDashboard },
-  { label: "Incoming Referrals", href: "/facility/referrals", icon: Inbox },
-  { label: "Patients", href: "/facility/patients", icon: Users },
-  { label: "Services", href: "/facility/services", icon: Activity },
-  { label: "Availability", href: "/facility/availability", icon: Package },
-  { label: "Reports", href: "/facility/reports", icon: FileBarChart },
+  { labelKey: "overview", defaultLabel: "Facility Overview", href: "/facility/dashboard", icon: LayoutDashboard },
+  { labelKey: "referrals", defaultLabel: "New Care Requests", href: "/facility/dashboard", icon: Inbox },
+  { labelKey: "records", defaultLabel: "People Expected Today", href: "/hw/patients", icon: Users },
+  { labelKey: "diagnostics", defaultLabel: "Services Available", href: "/facility/dashboard", icon: Activity },
+  { labelKey: "medicines", defaultLabel: "Medicine Stock", href: "/facility/dashboard", icon: PackageCheck },
 ];
 
 export default function FacilityLayout({
@@ -29,10 +27,9 @@ export default function FacilityLayout({
   return (
     <AppShell
       role="Healthcare Facility"
-      userName="Admin Desk (District Hospital)"
-      facilityOrLocation="District Civil Hospital & Maternal Care Centre"
+      userName="District Civil Hospital"
+      facilityOrLocation="Kalyanpur District"
       navItems={facilityNavItems}
-      showMobileNav={true}
     >
       {children}
     </AppShell>
