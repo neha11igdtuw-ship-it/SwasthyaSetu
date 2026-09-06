@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import {
   User,
   HeartPulse,
@@ -17,6 +18,7 @@ interface RoleCardProps {
   description: string;
   icon: React.ElementType;
   primaryActionLabel: string;
+  href: string;
   badgeText?: string;
 }
 
@@ -26,6 +28,7 @@ function RoleCard({
   description,
   icon: Icon,
   primaryActionLabel,
+  href,
   badgeText,
 }: RoleCardProps) {
   return (
@@ -51,15 +54,14 @@ function RoleCard({
       </div>
 
       <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-        <button
-          type="button"
-          disabled
-          aria-label={`${title} dashboard demo mode`}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-500 text-sm font-semibold cursor-not-allowed border border-slate-200"
+        <Link
+          href={href}
+          aria-label={`Open ${title} demo dashboard`}
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-sm font-semibold transition-colors shadow-sm"
         >
           <span>{primaryActionLabel}</span>
           <ArrowRight className="w-4 h-4" />
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -73,7 +75,8 @@ export default function LandingPage() {
       description:
         "Submit symptoms using voice or text in your language, upload records, receive reminders, and track your referral status.",
       icon: User,
-      primaryActionLabel: "Patient Dashboard (Coming Next)",
+      primaryActionLabel: "Open Demo Dashboard",
+      href: "/patient/dashboard",
       badgeText: "Voice & Text",
     },
     {
@@ -82,7 +85,8 @@ export default function LandingPage() {
       description:
         "ASHA/ANM offline patient registration, vitals & pregnancy screening, high-risk tracking, referral creation, and offline sync.",
       icon: HeartPulse,
-      primaryActionLabel: "Health Worker Dashboard (Coming Next)",
+      primaryActionLabel: "Open Demo Dashboard",
+      href: "/hw/dashboard",
       badgeText: "Offline First",
     },
     {
@@ -91,7 +95,8 @@ export default function LandingPage() {
       description:
         "Review AI draft summaries, validate risk levels, issue teleconsultations, prescribe medicines, and direct care pathways.",
       icon: Stethoscope,
-      primaryActionLabel: "Doctor Dashboard (Coming Next)",
+      primaryActionLabel: "Open Demo Dashboard",
+      href: "/doctor/dashboard",
       badgeText: "Clinical Review",
     },
     {
@@ -100,7 +105,8 @@ export default function LandingPage() {
       description:
         "Facility admin dashboard to accept incoming referrals, confirm patient arrival, manage doctor duty schedules, and update bed/medicine stock.",
       icon: Building2,
-      primaryActionLabel: "Facility Dashboard (Coming Next)",
+      primaryActionLabel: "Open Demo Dashboard",
+      href: "/facility/dashboard",
       badgeText: "Referral Desk",
     },
   ];
@@ -232,7 +238,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>SwasthyaSetu Frontend Foundation Active</span>
+            <span>SwasthyaSetu Platform Active</span>
           </div>
           <p>© 2026 SwasthyaSetu Platform. All rights reserved.</p>
         </div>
