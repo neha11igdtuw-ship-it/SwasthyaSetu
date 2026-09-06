@@ -4,6 +4,8 @@ export type StatusType =
   | "High Risk"
   | "Watch / Moderate"
   | "Normal"
+  | "Low Risk"
+  | "Waiting for action"
   | "Pending Acceptance"
   | "Accepted"
   | "Completed"
@@ -26,11 +28,13 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
       badgeStyle = "bg-rose-50 text-rose-800 border-rose-200 font-bold";
       break;
     case "Watch / Moderate":
+    case "Waiting for action":
     case "Pending Acceptance":
     case "Limited":
       badgeStyle = "bg-amber-50 text-amber-800 border-amber-200 font-semibold";
       break;
     case "Normal":
+    case "Low Risk":
     case "Accepted":
     case "Completed":
     case "In Stock":
@@ -39,11 +43,17 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
       break;
   }
 
+  // Display user-friendly plain text for status
+  let displayStatus = status;
+  if (status === "Pending Acceptance") {
+    displayStatus = "Waiting for action";
+  }
+
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs border ${badgeStyle} ${className}`}
     >
-      {status}
+      {displayStatus}
     </span>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
@@ -28,29 +30,29 @@ export default function DoctorDashboardPage() {
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         <DashboardCard
-          title="Cases Awaiting Review"
+          title="Patients to Review"
           value={doc.casesAwaitingReview}
-          subtitle="Pending clinical validation"
+          subtitle="Waiting for doctor review"
           icon={Stethoscope}
           highlight
         />
 
         <DashboardCard
-          title="High-Risk Cases"
+          title="High Priority Cases"
           value={doc.highRiskCases}
-          subtitle="Maternal / ANC priority"
+          subtitle="Maternal care priority"
           icon={AlertTriangle}
         />
 
         <DashboardCard
-          title="Pending Referrals"
+          title="New Care Requests"
           value={doc.pendingReferrals}
-          subtitle="From sub-centres / ASHAs"
+          subtitle="From health workers"
           icon={Share2}
         />
 
         <DashboardCard
-          title="Today's Follow-ups"
+          title="Today's Appointments"
           value={doc.todaysFollowUpsCount}
           subtitle="Teleconsult & OPD queue"
           icon={Calendar}
@@ -62,14 +64,14 @@ export default function DoctorDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
           <div>
             <h2 className="font-extrabold text-slate-900 text-lg">
-              Referred & Assigned Patient Cases
+              Patients to Review & Confirm
             </h2>
             <p className="text-xs text-slate-500">
-              Review preliminary AI triage summaries and validate care recommendations
+              Review assistant-prepared summaries and confirm care recommendations
             </p>
           </div>
           <span className="text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200 px-3 py-1 rounded-full w-fit">
-            {doc.recentCases.length} Cases Requiring Validation
+            {doc.recentCases.length} Cases Requiring Doctor Review
           </span>
         </div>
 
@@ -91,16 +93,16 @@ export default function DoctorDashboardPage() {
                   <StatusBadge status={c.preliminaryRisk} />
                 </div>
                 <div className="text-xs text-slate-500">
-                  Referred by:{" "}
+                  Care request from:{" "}
                   <span className="font-bold text-slate-800">{c.referredBy}</span>
                 </div>
               </div>
 
-              {/* AI Draft Summary Placeholder Box */}
+              {/* Assistant Summary Placeholder Box */}
               <div className="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200/80 text-amber-950 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800">
                   <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                  <span>AI-generated draft; doctor validation required</span>
+                  <span>Assistant-prepared summary; doctor review and confirmation required</span>
                 </div>
                 <p className="text-xs leading-relaxed">{c.aiSummaryDraft}</p>
               </div>
@@ -116,7 +118,7 @@ export default function DoctorDashboardPage() {
                     type="button"
                     className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5"
                   >
-                    <span>Validate & Add Prescription</span>
+                    <span>Review & Add Care Advice</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
