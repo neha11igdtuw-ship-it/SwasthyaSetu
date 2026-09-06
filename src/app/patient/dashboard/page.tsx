@@ -99,42 +99,42 @@ export default function PatientDashboardPage() {
           />
           <QuickActionCard
             title={t("bookAppointment")}
-            subtitle="Schedule doctor visit"
+            subtitle={t("scheduleDoctorVisit")}
             href="/patient/appointments"
             icon={Calendar}
             accentColor="teal"
           />
           <QuickActionCard
             title={t("uploadReport")}
-            subtitle="Scan lab tests or ANC card"
+            subtitle={t("scanLabTestsOrAncCard")}
             href="/patient/documents"
             icon={Upload}
             accentColor="indigo"
           />
           <QuickActionCard
             title={t("viewCareRequest")}
-            subtitle="Check hospital progress"
+            subtitle={t("checkHospitalProgress")}
             href="/patient/referrals"
             icon={Share2}
             accentColor="teal"
           />
           <QuickActionCard
             title={t("viewLabTests")}
-            subtitle="Recommended health tests"
+            subtitle={t("recommendedHealthTests")}
             href="/patient/diagnostics"
             icon={Stethoscope}
             accentColor="teal"
           />
           <QuickActionCard
             title={t("viewMedicines")}
-            subtitle="Dosage & nearby stock"
+            subtitle={t("dosageAndNearbyStock")}
             href="/patient/medicines"
             icon={Pill}
             accentColor="teal"
           />
           <QuickActionCard
             title={t("emergencyHelp")}
-            subtitle="Immediate high-risk alert"
+            subtitle={t("immediateHighRiskAlert")}
             href="/patient/emergency-help"
             icon={AlertOctagon}
             badgeText={t("highRisk")}
