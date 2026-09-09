@@ -23,7 +23,7 @@ export function Sidebar({ items }: SidebarProps) {
   return (
     <aside className="hidden md:flex flex-col w-64 border-r border-slate-200/80 bg-white min-h-[calc(100vh-61px)] p-4 shrink-0">
       <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-3">
-        Navigation
+        {t("navigation")}
       </div>
       <nav className="space-y-1">
         {items.map((item) => {
