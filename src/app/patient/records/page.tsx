@@ -4,16 +4,18 @@ import React from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { priyaPatientMock } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { User, Clock } from "lucide-react";
 
 export default function PatientRecordsPage() {
   const p = priyaPatientMock;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="My Health Records"
-        subtitle="Shared antenatal health details & health visit timeline"
+        title="recordsTitle"
+        subtitle="recordsSubtitle"
         roleBadge={<RoleBadge role="Patient" />}
       />
 
@@ -25,37 +27,37 @@ export default function PatientRecordsPage() {
           </div>
           <div>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-              Patient ID: {p.profile.id}
+              {t("patientId")}: {p.profile.id}
             </span>
             <h3 className="font-extrabold text-slate-900 text-lg">
-              {p.profile.name} ({p.profile.age} Yrs)
+              {t("priyaSharmaName")} ({p.profile.age} Yrs)
             </h3>
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block">Pregnancy Month</span>
+            <span className="text-[10px] font-bold text-slate-400 block">{t("pregnancyWeek")}</span>
             <span className="text-sm font-extrabold text-slate-900">
               Week {p.profile.pregnancyWeek}
             </span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block">Blood Pressure</span>
+            <span className="text-[10px] font-bold text-slate-400 block">{t("bloodPressureReading")}</span>
             <span className="text-sm font-extrabold text-rose-700">
               {p.profile.vitals.bp}
             </span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block">Hemoglobin</span>
+            <span className="text-[10px] font-bold text-slate-400 block">{t("hemoglobin")}</span>
             <span className="text-sm font-extrabold text-rose-700">
               {p.profile.vitals.hemoglobin}
             </span>
           </div>
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block">Assigned ASHA</span>
+            <span className="text-[10px] font-bold text-slate-400 block">{t("callASHA")}</span>
             <span className="text-xs font-bold text-teal-800">
-              {p.profile.assignedASHA}
+              {t("sunitaDeviWorker")}
             </span>
           </div>
         </div>
@@ -66,7 +68,7 @@ export default function PatientRecordsPage() {
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
           <Clock className="w-5 h-5 text-teal-700" />
           <h3 className="font-extrabold text-slate-900 text-base">
-            Health Visit Timeline
+            {t("healthVisitTimeline")}
           </h3>
         </div>
 
@@ -86,11 +88,11 @@ export default function PatientRecordsPage() {
                 </div>
 
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  {vis.summary}
+                  {vis.summary.includes("headache") ? t("preEclampsiaReason") : vis.summary}
                 </p>
 
                 <div className="flex gap-3 text-[11px] text-slate-500 font-medium pt-1">
-                  <span>Visited: <strong>{vis.provider}</strong></span>
+                  <span>Visited: <strong>{vis.provider.includes("ANM") ? t("sunitaDeviWorker") : vis.provider.includes("District") ? t("districtHospitalName") : vis.provider}</strong></span>
                   <span>BP: <strong className="text-rose-700">{vis.bp}</strong></span>
                   <span>Hb: <strong className="text-rose-700">{vis.hb}</strong></span>
                 </div>
