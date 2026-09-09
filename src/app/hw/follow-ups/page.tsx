@@ -4,9 +4,11 @@ import React, { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { hwFollowUpsList, HWFollowUp } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { Clock, CheckCircle2, PhoneCall } from "lucide-react";
 
 export default function HWFollowUpsPage() {
+  const { t } = useLanguage();
   const [activeCategory, setActiveTab] = useState<string>("Due Today");
   const [followUps, setFollowUps] = useState<HWFollowUp[]>(hwFollowUpsList);
 
@@ -29,26 +31,31 @@ export default function HWFollowUpsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
-        title="Next Visits & Care Schedule"
-        subtitle="Manage scheduled home visits, medicine reminders, and missed follow-ups"
+        title={t("followUpsTitle")}
+        subtitle={t("followUpsSubtitle")}
         roleBadge={<RoleBadge role="Health Worker" />}
       />
 
       {/* Category Tabs */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between gap-2 overflow-x-auto">
         <div className="flex gap-2 text-xs">
-          {["Due Today", "Missed", "Upcoming", "Completed"].map((cat) => (
+          {[
+            { id: "Due Today", label: t("dueTodayTab") },
+            { id: "Missed", label: t("missedVisitsTab") },
+            { id: "Upcoming", label: t("upcomingTab") },
+            { id: "Completed", label: t("completedTab") },
+          ].map((cat) => (
             <button
-              key={cat}
+              key={cat.id}
               type="button"
-              onClick={() => setActiveTab(cat)}
+              onClick={() => setActiveTab(cat.id)}
               className={`px-4 py-2 rounded-xl font-bold transition-colors whitespace-nowrap ${
-                activeCategory === cat
+                activeCategory === cat.id
                   ? "bg-teal-700 text-white shadow-xs"
                   : "bg-slate-100 text-slate-700 hover:bg-slate-200"
               }`}
             >
-              {cat === "Missed" ? "Missed Visits" : cat}
+              {cat.label}
             </button>
           ))}
         </div>
@@ -83,7 +90,7 @@ export default function HWFollowUpsPage() {
                   </span>
                 </div>
                 <p className="text-xs text-slate-500">
-                  Village: <strong>{fu.village}</strong> • Type: <strong>{fu.type}</strong>
+                  {t("villageLabel")}: <strong>{fu.village}</strong> • {t("visitType")} <strong>{fu.type}</strong>
                 </p>
               </div>
 
@@ -93,21 +100,21 @@ export default function HWFollowUpsPage() {
                   className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold transition-colors inline-flex items-center gap-1 border border-teal-200"
                 >
                   <PhoneCall className="w-3.5 h-3.5" />
-                  <span>Call Person</span>
+                  <span>{t("callPatient")}</span>
                 </a>
               </div>
             </div>
 
             <div className="text-xs text-slate-700 space-y-1">
               <p>
-                <strong>Scheduled Date:</strong> {fu.dueDate}
+                <strong>{t("scheduledDate")}</strong> {fu.dueDate}
               </p>
               <p>
-                <strong>Visit Action:</strong> {fu.actionNeeded}
+                <strong>{t("visitAction")}</strong> {fu.actionNeeded}
               </p>
               {fu.reasonIfMissed && (
                 <p className="text-rose-700 font-semibold bg-rose-50 p-2 rounded-lg border border-rose-100 w-fit">
-                  Reason Missed: {fu.reasonIfMissed}
+                  {t("reasonIfMissed")} {fu.reasonIfMissed}
                 </p>
               )}
             </div>
@@ -125,7 +132,7 @@ export default function HWFollowUpsPage() {
                   className="px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-xs"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Mark Visit Completed</span>
+                  <span>{t("markVisitCompleted")}</span>
                 </button>
               )}
             </div>
@@ -134,7 +141,7 @@ export default function HWFollowUpsPage() {
 
         {filteredList.length === 0 && (
           <div className="p-8 text-center text-xs text-slate-500 bg-white rounded-2xl border border-slate-200">
-            No visit items found for this category.
+            {t("noVisitItemsFound")}
           </div>
         )}
       </div>

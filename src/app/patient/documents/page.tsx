@@ -3,9 +3,11 @@
 import React, { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { Upload, FileText, WifiOff, FileCheck } from "lucide-react";
 
 export default function PatientDocumentsPage() {
+  const { t } = useLanguage();
   const [selectedFiles, setSelectedFiles] = useState<string[]>([
     "Mother_and_Child_Protection_Card_Priya.pdf",
     "Hemoglobin_Lab_Report_Sep4.jpg",
@@ -29,14 +31,14 @@ export default function PatientDocumentsPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Upload Health Records & ANC Card"
-        subtitle="Keep copies of physical reports and maternal health cards on this phone"
+        title="uploadHealthRecordsTitle"
+        subtitle="uploadSubtitle"
         roleBadge={<RoleBadge role="Patient" />}
       />
 
       <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-2">
         <WifiOff className="w-4 h-4 text-emerald-700 shrink-0" />
-        <span>Documents will be synchronised when connectivity is available.</span>
+        <span>{t("documentsSyncWhenOnline")}</span>
       </div>
 
       {/* Upload Component Box */}
@@ -47,15 +49,15 @@ export default function PatientDocumentsPage() {
           </div>
           <div>
             <h3 className="font-extrabold text-slate-900 text-base">
-              Select or Take Photos of ANC Cards & Reports
+              {t("selectOrTakePhotosAnc")}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Supports photos or PDF documents
+              {t("supportsPhotosPdf")}
             </p>
           </div>
 
           <label className="inline-block px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs cursor-pointer transition-colors shadow-xs">
-            <span>Choose File or Photo</span>
+            <span>{t("chooseFileOrPhoto")}</span>
             <input
               type="file"
               multiple
@@ -68,7 +70,7 @@ export default function PatientDocumentsPage() {
         {/* Add File manually */}
         <div className="pt-2 space-y-2">
           <label className="text-xs font-bold text-slate-700 block">
-            Add Document Name:
+            {t("addDocumentName")}
           </label>
           <div className="flex gap-2">
             <input
@@ -81,9 +83,9 @@ export default function PatientDocumentsPage() {
             <button
               type="button"
               onClick={handleAddCustomMock}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold cursor-pointer"
             >
-              Add Record
+              {t("addRecord")}
             </button>
           </div>
         </div>
@@ -92,7 +94,7 @@ export default function PatientDocumentsPage() {
         <div className="space-y-3 pt-4 border-t border-slate-100">
           <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
             <FileCheck className="w-4 h-4 text-teal-700" />
-            <span>Saved Records ({selectedFiles.length})</span>
+            <span>{t("savedRecords")} ({selectedFiles.length})</span>
           </h4>
 
           <div className="space-y-2">
@@ -106,7 +108,7 @@ export default function PatientDocumentsPage() {
                   <span className="font-bold text-slate-800">{file}</span>
                 </div>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  Saved on Phone
+                  {t("savedOnPhone")}
                 </span>
               </div>
             ))}

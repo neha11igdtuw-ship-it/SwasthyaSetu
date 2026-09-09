@@ -18,6 +18,17 @@ export function CareStatusCard({
 }: CareStatusCardProps) {
   const { t } = useLanguage();
 
+  const mapReason = (reason: string) => {
+    const lower = reason.toLowerCase();
+    if (lower.includes("headache")) return t("persistentHeadache");
+    if (lower.includes("vision")) return t("blurredVision");
+    if (lower.includes("anemia")) return t("moderateAnemia");
+    if (lower.includes("blood pressure") || lower.includes("bp")) {
+      return `${t("bloodPressureReading")}: 145/92 mmHg`;
+    }
+    return t(reason);
+  };
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -27,7 +38,7 @@ export function CareStatusCard({
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
               {t("carePriority")}
             </span>
-            <h3 className="font-bold text-slate-900 text-base">{t("initialHealthCheck")}</h3>
+            <h3 className="font-bold text-slate-900 text-base">{t("preliminaryScreening")}</h3>
           </div>
         </div>
         <StatusBadge status={riskStatus} />
@@ -41,7 +52,7 @@ export function CareStatusCard({
           {reasons.map((reason, idx) => (
             <li key={idx} className="flex items-start gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-teal-700 shrink-0 mt-0.5" />
-              <span>{reason}</span>
+              <span>{mapReason(reason)}</span>
             </li>
           ))}
         </ul>

@@ -13,10 +13,10 @@ import {
 
 const doctorNavItems: NavItem[] = [
   { labelKey: "overview", defaultLabel: "Overview", href: "/doctor/dashboard", icon: LayoutDashboard },
-  { labelKey: "hwTriage", defaultLabel: "Patients to Review", href: "/doctor/dashboard", icon: Stethoscope },
+  { labelKey: "patientsToReview", defaultLabel: "Patients to Review", href: "/doctor/dashboard", icon: Stethoscope },
   { labelKey: "records", defaultLabel: "People Records", href: "/hw/patients", icon: Users },
   { labelKey: "referrals", defaultLabel: "Care Requests", href: "/hw/referrals", icon: Share2 },
-  { labelKey: "followUps", defaultLabel: "Today's Schedule", href: "/hw/follow-ups", icon: Clock },
+  { labelKey: "todaysSchedule", defaultLabel: "Today's Schedule", href: "/hw/follow-ups", icon: Clock },
 ];
 
 export default function DoctorLayout({

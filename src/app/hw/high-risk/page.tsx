@@ -6,9 +6,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { hwPatientsList } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { ShieldAlert, PhoneCall, ArrowRight, Stethoscope } from "lucide-react";
 
 export default function HWHighRiskPage() {
+  const { t } = useLanguage();
   const highRiskPatients = hwPatientsList.filter(
     (p) => p.riskLevel === "High Risk"
   );
@@ -16,15 +18,15 @@ export default function HWHighRiskPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <PageHeader
-        title="High Priority Cases"
-        subtitle="Maternal care patients requiring urgent follow-up, visits, or hospital transfers"
+        title={t("highRiskTitle")}
+        subtitle={t("highRiskSubtitle")}
         roleBadge={<RoleBadge role="Health Worker" />}
       />
 
       <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 text-xs font-bold flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShieldAlert className="w-5 h-5 text-rose-700 shrink-0" />
-          <span>{highRiskPatients.length} High priority patients in your village sector</span>
+          <span>{highRiskPatients.length} {t("highRiskCountBanner")}</span>
         </div>
       </div>
 
@@ -41,13 +43,13 @@ export default function HWHighRiskPage() {
                   <StatusBadge status={p.riskLevel} />
                 </div>
                 <span className="text-xs text-slate-500">
-                  {p.age} Yrs • Village: {p.village}
+                  {p.age} {t("ageYears")} • {t("villageLabel")}: {p.village}
                 </span>
               </div>
               <a
                 href={`tel:${p.phone}`}
                 className="p-2.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200"
-                title="Call Patient"
+                title={t("callPatient")}
               >
                 <PhoneCall className="w-4 h-4" />
               </a>
@@ -55,21 +57,27 @@ export default function HWHighRiskPage() {
 
             <div className="space-y-2 text-xs text-slate-700">
               <div className="p-3 rounded-xl bg-rose-50/60 border border-rose-100 space-y-1">
-                <span className="font-bold text-rose-900 block">Care Priority Reasons:</span>
-                <p className="text-rose-800">
-                  BP: {p.vitals.bp} mmHg • Hemoglobin: {p.vitals.hemoglobin} • Reported: {p.latestSymptoms.join(", ")}
+                <span className="font-bold text-rose-900 block">{t("carePriorityReasons")}</span>
+                <p className="text-rose-800 font-medium">
+                  {t("bloodPressure")}: {p.vitals.bp} mmHg • {t("hemoglobinLevel")}: {p.vitals.hemoglobin} • {t("reportedSymptoms")}: {p.latestSymptoms.join(", ")}
                 </p>
               </div>
 
+              {p.pregnancyWeek && (
+                <div className="p-2.5 rounded-xl bg-teal-50/60 border border-teal-100 text-teal-900 font-semibold">
+                  {t("pregnancyWeekLabel")}: Week {p.pregnancyWeek} (EDD: {p.edd})
+                </div>
+              )}
+
               <div>
-                <span className="font-bold text-slate-800 block">Required Action:</span>
+                <span className="font-bold text-slate-800 block">{t("requiredAction")}</span>
                 <p className="text-slate-700">{p.requiredAction}</p>
               </div>
             </div>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
               <span className="text-xs font-bold text-teal-800">
-                Next Visit: {p.nextFollowUp}
+                {t("nextVisitLabel")}: {p.nextFollowUp}
               </span>
 
               <div className="flex items-center gap-2">
@@ -78,14 +86,14 @@ export default function HWHighRiskPage() {
                   className="px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1"
                 >
                   <Stethoscope className="w-3.5 h-3.5" />
-                  <span>Check</span>
+                  <span>{t("check")}</span>
                 </Link>
 
                 <Link
                   href={`/hw/patients/${p.id}`}
                   className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors inline-flex items-center gap-1"
                 >
-                  <span>Details</span>
+                  <span>{t("openPatientDetails")}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>

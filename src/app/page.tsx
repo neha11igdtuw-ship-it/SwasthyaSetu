@@ -1,236 +1,263 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { TopBar } from "@/components/TopBar";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import {
+  MessageSquare,
+  Search,
+  Calendar,
+  AlertCircle,
+  ArrowRight,
+  ShieldAlert,
+  Globe2,
+  Building2,
+  WifiOff,
   User,
   HeartPulse,
   Stethoscope,
-  Building2,
-  WifiOff,
-  ShieldCheck,
-  ArrowRight,
-  CheckCircle2,
-  Activity,
+  ChevronRight,
 } from "lucide-react";
-import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/languageContext";
-import { LanguageSelector } from "@/components/shared/LanguageSelector";
-
-interface RoleCardProps {
-  title: string;
-  roleTag: string;
-  description: string;
-  icon: React.ElementType;
-  primaryActionLabel: string;
-  href: string;
-  badgeText?: string;
-}
-
-function RoleCard({
-  title,
-  roleTag,
-  description,
-  icon: Icon,
-  primaryActionLabel,
-  href,
-  badgeText,
-}: RoleCardProps) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/80 hover:border-teal-500/50 hover:shadow-md transition-all flex flex-col justify-between">
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
-            <Icon className="w-6 h-6" aria-hidden="true" />
-          </div>
-          {badgeText && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              {badgeText}
-            </span>
-          )}
-        </div>
-        <span className="text-xs font-medium uppercase tracking-wider text-teal-800/70">
-          {roleTag}
-        </span>
-        <h3 className="text-xl font-bold text-slate-900 mt-1 mb-2">{title}</h3>
-        <p className="text-slate-600 text-sm leading-relaxed mb-6">
-          {description}
-        </p>
-      </div>
-
-      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-        <Link
-          href={href}
-          aria-label={`Open ${title} overview`}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-sm font-semibold transition-colors shadow-sm"
-        >
-          <span>{primaryActionLabel}</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    </div>
-  );
-}
 
 export default function LandingPage() {
   const { t } = useLanguage();
 
-  const roles: RoleCardProps[] = [
+  const quickActionTiles = [
     {
-      roleTag: "Role 1",
-      title: t("patient"),
-      description:
-        "Tell your symptoms using voice or text in your language, view health records, receive visit reminders, and track your care request.",
-      icon: User,
-      primaryActionLabel: t("openOverview"),
-      href: "/patient/dashboard",
-      badgeText: "Voice & Text",
+      titleKey: "tellUsProblemTitle",
+      descKey: "tellUsProblemDesc",
+      icon: MessageSquare,
+      color: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+      iconBg: "bg-emerald-600 text-white",
+      href: "/patient/symptoms",
     },
     {
-      roleTag: "Role 2",
-      title: t("healthWorker"),
-      description:
-        "ASHA/ANM patient registration, vitals & pregnancy screening, high-risk tracking, care request creation, and device record management.",
-      icon: HeartPulse,
-      primaryActionLabel: t("openOverview"),
-      href: "/hw/dashboard",
-      badgeText: t("savedOnThisDevice"),
+      titleKey: "findRightCareTitle",
+      descKey: "findRightCareDesc",
+      icon: Search,
+      color: "bg-teal-50 text-teal-800 border-teal-200/80",
+      iconBg: "bg-teal-600 text-white",
+      href: "/patient/facilities",
     },
     {
-      roleTag: "Role 3",
-      title: t("doctor"),
-      description:
-        "Review assistant-prepared summaries, confirm risk levels, issue teleconsultations, prescribe medicines, and direct care pathways.",
-      icon: Stethoscope,
-      primaryActionLabel: t("openOverview"),
-      href: "/doctor/dashboard",
-      badgeText: "Clinical Review",
+      titleKey: "continueCareTitle",
+      descKey: "continueCareDesc",
+      icon: Calendar,
+      color: "bg-sky-50 text-sky-800 border-sky-200/80",
+      iconBg: "bg-sky-600 text-white",
+      href: "/patient/follow-ups",
     },
     {
-      roleTag: "Role 4",
-      title: t("healthcareFacility"),
-      description:
-        "Facility dashboard to accept incoming care requests, confirm patient arrival, manage doctor duty schedules, and update bed and medicine availability.",
+      titleKey: "getSupportTitle",
+      descKey: "getSupportDesc",
+      icon: AlertCircle,
+      color: "bg-amber-50 text-amber-900 border-amber-200/80",
+      iconBg: "bg-amber-600 text-white",
+      href: "/hw/high-risk",
+    },
+  ];
+
+  const journeySteps = [
+    { step: "01", titleKey: "journeyStep1", desc: "Speak or type symptoms in your language" },
+    { step: "02", titleKey: "journeyStep2", desc: "Get preliminary guidance and hospital match" },
+    { step: "03", titleKey: "journeyStep3", desc: "Receive treatment and care transfer support" },
+    { step: "04", titleKey: "journeyStep4", desc: "Complete follow-up visits with ASHA alerts" },
+  ];
+
+  const ruralBenefits = [
+    {
+      titleKey: "speakInLocalLanguage",
+      desc: "Speak naturally in Hindi, Marathi or local dialect with easy voice assistance.",
+      icon: Globe2,
+    },
+    {
+      titleKey: "findSuitableFacility",
+      desc: "Match symptoms directly with available doctor duty and hospital beds.",
       icon: Building2,
-      primaryActionLabel: t("openOverview"),
-      href: "/facility/dashboard",
-      badgeText: "Care Desk",
+    },
+    {
+      titleKey: "continueCareWeakInternet",
+      desc: "Important records are saved on phone and automatically sent when online.",
+      icon: WifiOff,
     },
   ];
 
   return (
-    <div className="flex-1 flex flex-col justify-between">
-      {/* Top Header / Navbar */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-4 py-3.5 sm:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-teal-700 text-white flex items-center justify-center font-bold text-xl shadow-sm">
-              S
+    <div className="min-h-screen flex flex-col bg-[#f6fafa]">
+      <TopBar />
+
+      <main className="flex-1 space-y-12 sm:space-y-16 pb-16">
+        {/* Hero Section */}
+        <section className="pt-8 sm:pt-14 px-4 sm:px-8 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 text-white rounded-3xl p-6 sm:p-12 shadow-xl relative overflow-hidden">
+            <div className="max-w-2xl space-y-6 relative z-10">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-200 text-xs font-semibold backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-teal-300 animate-pulse" />
+                <span>{t("corePurposeStatement")}</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+                {t("heroHeadline")}
+              </h1>
+
+              <p className="text-sm sm:text-base text-teal-100 font-normal leading-relaxed">
+                {t("heroDescription")}
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <Link
+                  href="/login"
+                  className="px-6 py-3.5 rounded-2xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2"
+                >
+                  <span>{t("getStarted")}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+
+                <a
+                  href="#care-journey"
+                  className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-colors text-center border border-white/20 backdrop-blur-md"
+                >
+                  {t("seeHowItWorks")}
+                </a>
+              </div>
             </div>
-            <div>
-              <span className="font-extrabold text-xl tracking-tight text-slate-900 block leading-none">
-                {t("appName")}
-              </span>
-              <span className="text-[10px] text-teal-700 font-semibold tracking-wide uppercase">
-                {t("platformSubtitle")}
-              </span>
+
+            {/* Visual connected care graphic element */}
+            <div className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 gap-4 items-center opacity-85 pointer-events-none">
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
+                <User className="w-6 h-6 mx-auto text-teal-300" />
+                <span className="text-xs font-bold block">{t("patient")}</span>
+              </div>
+
+              <div className="w-8 h-0.5 bg-teal-400/60" />
+
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
+                <HeartPulse className="w-6 h-6 mx-auto text-emerald-300" />
+                <span className="text-xs font-bold block">{t("healthWorker")}</span>
+              </div>
+
+              <div className="w-8 h-0.5 bg-teal-400/60" />
+
+              <div className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
+                <Stethoscope className="w-6 h-6 mx-auto text-sky-300" />
+                <span className="text-xs font-bold block">{t("doctor")}</span>
+              </div>
             </div>
           </div>
+        </section>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold">
-              <WifiOff className="w-3.5 h-3.5 text-teal-700" />
-              <span>{t("savedOnThisDevice")}</span>
-            </div>
+        {/* Quick Action Tiles */}
+        <section className="px-4 sm:px-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {quickActionTiles.map((tile, i) => {
+              const Icon = tile.icon;
 
-            {/* Language Selector in Top Right Header */}
-            <LanguageSelector />
+              return (
+                <Link
+                  key={i}
+                  href={tile.href}
+                  className={`p-5 rounded-2xl border transition-all shadow-xs hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between space-y-4 ${tile.color}`}
+                >
+                  <div className="space-y-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tile.iconBg}`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
+                        {t(tile.titleKey)}
+                      </h3>
+                      <p className="text-xs text-slate-600 font-medium leading-relaxed mt-1">
+                        {t(tile.descKey)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="inline-flex items-center text-xs font-bold text-slate-900 gap-1 pt-2 border-t border-slate-200/50">
+                    <span>{t("viewDetails")}</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-        </div>
-      </header>
+        </section>
 
-      {/* Main Hero & Content Section */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-8 sm:py-14 flex-1 flex flex-col justify-center">
-        {/* Hero Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/70 border border-emerald-300 text-emerald-900 text-xs font-bold tracking-wide">
-            <Activity className="w-3.5 h-3.5 text-emerald-700" />
-            <span>SIH26133 • Rural Healthcare & Continuity Solution</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            {t("appName")}
-          </h1>
-
-          <p className="text-xl sm:text-2xl font-semibold text-teal-800 italic">
-            “{t("tagline")}”
-          </p>
-
-          <p className="text-slate-600 text-base sm:text-lg leading-relaxed pt-2">
-            {t("landingHeroDescription")}
-          </p>
-
-          {/* Core USP Banner */}
-          <div className="mt-6 p-4 rounded-2xl bg-teal-900 text-white shadow-md text-left sm:text-center flex flex-col sm:flex-row items-center justify-center gap-3 border border-teal-800">
-            <span className="px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 text-xs font-extrabold uppercase tracking-wide shrink-0">
-              {t("corePurposeTag")}
-            </span>
-            <p className="text-sm sm:text-base font-medium text-teal-50">
-              “{t("corePurposeStatement")}”
+        {/* Simple Care Journey */}
+        <section id="care-journey" className="px-4 sm:px-8 max-w-7xl mx-auto space-y-6 scroll-mt-20">
+          <div className="text-center max-w-xl mx-auto space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              {t("yourCareJourneyConnected")}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium">
+              {t("corePurposeStatement")}
             </p>
           </div>
-        </div>
 
-        {/* Roles Grid */}
-        <section className="space-y-6" aria-labelledby="roles-heading">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-2">
-            <div>
-              <h2
-                id="roles-heading"
-                className="text-xl font-bold text-slate-900"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {journeySteps.map((step, idx) => (
+              <div
+                key={idx}
+                className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3 relative"
               >
-                {t("fourStakeholders")}
-              </h2>
-              <p className="text-xs text-slate-500">
-                {t("selectRoleSub")}
-              </p>
-            </div>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-200/70 text-slate-700 w-fit">
-              {t("demoPathwayTag")}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {roles.map((role) => (
-              <RoleCard key={role.title} {...role} />
+                <div className="text-2xl font-black text-teal-700/30 font-mono">
+                  {step.step}
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                  {t(step.titleKey)}
+                </h3>
+                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                  {step.desc}
+                </p>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Offline & Safety Guidance Section */}
-        <section className="mt-12 sm:mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center shrink-0 mt-0.5">
-              <WifiOff className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base mb-1">
-                {t("savedOnThisDevice")}
-              </h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
-                {t("informationSavedOnThisDevice")}
+        {/* Rural Support Benefits Section */}
+        <section className="px-4 sm:px-8 max-w-7xl mx-auto space-y-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-6">
+            <div className="max-w-xl space-y-1">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                {t("ruralSupportSectionTitle")}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium">
+                {t("landingHeroDescription")}
               </p>
             </div>
-          </div>
 
-          <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+              {ruralBenefits.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <div key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/60">
+                    <div className="p-2.5 rounded-xl bg-teal-100 text-teal-800 shrink-0">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-sm text-slate-900">
+                        {t(item.titleKey)}
+                      </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base mb-1">
-                {t("importantSafetyNotice")}
-              </h3>
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+          </div>
+        </section>
+
+        {/* Important Safety Notice */}
+        <section className="px-4 sm:px-8 max-w-7xl mx-auto">
+          <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 flex items-start gap-3.5 shadow-xs">
+            <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            <div className="space-y-1 text-xs sm:text-sm">
+              <span className="font-extrabold block">
+                {t("safetyNoticeTitle")}
+              </span>
+              <p className="text-amber-800 font-medium leading-relaxed">
                 {t("aiPreliminaryNotice")}
               </p>
             </div>
@@ -239,13 +266,37 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-6 border-t border-slate-800 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>SwasthyaSetu Platform Active</span>
+      <footer className="mt-auto bg-slate-900 text-slate-400 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-1 text-center md:text-left">
+            <span className="font-extrabold text-white text-base block">
+              {t("appName")}
+            </span>
+            <p className="text-slate-400 text-xs">
+              {t("tagline")}
+            </p>
           </div>
-          <p>© 2026 SwasthyaSetu Platform. All rights reserved.</p>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-300">
+            <Link href="/login" className="hover:text-white transition-colors">
+              {t("signInTitle")}
+            </Link>
+            <Link href="/register" className="hover:text-white transition-colors">
+              {t("createAccountTitle")}
+            </Link>
+            <Link href="/patient/dashboard" className="hover:text-white transition-colors">
+              {t("patient")}
+            </Link>
+            <Link href="/hw/dashboard" className="hover:text-white transition-colors">
+              {t("healthWorker")}
+            </Link>
+            <Link href="/doctor/dashboard" className="hover:text-white transition-colors">
+              {t("doctor")}
+            </Link>
+            <Link href="/facility/dashboard" className="hover:text-white transition-colors">
+              {t("healthcareFacility")}
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

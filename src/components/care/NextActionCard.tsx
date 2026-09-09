@@ -24,6 +24,33 @@ export function NextActionCard({
 }: NextActionCardProps) {
   const { t } = useLanguage();
 
+  const displayAction =
+    recommendedAction.includes("District Hospital") || recommendedAction.includes("specialist")
+      ? t("visitDistrictHospitalText")
+      : t(recommendedAction);
+
+  const displayFacility =
+    recommendedFacility.includes("District Civil Hospital")
+      ? t("districtHospitalName")
+      : t(recommendedFacility);
+
+  const displayFacilityType =
+    facilityType.includes("Hospital") || facilityType.includes("Facility")
+      ? t("healthcareFacility")
+      : t(facilityType);
+
+  const mapService = (srv: string) => {
+    if (srv.includes("OB-GYN")) return "OB-GYN (स्त्री रोग विशेषज्ञ)";
+    if (srv.includes("BP")) return `${t("bpMonitoring")}`;
+    if (srv.includes("Emergency")) return t("emergencyHelp");
+    if (srv.includes("Blood")) return "Blood Bank (रक्त बैंक)";
+    return t(srv);
+  };
+
+  const displayDoctor = doctorAvailability.includes("Ananya Rao")
+    ? `${t("drAnanyaRao")} — On Duty Today`
+    : t(doctorAvailability);
+
   return (
     <div className="bg-white rounded-2xl p-6 border border-teal-500/60 shadow-sm space-y-4 ring-1 ring-teal-500/20">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -36,7 +63,7 @@ export function NextActionCard({
               {t("whatYouShouldDoNext")}
             </span>
             <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-              {recommendedAction}
+              {displayAction}
             </h3>
           </div>
         </div>
@@ -50,7 +77,7 @@ export function NextActionCard({
                 {t("recommendedHospital")}
               </span>
               <p className="text-sm font-bold text-slate-900">
-                {recommendedFacility}
+                {displayFacility}
               </p>
             </div>
             <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-teal-100 text-teal-900 shrink-0">
@@ -61,7 +88,7 @@ export function NextActionCard({
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
             <span className="inline-flex items-center gap-1 font-medium">
               <Building2 className="w-3.5 h-3.5 text-teal-700" />
-              {facilityType}
+              {displayFacilityType}
             </span>
           </div>
         </div>
@@ -71,7 +98,7 @@ export function NextActionCard({
             {t("doctorAvailability")}
           </span>
           <p className="text-xs text-slate-600 font-medium">
-            {doctorAvailability}
+            {displayDoctor}
           </p>
         </div>
 
@@ -86,7 +113,7 @@ export function NextActionCard({
                 className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1"
               >
                 <CheckCircle className="w-3 h-3 text-teal-600" />
-                {srv}
+                {mapService(srv)}
               </span>
             ))}
           </div>
