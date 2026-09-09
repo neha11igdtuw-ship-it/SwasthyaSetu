@@ -6,6 +6,7 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { DashboardCard } from "@/components/DashboardCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { mockFacilityData } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import {
   Inbox,
   CheckCircle2,
@@ -21,48 +22,49 @@ import {
 
 export default function FacilityDashboardPage() {
   const fac = mockFacilityData;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={fac.facilityName}
-        subtitle={`${fac.type} • ${fac.district}`}
+        title={t("districtHospitalName")}
+        subtitle={`${t("healthcareFacility")} • Kalyanpur District`}
         roleBadge={<RoleBadge role="Healthcare Facility" />}
       />
 
       {/* Metric Cards Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <DashboardCard
-          title="New Care Requests"
+          title={t("newCareRequests")}
           value={fac.incomingReferralsCount}
-          subtitle="From health workers"
+          subtitle={t("hwSpaceDesc")}
           icon={Inbox}
           highlight
         />
 
         <DashboardCard
-          title="Accepted Requests"
+          title={t("acceptedAndConfirmed")}
           value={fac.acceptedReferralsCount}
-          subtitle="Ready for arrival"
+          subtitle={t("waitingPatientVisit")}
           icon={CheckCircle2}
         />
 
         <DashboardCard
-          title="People Expected Today"
+          title={t("peopleExpectedToday")}
           value={fac.patientsExpectedToday}
-          subtitle="Transit in progress"
+          subtitle={t("todaysSchedule")}
           icon={Users}
         />
 
         <DashboardCard
-          title="Pending Responses"
+          title={t("waitingHospitalResponse")}
           value={fac.pendingFacilityResponsesCount}
-          subtitle="Awaiting desk review"
+          subtitle={t("waitingForAction")}
           icon={Clock}
         />
 
         <DashboardCard
-          title="Bed Occupancy"
+          title={t("facilityOverview")}
           value="78%"
           subtitle={fac.bedOccupancyRate}
           icon={Building2}
@@ -76,14 +78,14 @@ export default function FacilityDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div>
               <h2 className="font-extrabold text-slate-900 text-lg">
-                New Care Requests Desk
+                {t("newCareRequestsDesk")}
               </h2>
               <p className="text-xs text-slate-500">
-                Accept, redirect, or send feedback on incoming patient transfers
+                {t("acceptRedirectFeedback")}
               </p>
             </div>
             <span className="text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200 px-3 py-1 rounded-full w-fit">
-              {fac.pendingFacilityResponsesCount} Pending Responses
+              {fac.pendingFacilityResponsesCount} {t("waitingHospitalResponse")}
             </span>
           </div>
 
@@ -96,7 +98,7 @@ export default function FacilityDashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-900 text-sm">
-                      {ref.patientName}
+                      {ref.patientName === "Priya Sharma" ? t("priyaSharmaName") : ref.patientName}
                     </span>
                     <span className="text-xs text-slate-500 font-mono">
                       ({ref.id})
@@ -104,14 +106,14 @@ export default function FacilityDashboardPage() {
                     <StatusBadge status={ref.status} />
                   </div>
                   <span className="text-xs font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
-                    {ref.urgency}
+                    {t("highRisk")}
                   </span>
                 </div>
 
                 <div className="text-xs text-slate-600 space-y-1">
                   <p>
-                    <strong>From:</strong> {ref.referringSubCenter} |{" "}
-                    <strong>Reason:</strong> {ref.reason}
+                    <strong>From:</strong> {t("subCentreRampur")} |{" "}
+                    <strong>Reason:</strong> {t("preEclampsiaReason")}
                   </p>
                 </div>
 
@@ -119,21 +121,21 @@ export default function FacilityDashboardPage() {
                   <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60">
                     <button
                       type="button"
-                      className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <Check className="w-3.5 h-3.5" /> Accept Care Request
+                      <Check className="w-3.5 h-3.5" /> {t("acceptCareRequest")}
                     </button>
                     <button
                       type="button"
-                      className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold transition-colors inline-flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <Repeat className="w-3.5 h-3.5" /> Redirect
+                      <Repeat className="w-3.5 h-3.5" /> {t("redirect")}
                     </button>
                     <button
                       type="button"
-                      className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-colors inline-flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <X className="w-3.5 h-3.5" /> Send Back to Health Worker
+                      <X className="w-3.5 h-3.5" /> {t("sendBackToWorker")}
                     </button>
                   </div>
                 )}
@@ -149,7 +151,7 @@ export default function FacilityDashboardPage() {
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <Activity className="w-5 h-5 text-teal-700" />
               <h3 className="font-bold text-slate-900 text-base">
-                Services Available
+                {t("servicesAvailable")}
               </h3>
             </div>
 
@@ -164,7 +166,7 @@ export default function FacilityDashboardPage() {
                       {service.name}
                     </span>
                     <span className="text-slate-500 block text-[11px]">
-                      {service.onDutyStaff}
+                      {service.onDutyStaff.includes("Ananya") ? `${t("drAnanyaRao")} — On Duty` : service.onDutyStaff}
                     </span>
                   </div>
                   <StatusBadge status={service.status} />
@@ -178,7 +180,7 @@ export default function FacilityDashboardPage() {
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <PackageCheck className="w-5 h-5 text-teal-700" />
               <h3 className="font-bold text-slate-900 text-base">
-                Medicine & Diagnostic Stock
+                {t("medicineDiagnosticStock")}
               </h3>
             </div>
 

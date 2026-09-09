@@ -5,9 +5,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { priyaPatientMock, MedicineItem } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { Pill, Clock, Building2, CheckCircle2 } from "lucide-react";
 
 export default function PatientMedicinesPage() {
+  const { t } = useLanguage();
   const [medicines, setMedicines] = useState<MedicineItem[]>(
     priyaPatientMock.medicines
   );
@@ -21,15 +23,15 @@ export default function PatientMedicinesPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Prescribed Medicines"
-        subtitle="Dosage, timing instructions, and medicine availability"
+        title="prescribedMedicinesTitle"
+        subtitle="medicinesSubtitle"
         roleBadge={<RoleBadge role="Patient" />}
       />
 
       <div className="p-4 rounded-2xl bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-slate-500" />
-          <span>Medicine information updated: <strong>Today at 8:00 AM</strong></span>
+          <span>{t("medicineUpdated")} <strong>{t("todayAt")} 8:00 AM</strong></span>
         </div>
       </div>
 
@@ -59,12 +61,12 @@ export default function PatientMedicinesPage() {
 
             <div className="space-y-2 text-xs text-slate-600">
               <div>
-                <span className="font-bold text-slate-800 block">How to take:</span>
+                <span className="font-bold text-slate-800 block">{t("howToTake")}</span>
                 <p className="text-slate-700 font-medium">{med.dosage}</p>
               </div>
 
               <div>
-                <span className="font-bold text-slate-800 block">When to take:</span>
+                <span className="font-bold text-slate-800 block">{t("whenToTake")}</span>
                 <p className="text-teal-900 font-bold bg-teal-50 p-2 rounded-lg border border-teal-100 w-fit">
                   {med.timing}
                 </p>
@@ -72,7 +74,7 @@ export default function PatientMedicinesPage() {
 
               <div className="flex items-center gap-1.5 pt-1">
                 <Building2 className="w-3.5 h-3.5 text-teal-700" />
-                <span>Available at: <strong>{med.nearbyFacility}</strong></span>
+                <span>{t("availableAt")} <strong>{med.nearbyFacility.includes("Sub-Centre") ? t("subCentreRampur") : med.nearbyFacility.includes("District") ? t("districtHospitalName") : med.nearbyFacility}</strong></span>
               </div>
             </div>
 
@@ -80,21 +82,21 @@ export default function PatientMedicinesPage() {
               <span className="text-xs text-slate-500 font-medium">
                 Status:{" "}
                 <strong className={med.received ? "text-emerald-700" : "text-amber-700"}>
-                  {med.received ? "Received" : "Waiting for collection"}
+                  {med.received ? t("accepted") : t("waitingForCollection")}
                 </strong>
               </span>
 
               <button
                 type="button"
                 onClick={() => toggleReceived(med.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5 ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors inline-flex items-center gap-1.5 cursor-pointer ${
                   med.received
                     ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     : "bg-teal-700 hover:bg-teal-800 text-white"
                 }`}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{med.received ? "Mark as Waiting" : "Mark Medicine Received"}</span>
+                <span>{med.received ? t("markAsWaiting") : t("markMedicineReceived")}</span>
               </button>
             </div>
           </div>

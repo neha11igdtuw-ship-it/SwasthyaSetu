@@ -7,9 +7,11 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { hwPatientsList } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { ShieldCheck, Share2 } from "lucide-react";
 
 export default function HWScreeningPage() {
+  const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
   const patientId = (params?.patientId as string) || "P-7821";
@@ -30,13 +32,13 @@ export default function HWScreeningPage() {
 
   if (bleeding || convulsions || parseInt(bpSystolic) >= 140 || (headacheVision && swelling)) {
     calculatedRisk = "High Risk";
-    if (bleeding) reasons.push("Vaginal bleeding reported");
-    if (convulsions) reasons.push("Convulsions / fits reported");
-    if (parseInt(bpSystolic) >= 140) reasons.push(`High blood pressure: ${bpSystolic}/${bpDiastolic} mmHg`);
-    if (headacheVision && swelling) reasons.push("Severe headache with blurred vision and swelling");
+    if (bleeding) reasons.push(t("vaginalBleedingCheck"));
+    if (convulsions) reasons.push(t("convulsionsFitsCheck"));
+    if (parseInt(bpSystolic) >= 140) reasons.push(`${t("bloodPressure")}: ${bpSystolic}/${bpDiastolic} mmHg`);
+    if (headacheVision && swelling) reasons.push(`${t("severeHeadacheCheck")} & ${t("bodySwellingCheck")}`);
   } else if (headacheVision || swelling) {
     calculatedRisk = "Watch / Moderate";
-    reasons.push("Moderate symptoms: headache or swelling present");
+    reasons.push(t("severeHeadacheCheck"));
   } else {
     reasons.push("No severe maternal danger signs identified");
   }
@@ -46,19 +48,19 @@ export default function HWScreeningPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title={`Initial Health Check: ${patient.name}`}
-        subtitle={`Patient ID: ${patient.id} • Assigned Village: ${patient.village}`}
+        title={`${t("healthCheckTitle")}: ${patient.name}`}
+        subtitle={`ID: ${patient.id} • ${t("villageLabel")}: ${patient.village}`}
         roleBadge={<RoleBadge role="Health Worker" />}
       />
 
       <DisclaimerCard
-        text="Preliminary health check only. Final assessment must be completed by a qualified doctor or authorised healthcare professional."
+        text={t("healthCheckDisclaimer")}
         variant="amber"
       />
 
       {validated && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between">
-          <span>Initial health check validated and saved for {patient.name}.</span>
+          <span>{t("healthCheckSavedSuccess")} ({patient.name})</span>
           <button
             type="button"
             onClick={() => setValidated(false)}
@@ -72,7 +74,7 @@ export default function HWScreeningPage() {
       {/* Danger Sign Checklist & Intake Form */}
       <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-6">
         <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-2">
-          1. Maternal Danger-Sign Checklist
+          {t("maternalDangerSignsSection")}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -83,7 +85,7 @@ export default function HWScreeningPage() {
               onChange={(e) => setBleeding(e.target.checked)}
               className="w-4 h-4 accent-teal-700"
             />
-            <span className="font-bold text-rose-800">Vaginal Bleeding / Discharge</span>
+            <span className="font-bold text-rose-800">{t("vaginalBleedingCheck")}</span>
           </label>
 
           <label className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
@@ -93,7 +95,7 @@ export default function HWScreeningPage() {
               onChange={(e) => setConvulsions(e.target.checked)}
               className="w-4 h-4 accent-teal-700"
             />
-            <span className="font-bold text-rose-800">Convulsions / Fits</span>
+            <span className="font-bold text-rose-800">{t("convulsionsFitsCheck")}</span>
           </label>
 
           <label className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
@@ -103,7 +105,7 @@ export default function HWScreeningPage() {
               onChange={(e) => setHeadacheVision(e.target.checked)}
               className="w-4 h-4 accent-teal-700"
             />
-            <span className="font-bold text-slate-800">Severe Headache & Blurred Vision</span>
+            <span className="font-bold text-slate-800">{t("severeHeadacheCheck")}</span>
           </label>
 
           <label className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
@@ -113,19 +115,19 @@ export default function HWScreeningPage() {
               onChange={(e) => setSwelling(e.target.checked)}
               className="w-4 h-4 accent-teal-700"
             />
-            <span className="font-bold text-slate-800">Swelling of Face, Hands or Feet</span>
+            <span className="font-bold text-slate-800">{t("bodySwellingCheck")}</span>
           </label>
         </div>
 
         {/* Vitals Input */}
         <div className="space-y-2 pt-2 border-t border-slate-100">
           <h3 className="font-extrabold text-slate-900 text-base border-b border-slate-100 pb-2">
-            2. Vitals Recorded Today
+            {t("vitalsTodaySection")}
           </h3>
 
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Systolic BP (mmHg):</label>
+              <label className="font-bold text-slate-700 block mb-1">{t("systolicBpLabel")}</label>
               <input
                 type="number"
                 value={bpSystolic}
@@ -134,7 +136,7 @@ export default function HWScreeningPage() {
               />
             </div>
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Diastolic BP (mmHg):</label>
+              <label className="font-bold text-slate-700 block mb-1">{t("diastolicBpLabel")}</label>
               <input
                 type="number"
                 value={bpDiastolic}
@@ -149,13 +151,13 @@ export default function HWScreeningPage() {
         <div className="p-5 rounded-2xl bg-teal-50/70 border border-teal-200/80 space-y-3">
           <div className="flex items-center justify-between border-b border-teal-200/60 pb-2">
             <span className="text-xs font-extrabold text-teal-900 uppercase tracking-wide">
-              Calculated Priority Result
+              {t("calculatedPriorityResult")}
             </span>
             <StatusBadge status={calculatedRisk} />
           </div>
 
           <div className="space-y-1 text-xs text-teal-950">
-            <span className="font-bold block">Noted Reasons:</span>
+            <span className="font-bold block">{t("notedReasons")}</span>
             <ul className="list-disc pl-4 space-y-1">
               {reasons.map((r, idx) => (
                 <li key={idx}>{r}</li>
@@ -172,7 +174,7 @@ export default function HWScreeningPage() {
             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 shadow-xs"
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Confirm Initial Check</span>
+            <span>{t("confirmHealthCheckBtn")}</span>
           </button>
 
           <button
@@ -181,7 +183,7 @@ export default function HWScreeningPage() {
             className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 shadow-xs"
           >
             <Share2 className="w-4 h-4" />
-            <span>Create Care Request</span>
+            <span>{t("createNewCareRequestBtn")}</span>
           </button>
         </div>
       </div>
