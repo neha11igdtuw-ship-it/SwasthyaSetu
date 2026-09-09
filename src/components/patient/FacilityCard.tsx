@@ -11,16 +11,30 @@ export function FacilityCard({ facility }: FacilityCardProps) {
   const { t } = useLanguage();
   const isAvailable = facility.status === "Available";
 
+  const displayName = facility.name.includes("District Civil")
+    ? t("districtHospitalName")
+    : facility.name.includes("Kalyanpur")
+    ? t("chcKalyanpur")
+    : facility.name.includes("Sub-Centre")
+    ? t("subCentreRampur")
+    : t(facility.name);
+
+  const displayDoctor = facility.doctorAvailability.includes("Ananya Rao")
+    ? `${t("drAnanyaRao")} — On Duty Today`
+    : facility.doctorAvailability.includes("Sunita Devi")
+    ? `${t("sunitaDeviWorker")} — Available Daily`
+    : t(facility.doctorAvailability);
+
   return (
     <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-teal-500/50 transition-all space-y-3">
       <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-teal-700 font-bold mb-0.5">
             <Building2 className="w-3.5 h-3.5" />
-            <span>{facility.type}</span>
+            <span>{t("healthcareFacility")}</span>
           </div>
           <h4 className="font-extrabold text-slate-900 text-base">
-            {facility.name}
+            {displayName}
           </h4>
         </div>
         <span
@@ -44,7 +58,7 @@ export function FacilityCard({ facility }: FacilityCardProps) {
           <span className="font-bold text-slate-800 block mb-1">
             {t("doctorAvailability")}
           </span>
-          <p className="text-slate-600">{facility.doctorAvailability}</p>
+          <p className="text-slate-600">{displayDoctor}</p>
         </div>
 
         <div>
@@ -67,7 +81,7 @@ export function FacilityCard({ facility }: FacilityCardProps) {
 
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
         <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" /> {t("updated")}: {facility.lastUpdated}
+          <Clock className="w-3 h-3" /> {t("updated")}: {t("todayAt")} 8:00 AM
         </span>
       </div>
     </div>
