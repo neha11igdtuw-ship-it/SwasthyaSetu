@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import {
   Building2,
   Share2,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 
 function ScreeningContent() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
 
   const risk = searchParams.get("risk") || "High Risk";
@@ -22,21 +24,21 @@ function ScreeningContent() {
   const week = searchParams.get("week") || "28";
 
   const reasons = [
-    `Higher blood pressure reading: ${bp} mmHg at ${week} weeks gestation`,
-    "Reported persistent headache and blurred vision",
-    "Swelling in feet recorded",
+    `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})`,
+    t("persistentHeadache"),
+    t("swellingFaceHandsFeet"),
   ];
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Preliminary Health Check Result"
-        subtitle="Initial assessment from your reported symptoms"
+        title="preliminaryHealthCheckTitle"
+        subtitle="initialAssessmentSubtitle"
         roleBadge={<RoleBadge role="Patient" />}
       />
 
       <DisclaimerCard
-        text="This is an initial health check, not a final medical decision. Review by a qualified health worker or doctor is required."
+        text={t("screeningDisclaimer")}
         variant="amber"
       />
 
@@ -45,10 +47,10 @@ function ScreeningContent() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-              Result
+              {t("resultLabel")}
             </span>
             <h2 className="text-xl font-extrabold text-slate-900 mt-0.5">
-              Care Priority Category:
+              {t("carePriorityCategory")}
             </h2>
           </div>
           <StatusBadge status={risk} className="text-sm px-3 py-1" />
@@ -56,7 +58,7 @@ function ScreeningContent() {
 
         <div className="space-y-2">
           <span className="text-xs font-bold text-slate-700 block">
-            Key Health Indicators Noted:
+            {t("keyHealthIndicatorsNoted")}
           </span>
           <div className="space-y-2 text-xs text-slate-700">
             {reasons.map((r, idx) => (
@@ -71,10 +73,10 @@ function ScreeningContent() {
         {/* Recommended Action Summary */}
         <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-950 space-y-2">
           <span className="text-xs font-extrabold uppercase tracking-wide text-teal-900 block">
-            Recommended Next Step:
+            {t("recommendedNextStep")}
           </span>
           <p className="text-sm font-bold leading-relaxed">
-            Visit District Hospital for doctor evaluation and lab checks.
+            {t("screeningNoticeText")}
           </p>
         </div>
 
@@ -85,7 +87,7 @@ function ScreeningContent() {
             className="p-3.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 shadow-xs"
           >
             <Building2 className="w-4 h-4" />
-            <span>View Nearby Hospitals</span>
+            <span>{t("viewNearbyFacilities")}</span>
           </Link>
 
           <Link
@@ -93,7 +95,7 @@ function ScreeningContent() {
             className="p-3.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 shadow-xs"
           >
             <Share2 className="w-4 h-4" />
-            <span>Request Care Transfer</span>
+            <span>{t("requestReferral")}</span>
           </Link>
 
           <Link
@@ -101,7 +103,7 @@ function ScreeningContent() {
             className="p-3.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 shadow-xs"
           >
             <PhoneCall className="w-4 h-4" />
-            <span>Contact Health Worker</span>
+            <span>{t("callASHA")}</span>
           </Link>
         </div>
       </div>
@@ -111,7 +113,7 @@ function ScreeningContent() {
 
 export default function PatientScreeningPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-xs font-bold">Loading health check result...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-xs font-bold">Loading...</div>}>
       <ScreeningContent />
     </Suspense>
   );

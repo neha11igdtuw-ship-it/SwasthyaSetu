@@ -20,13 +20,19 @@ export function PatientHeader({
 }: PatientHeaderProps) {
   const { t } = useLanguage();
 
+  const displayName = name === "Priya Sharma" ? t("priyaSharmaName") : t(name);
+  const displayLocation =
+    location === "Rampur Village" || location === "Rampur"
+      ? t("rampurLocation")
+      : t(location);
+
   return (
     <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm mb-6 space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {name}
+              {displayName}
             </h1>
             <RoleBadge role="Patient" />
           </div>
@@ -44,7 +50,7 @@ export function PatientHeader({
       <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600">
         <div className="flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-          <span>{location}</span>
+          <span>{displayLocation}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Languages className="w-3.5 h-3.5 text-teal-700 shrink-0" />

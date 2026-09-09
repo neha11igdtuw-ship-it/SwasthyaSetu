@@ -3,79 +3,113 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { LanguageOption } from "@/lib/i18n/translations";
-import { Globe, Check } from "lucide-react";
+import { Globe, Check, ChevronDown } from "lucide-react";
 
 export function LanguageSelector() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const selectorRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
+  // Close on outside click and Escape key
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        selectorRef.current &&
+        !selectorRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
-  const options: { id: LanguageOption; buttonLabel: string; label: string; sublabel?: string }[] = [
-    { id: "en", buttonLabel: "English ▾", label: "English" },
-    { id: "hi", buttonLabel: "हिंदी ▾", label: "हिंदी", sublabel: "Hindi" },
-    { id: "mr", buttonLabel: "मराठी ▾", label: "मराठी", sublabel: "Marathi" },
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const options: {
+    id: LanguageOption;
+    buttonLabel: string;
+    label: string;
+    sublabel?: string;
+  }[] = [
+    { id: "en", buttonLabel: "English", label: "English" },
+    { id: "hi", buttonLabel: "हिंदी", label: "हिंदी", sublabel: "Hindi" },
+    { id: "mr", buttonLabel: "मराठी", label: "मराठी", sublabel: "Marathi" },
+    {
+      id: "local",
+      buttonLabel: "Multilingual",
+      label: "बहुभाषी / स्थानीय",
+      sublabel: "Multilingual / Local language",
+    },
   ];
 
-  const currentOption =
-    options.find((opt) => opt.id === language) || options[0];
-
-  const handleSelect = (id: LanguageOption) => {
-    setLanguage(id);
-    setIsOpen(false);
-  };
+  const currentOption = options.find((opt) => opt.id === language) || options[0];
 
   return (
-    <div className="relative inline-block text-left z-50" ref={dropdownRef}>
+    <div className="relative inline-block text-left z-50" ref={selectorRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Change language"
-        title="Change language / भाषा बदलें / भाषा बदला"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 text-xs font-bold transition-all shadow-sm hover:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-500 shrink-0"
+        aria-label={t("changeLanguage")}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs sm:text-sm font-semibold border border-slate-200/80 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
       >
         <Globe className="w-4 h-4 text-teal-700 shrink-0" />
-        <span className="font-extrabold text-xs">{currentOption.buttonLabel}</span>
+        <span>{currentOption.buttonLabel}</span>
+        <ChevronDown className="w-3.5 h-3.5 text-slate-500 shrink-0" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-slate-200 shadow-xl p-2 space-y-1 text-xs z-50">
-          <div className="px-3 py-1.5 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            Select Language / भाषा चुनें / भाषा निवडा
+        <div className="absolute right-0 mt-2 w-56 sm:w-64 rounded-2xl bg-white border border-slate-200 shadow-2xl p-1.5 space-y-1 text-xs z-50">
+          <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            {t("changeLanguage")}
           </div>
 
-          {options.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => handleSelect(opt.id)}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors text-left ${
-                language === opt.id
-                  ? "bg-teal-50 text-teal-900 font-extrabold"
-                  : "text-slate-700 hover:bg-slate-50 font-semibold"
-              }`}
-            >
-              <div>
-                <span className="block text-xs">{opt.label}</span>
-                {opt.sublabel && (
-                  <span className="block text-[10px] text-slate-500 font-normal">{opt.sublabel}</span>
+          {options.map((opt) => {
+            const isSelected = language === opt.id;
+
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => {
+                  setLanguage(opt.id);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left cursor-pointer ${
+                  isSelected
+                    ? "bg-teal-50 text-teal-900 font-bold border border-teal-200/80"
+                    : "hover:bg-slate-50 text-slate-700 font-medium"
+                }`}
+              >
+                <div>
+                  <span className="block text-xs sm:text-sm">{opt.label}</span>
+                  {opt.sublabel && (
+                    <span className="block text-[10px] text-slate-400 font-normal">
+                      {opt.sublabel}
+                    </span>
+                  )}
+                </div>
+
+                {isSelected && (
+                  <Check className="w-4 h-4 text-teal-700 shrink-0 ml-2" />
                 )}
-              </div>
-              {language === opt.id && (
-                <Check className="w-4 h-4 text-teal-700 shrink-0" />
-              )}
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

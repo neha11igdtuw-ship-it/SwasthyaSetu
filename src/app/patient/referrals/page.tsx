@@ -5,24 +5,26 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
 import { priyaPatientMock } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { Share2, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export default function PatientReferralsPage() {
   const ref = priyaPatientMock.referral;
+  const { t } = useLanguage();
   const [requested, setRequested] = useState(false);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Care Request Progress"
-        subtitle="Track hospital referral progress from Sub-Centre to District Hospital"
+        title="referralProgressTitle"
+        subtitle="referralProgressSubtitle"
         roleBadge={<RoleBadge role="Patient" />}
       />
 
       {requested && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          <span>Care request update sent to ASHA Meena Devi.</span>
+          <span>{t("referralUpdateSent")}</span>
         </div>
       )}
 
@@ -35,52 +37,52 @@ export default function PatientReferralsPage() {
             </div>
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Care Request ID: {ref.id}
+                {t("careRequestId")}: {ref.id}
               </span>
               <h3 className="font-extrabold text-slate-900 text-lg">
-                {ref.facilityName}
+                {t("districtHospitalName")}
               </h3>
             </div>
           </div>
           <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-rose-50 text-rose-800 border border-rose-200">
-            {ref.priority} Priority
+            {t("highRisk")} {t("priorityText")}
           </span>
         </div>
 
         {/* Visual Referral Stepper */}
         <div className="space-y-2">
           <span className="text-xs font-bold text-slate-700 block">
-            Care Request Progress Stage:
+            {t("careRequestProgressStage")}
           </span>
           <ReferralStatusStepper steps={ref.steps} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700">
           <div>
-            <span className="text-slate-500 block">Reason for Care Request:</span>
-            <span className="font-bold text-slate-900">{ref.reason}</span>
+            <span className="text-slate-500 block">{t("reasonForCareRequest")}</span>
+            <span className="font-bold text-slate-900">{t("preEclampsiaReason")}</span>
           </div>
           <div>
-            <span className="text-slate-500 block">Expected Visit Date:</span>
-            <span className="font-bold text-teal-800">{ref.expectedVisitDate}</span>
+            <span className="text-slate-500 block">{t("expectedVisitDate")}</span>
+            <span className="font-bold text-teal-800">{t("followUpDueSep12")}</span>
           </div>
           <div className="sm:col-span-2 flex items-center gap-1.5 text-slate-600 border-t border-slate-200/60 pt-2">
             <ShieldCheck className="w-4 h-4 text-teal-700" />
-            <span>Status: <strong>Accepted by Hospital Registration Desk</strong></span>
+            <span><strong>{t("statusAcceptedHospitalDesk")}</strong></span>
           </div>
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-slate-500">
-            Show this care request slip at the Hospital Registration Counter.
+            {t("showSlipAtHospitalDesk")}
           </p>
 
           <button
             type="button"
             onClick={() => setRequested(true)}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors shadow-xs"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
           >
-            Update Care Request Status
+            {t("updateCareRequestStatus")}
           </button>
         </div>
       </div>

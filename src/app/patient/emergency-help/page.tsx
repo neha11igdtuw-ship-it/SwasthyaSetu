@@ -5,16 +5,18 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { EmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
 import { priyaPatientMock } from "@/lib/mockData";
+import { useLanguage } from "@/lib/i18n/languageContext";
 import { ShieldAlert, AlertTriangle, CheckCircle2, PhoneCall, Building2 } from "lucide-react";
 
 export default function PatientEmergencyHelpPage() {
   const p = priyaPatientMock;
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
-        title="Emergency Help"
-        subtitle="Maternal danger signs requiring urgent hospital evaluation"
+        title="emergencyHelp"
+        subtitle="immediateHighRiskAlert"
         roleBadge={<RoleBadge role="Patient" />}
       />
 
@@ -22,10 +24,10 @@ export default function PatientEmergencyHelpPage() {
         <ShieldAlert className="w-5 h-5 text-rose-700 shrink-0 mt-0.5" />
         <div>
           <span className="block text-sm font-extrabold mb-0.5">
-            EMERGENCY ASSISTANCE PROTOCOL
+            {t("emergencyProtocolTitle")}
           </span>
           <p className="font-normal text-rose-800">
-            Clicking call buttons will simulate phone calls to your health worker or emergency services.
+            {t("aiPreliminaryNotice")}
           </p>
         </div>
       </div>
@@ -38,12 +40,19 @@ export default function PatientEmergencyHelpPage() {
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
           <AlertTriangle className="w-5 h-5 text-rose-600" />
           <h3 className="font-extrabold text-slate-900 text-base">
-            Maternal Danger Signs — Get Help Immediately If You Have:
+            {t("maternalDangerSignsGetHelp")}
           </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-800">
-          {p.emergencySymptoms.map((symptom, idx) => (
+          {[
+            t("severeContinuousHeadache"),
+            t("blurredVisionOrSpots"),
+            t("swellingFaceHandsFeet"),
+            t("severeAbdominalPain"),
+            t("vaginalBleedingDischarge"),
+            t("reducedFetalMovement"),
+          ].map((symptom, idx) => (
             <div
               key={idx}
               className="p-3 rounded-xl bg-rose-50/60 border border-rose-100 flex items-start gap-2"
@@ -59,39 +68,39 @@ export default function PatientEmergencyHelpPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-            Health Worker Contact
+            {t("callASHA")}
           </span>
           <h4 className="font-extrabold text-slate-900 text-base">
-            ASHA Worker Meena Devi
+            {t("sunitaDeviWorker")}
           </h4>
           <p className="text-xs text-slate-600">
-            Assigned frontline health worker for Rampur Village.
+            {t("rampurLocation")}
           </p>
           <a
             href={`tel:${p.profile.assignedASHAPhone}`}
-            className="w-full py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 mt-2"
+            className="w-full py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 mt-2 cursor-pointer"
           >
             <PhoneCall className="w-4 h-4" />
-            <span>Call ASHA Worker ({p.profile.assignedASHAPhone})</span>
+            <span>{t("callASHA")} ({p.profile.assignedASHAPhone})</span>
           </a>
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-            Nearest Hospital
+            {t("nearestHospital")}
           </span>
           <h4 className="font-extrabold text-slate-900 text-base">
-            District Civil Hospital
+            {t("districtHospitalName")}
           </h4>
           <p className="text-xs text-slate-600">
-            24/7 Maternal Emergency Unit (8.5 km away).
+            24/7 Maternal Emergency Unit (8.5 km away)
           </p>
           <a
             href="/patient/facilities"
-            className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 mt-2"
+            className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors inline-flex items-center justify-center gap-2 mt-2 cursor-pointer"
           >
             <Building2 className="w-4 h-4" />
-            <span>View Hospital Details</span>
+            <span>{t("viewHospitalDetails")}</span>
           </a>
         </div>
       </div>
