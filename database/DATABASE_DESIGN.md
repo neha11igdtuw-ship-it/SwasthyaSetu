@@ -24,6 +24,8 @@ Stores patient-specific information.
 | edd | DATE | |
 | care_pathway | VARCHAR(50) | |
 | preferred_language | VARCHAR(50) | |
+| phone | VARCHAR(20) | |
+| risk_level | VARCHAR(30) | |
 | created_at | TIMESTAMP | NOT NULL |
 
 ---

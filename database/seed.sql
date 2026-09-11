@@ -59,7 +59,9 @@ INSERT INTO patients (
     pregnancy_week,
     edd,
     care_pathway,
-    preferred_language
+    preferred_language,
+    phone,
+    risk_level
 ) VALUES
 (
     '10000000-0000-0000-0000-000000000001',
@@ -70,7 +72,9 @@ INSERT INTO patients (
     28,
     '2026-11-28',
     'Maternal Care',
-    'Hindi (हिंदी)'
+    'Hindi (हिंदी)',
+    '+91 12345 67890',
+    'High Risk'
 ),
 (
     '10000000-0000-0000-0000-000000000002',
@@ -81,7 +85,9 @@ INSERT INTO patients (
     32,
     '2026-11-02',
     'Maternal Care',
-    'Bhojpuri'
+    'Bhojpuri',
+    '+91 11111 11111',
+    'High Risk'
 ),
 (
     '10000000-0000-0000-0000-000000000003',
@@ -92,7 +98,9 @@ INSERT INTO patients (
     16,
     '2027-02-14',
     'Maternal Care',
-    'Hindi'
+    'Hindi',
+    '+91 22222 22222',
+    'Watch'
 ),
 (
     '10000000-0000-0000-0000-000000000004',
@@ -103,7 +111,9 @@ INSERT INTO patients (
     36,
     '2026-10-05',
     'Maternal Care',
-    'Maithili'
+    'Maithili',
+    '+91 33333 44444',
+    'Normal'
 ),
 (
     '10000000-0000-0000-0000-000000000005',
@@ -114,7 +124,9 @@ INSERT INTO patients (
     NULL,
     NULL,
     'Hypertension',
-    'Hindi'
+    'Hindi',
+    '+91 12345 12345',
+    'High Risk'
 );
 
 
