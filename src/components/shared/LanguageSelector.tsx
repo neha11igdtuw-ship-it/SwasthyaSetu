@@ -65,11 +65,11 @@ export function LanguageSelector() {
         aria-label={t("changeLanguage")}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold border border-slate-200/80 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+        className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold border border-slate-200/80 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
       >
         <Globe className="w-4 h-4 text-teal-700 shrink-0" />
-        <span>{currentOption.buttonLabel}</span>
-        <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+        <span className="hidden sm:inline">{currentOption.buttonLabel}</span>
+        <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0 hidden sm:inline" />
       </button>
 
       {isOpen && (
