@@ -30,25 +30,25 @@ export function CareStatusCard({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-teal-700" />
           <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
               {t("carePriority")}
             </span>
-            <h3 className="font-bold text-slate-900 text-base">{t("preliminaryScreening")}</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white text-base">{t("preliminaryScreening")}</h3>
           </div>
         </div>
         <StatusBadge status={riskStatus} />
       </div>
 
       <div className="space-y-2">
-        <span className="text-xs font-bold text-slate-700 block">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
           {t("reasonsForCarePriority")}
         </span>
-        <ul className="space-y-1.5 text-xs text-slate-600">
+        <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
           {reasons.map((reason, idx) => (
             <li key={idx} className="flex items-start gap-2">
               <CheckCircle2 className="w-3.5 h-3.5 text-teal-700 shrink-0 mt-0.5" />
