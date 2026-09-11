@@ -24,7 +24,7 @@ export function AppShell({
   showMobileNav = true,
 }: AppShellProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f6fafa]">
+    <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
       <TopBar
         role={role}
         userName={userName}
