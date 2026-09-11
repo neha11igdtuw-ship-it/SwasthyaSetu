@@ -9,6 +9,7 @@ import {
   Inbox,
   LayoutDashboard,
   LogIn,
+  MessageSquare,
   Mic,
   PackageCheck,
   Pill,
@@ -26,6 +27,15 @@ import type { SearchableItem } from "./searchTypes";
  * worker/doctor/facility-admin destinations.
  */
 export const SEARCHABLE_ROUTES: SearchableItem[] = [
+  {
+    id: "feedback-form",
+    title: "Feedback Form",
+    category: "Support",
+    href: "/#feedback-section",
+    keywords: ["feedback", "support", "report issue", "complaint", "help", "suggestion", "escalation"],
+    icon: MessageSquare,
+    audiences: ["public", "patient", "hw", "doctor", "facility"],
+  },
   {
     id: "patient-facilities",
     title: "Nearby Hospitals / Facilities",
