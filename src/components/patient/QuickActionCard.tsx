@@ -32,7 +32,7 @@ export function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md hover:border-teal-500/50 transition-all flex flex-col justify-between"
+            className="group bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:shadow-md hover:border-teal-500/50 transition-all flex flex-col justify-between cursor-pointer"
     >
       <div>
         <div className="flex items-center justify-between mb-3">

@@ -402,7 +402,7 @@ export default function VoiceAssistantPage() {
                   type="button"
                   onClick={handleCopySummary}
                   className="px-2.5 py-1 rounded-lg bg-white border border-emerald-200 hover:bg-emerald-100 text-emerald-900 text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer shadow-2xs"
-                  title="Copy ChatGPT-style summary to clipboard"
+                  title="Copy summary to clipboard"
                 >
                   {copied ? (
                     <>

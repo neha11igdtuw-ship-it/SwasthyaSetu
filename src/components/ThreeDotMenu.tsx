@@ -78,14 +78,14 @@ export function ThreeDotMenu() {
   ];
 
   return (
-    <div className="relative inline-block text-left z-50" ref={menuRef}>
+    <div className={`relative inline-block text-left ${isOpen ? "z-50" : "z-10"}`} ref={menuRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="More options"
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+        className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
       >
         <MoreVertical className="w-5 h-5" />
       </button>
