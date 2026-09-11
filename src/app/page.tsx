@@ -25,7 +25,9 @@ import {
   Hospital,
   CalendarCheck,
   Sprout,
+  MessageSquare,
 } from "lucide-react";
+import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 
 export default function LandingPage() {
   const { t } = useLanguage();
@@ -384,16 +386,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-100 flex items-start gap-3.5">
-            <ShieldAlert className="w-5 h-5 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
-            <div className="space-y-1 text-xs sm:text-sm">
-              <span className="font-extrabold block">{t("safetyNoticeTitle")}</span>
-              <p className="text-amber-800 dark:text-amber-200 font-medium leading-relaxed">
-                {t("aiPreliminaryNotice")}
-              </p>
-            </div>
-          </div>
+        {/* Feedback & Support Section */}
+        <section id="feedback-section" className="px-4 sm:px-8 max-w-7xl mx-auto scroll-mt-20">
+          <FeedbackFormSection />
         </section>
       </main>
 
@@ -422,6 +417,9 @@ export default function LandingPage() {
             </Link>
             <Link href="/facility/dashboard" className="hover:text-white transition-colors">
               {t("healthcareFacility")}
+            </Link>
+            <Link href="/#feedback-section" className="hover:text-white transition-colors">
+              {t("feedbackTitle")}
             </Link>
           </div>
         </div>
