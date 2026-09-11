@@ -2,22 +2,29 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import type { LucideIcon } from "lucide-react";
 import {
-  MessageSquare,
   Search,
   Calendar,
   AlertCircle,
   ArrowRight,
   ShieldAlert,
-  Globe2,
-  Building2,
-  WifiOff,
-  User,
-  HeartPulse,
-  Stethoscope,
   ChevronRight,
+  Mic,
+  Stethoscope,
+  Languages,
+  HeartPulse,
+  WifiOff,
+  Building2,
+  ClipboardList,
+  Bell,
+  UserRound,
+  Hospital,
+  CalendarCheck,
+  Sprout,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -27,8 +34,8 @@ export default function LandingPage() {
     {
       titleKey: "tellUsProblemTitle",
       descKey: "tellUsProblemDesc",
-      icon: MessageSquare,
-      color: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 border-emerald-200/80",
+      icon: Mic,
+      color: "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800",
       iconBg: "bg-emerald-600 text-white",
       href: "/patient/symptoms",
     },
@@ -36,7 +43,7 @@ export default function LandingPage() {
       titleKey: "findRightCareTitle",
       descKey: "findRightCareDesc",
       icon: Search,
-      color: "bg-teal-50 dark:bg-teal-900/30 text-teal-800 border-teal-200/80",
+      color: "bg-teal-50 dark:bg-teal-950/50 border-teal-200 dark:border-teal-800",
       iconBg: "bg-teal-600 text-white",
       href: "/patient/facilities",
     },
@@ -44,7 +51,7 @@ export default function LandingPage() {
       titleKey: "continueCareTitle",
       descKey: "continueCareDesc",
       icon: Calendar,
-      color: "bg-sky-50 dark:bg-sky-900/30 text-sky-800 border-sky-200/80",
+      color: "bg-sky-50 dark:bg-sky-950/50 border-sky-200 dark:border-sky-800",
       iconBg: "bg-sky-600 text-white",
       href: "/patient/follow-ups",
     },
@@ -52,34 +59,96 @@ export default function LandingPage() {
       titleKey: "getSupportTitle",
       descKey: "getSupportDesc",
       icon: AlertCircle,
-      color: "bg-amber-50 dark:bg-amber-900/30 text-amber-900 border-amber-200/80",
+      color: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800",
       iconBg: "bg-amber-600 text-white",
       href: "/hw/high-risk",
     },
+    {
+      titleKey: "tellSymptomsCta",
+      descKey: "tellSymptomsTileDesc",
+      icon: Mic,
+      color: "bg-teal-600 dark:bg-teal-500 border-teal-700 dark:border-teal-400 text-white",
+      iconBg: "bg-slate-950 text-teal-300",
+      href: "/patient/voice-assistant",
+      featured: true,
+    },
   ];
 
-  const journeySteps = [
-    { step: "01", titleKey: "journeyStep1", desc: "Speak or type symptoms in your language" },
-    { step: "02", titleKey: "journeyStep2", desc: "Get preliminary guidance and hospital match" },
-    { step: "03", titleKey: "journeyStep3", desc: "Receive treatment and care transfer support" },
-    { step: "04", titleKey: "journeyStep4", desc: "Complete follow-up visits with ASHA alerts" },
-  ];
-
-  const ruralBenefits = [
+  const leftFeatures: FeatureItem[] = [
     {
       titleKey: "speakInLocalLanguage",
-      desc: "Speak naturally in Hindi, Marathi or local dialect with easy voice assistance.",
-      icon: Globe2,
+      descKey: "featureVoiceBrief",
+      icon: Languages,
+      href: "/patient/voice-assistant",
     },
     {
-      titleKey: "findSuitableFacility",
-      desc: "Match symptoms directly with available doctor duty and hospital beds.",
-      icon: Building2,
+      titleKey: "featureWorkerTitle",
+      descKey: "featureWorkerBrief",
+      icon: HeartPulse,
+      href: "/hw/dashboard",
     },
     {
       titleKey: "continueCareWeakInternet",
-      desc: "Important records are saved on phone and automatically sent when online.",
+      descKey: "featureOfflineBrief",
       icon: WifiOff,
+      href: "/patient/documents",
+    },
+  ];
+
+  const rightFeatures: FeatureItem[] = [
+    {
+      titleKey: "findSuitableFacility",
+      descKey: "featureFacilityBrief",
+      icon: Building2,
+      href: "/patient/facilities",
+    },
+    {
+      titleKey: "featureDoctorTitle",
+      descKey: "featureDoctorBrief",
+      icon: ClipboardList,
+      href: "/doctor/dashboard",
+    },
+    {
+      titleKey: "featureFollowTitle",
+      descKey: "featureFollowBrief",
+      icon: Bell,
+      href: "/patient/follow-ups",
+    },
+  ];
+
+  const roadmapSteps: RoadmapStep[] = [
+    {
+      n: 1,
+      titleKey: "roadmapStep1Title",
+      descKey: "roadmapStep1Desc",
+      icon: Mic,
+      place: "top",
+      accent: "violet",
+      featured: true,
+    },
+    {
+      n: 2,
+      titleKey: "roadmapStep2Title",
+      descKey: "roadmapStep2Desc",
+      icon: HeartPulse,
+      place: "bottom",
+      accent: "orange",
+    },
+    {
+      n: 3,
+      titleKey: "roadmapStep3Title",
+      descKey: "roadmapStep3Desc",
+      icon: Hospital,
+      place: "top",
+      accent: "navy",
+    },
+    {
+      n: 4,
+      titleKey: "roadmapStep4Title",
+      descKey: "roadmapStep4Desc",
+      icon: CalendarCheck,
+      place: "bottom",
+      accent: "green",
     },
   ];
 
@@ -88,27 +157,26 @@ export default function LandingPage() {
       <TopBar />
 
       <main className="flex-1 space-y-12 sm:space-y-16 pb-16">
-        {/* Hero Section */}
         <section className="pt-8 sm:pt-14 px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 text-white rounded-3xl p-6 sm:p-12 shadow-xl relative overflow-hidden">
-            <div className="max-w-2xl space-y-6 relative z-10">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-200 text-xs font-semibold backdrop-blur-md">
-                <span className="w-2 h-2 rounded-full bg-teal-300 animate-pulse" />
+          <div className="bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 text-white rounded-3xl p-6 sm:p-12 shadow-xl">
+            <div className="max-w-3xl space-y-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-100 text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-teal-300" />
                 <span>{t("corePurposeStatement")}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
                 {t("heroHeadline")}
               </h1>
 
-              <p className="text-sm sm:text-base text-teal-100 font-normal leading-relaxed">
+              <p className="text-sm sm:text-base text-teal-50 font-normal leading-relaxed">
                 {t("heroDescription")}
               </p>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                 <Link
                   href="/login"
-                  className="px-6 py-3.5 rounded-2xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2"
+                  className="px-6 py-3.5 rounded-2xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>{t("getStarted")}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -116,64 +184,56 @@ export default function LandingPage() {
 
                 <a
                   href="#care-journey"
-                  className="px-6 py-3.5 rounded-2xl bg-white/10 dark:bg-slate-800 hover:bg-white/20 dark:hover:bg-slate-800 text-white font-bold text-sm transition-colors text-center border border-white/20 backdrop-blur-md"
+                  className="px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm transition-colors text-center border border-white/25 cursor-pointer"
                 >
                   {t("seeHowItWorks")}
                 </a>
               </div>
             </div>
-
-            {/* Visual connected care graphic element */}
-            <div className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 gap-4 items-center opacity-85 pointer-events-none">
-              <div className="p-4 rounded-2xl bg-white/10 dark:bg-slate-800 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
-                <User className="w-6 h-6 mx-auto text-teal-300" />
-                <span className="text-xs font-bold block">{t("patient")}</span>
-              </div>
-
-              <div className="w-8 h-0.5 bg-teal-400/60" />
-
-              <div className="p-4 rounded-2xl bg-white/10 dark:bg-slate-800 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
-                <HeartPulse className="w-6 h-6 mx-auto text-emerald-300" />
-                <span className="text-xs font-bold block">{t("healthWorker")}</span>
-              </div>
-
-              <div className="w-8 h-0.5 bg-teal-400/60" />
-
-              <div className="p-4 rounded-2xl bg-white/10 dark:bg-slate-800 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
-                <Stethoscope className="w-6 h-6 mx-auto text-sky-300" />
-                <span className="text-xs font-bold block">{t("doctor")}</span>
-              </div>
-            </div>
           </div>
         </section>
 
-        {/* Quick Action Tiles */}
-        <section className="px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActionTiles.map((tile, i) => {
+        <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {quickActionTiles.map((tile) => {
               const Icon = tile.icon;
+              const featured = "featured" in tile && tile.featured;
 
               return (
                 <Link
-                  key={i}
+                  key={tile.titleKey}
                   href={tile.href}
-                  className={`p-5 rounded-2xl border transition-all shadow-xs hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between space-y-4 ${tile.color}`}
+                  className={`p-5 rounded-2xl border transition-all shadow-xs hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between space-y-4 min-w-0 cursor-pointer ${tile.color}`}
                 >
                   <div className="space-y-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tile.iconBg}`}>
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
+                      <h3
+                        className={`font-extrabold text-base tracking-tight ${
+                          featured ? "text-white" : "text-slate-900 dark:text-white"
+                        }`}
+                      >
                         {t(tile.titleKey)}
                       </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed mt-1">
+                      <p
+                        className={`text-xs font-medium leading-relaxed mt-1 ${
+                          featured ? "text-teal-50" : "text-slate-600 dark:text-slate-300"
+                        }`}
+                      >
                         {t(tile.descKey)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="inline-flex items-center text-xs font-bold text-slate-900 dark:text-white gap-1 pt-2 border-t border-slate-200/50 dark:border-slate-700">
+                  <div
+                    className={`inline-flex items-center text-xs font-bold gap-1 pt-2 border-t ${
+                      featured
+                        ? "text-white border-white/25"
+                        : "text-slate-900 dark:text-white border-slate-200/50 dark:border-slate-600"
+                    }`}
+                  >
                     <span>{t("viewDetails")}</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </div>
@@ -183,81 +243,153 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Simple Care Journey */}
-        <section id="care-journey" className="px-4 sm:px-8 max-w-7xl mx-auto space-y-6 scroll-mt-20">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              {t("yourCareJourneyConnected")}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-              {t("corePurposeStatement")}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {journeySteps.map((step, idx) => (
-              <div
-                key={idx}
-                className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3 relative"
-              >
-                <div className="text-2xl font-black text-teal-700/30 font-mono">
-                  {step.step}
-                </div>
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
-                  {t(step.titleKey)}
-                </h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-                  {step.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Rural Support Benefits Section */}
-        <section className="px-4 sm:px-8 max-w-7xl mx-auto space-y-6">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-6">
-            <div className="max-w-xl space-y-1">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+        <section className="px-4 sm:px-8 max-w-7xl mx-auto">
+          <div className="relative overflow-hidden rounded-[2rem] border border-teal-100/80 dark:border-teal-800/40 bg-gradient-to-b from-[#f3faf7] via-[#eef8f4] to-[#d7eee4] dark:from-[#082226] dark:via-[#0a2429] dark:to-[#071c1f] px-5 sm:px-8 lg:px-10 pt-8 sm:pt-10 pb-8 sm:pb-9">
+            <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 space-y-2 relative z-10">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#16384a] dark:text-white tracking-tight">
                 {t("ruralSupportSectionTitle")}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                {t("landingHeroDescription")}
+              <p className="text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                {t("ecosystemSubtitle")}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-              {ruralBenefits.map((item, index) => {
-                const Icon = item.icon;
-                return (
-                  <div key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
-                    <div className="p-2.5 rounded-xl bg-teal-100 text-teal-800 shrink-0">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                        {t(item.titleKey)}
-                      </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-                        {item.desc}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(280px,380px)_1fr] gap-8 lg:gap-6 xl:gap-10 items-center relative z-10">
+              <div className="space-y-2 order-2 lg:order-1">
+                {leftFeatures.map((item) => (
+                  <FeatureRow
+                    key={item.titleKey}
+                    href={item.href}
+                    icon={item.icon}
+                    title={t(item.titleKey)}
+                    desc={t(item.descKey)}
+                  />
+                ))}
+              </div>
+
+              <div className="order-1 lg:order-2">
+                <EcosystemVisual
+                  patientLabel={t("patient")}
+                  workerLabel={t("ecosystemNodeWorker")}
+                  doctorLabel={t("doctor")}
+                  facilityLabel={t("ecosystemNodeFacility")}
+                  brandName={t("appName")}
+                  tagline={t("continuityInEveryStep")}
+                  footer={t("peopleTechCommunities")}
+                />
+              </div>
+
+              <div className="space-y-2 order-3">
+                {rightFeatures.map((item) => (
+                  <FeatureRow
+                    key={item.titleKey}
+                    href={item.href}
+                    icon={item.icon}
+                    title={t(item.titleKey)}
+                    desc={t(item.descKey)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Important Safety Notice */}
+        <section id="care-journey" className="px-4 sm:px-8 max-w-7xl mx-auto space-y-10 scroll-mt-20">
+          <div className="text-center max-w-xl mx-auto space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("howItWorksTitle")}
+            </h2>
+          </div>
+
+          <div className="hidden lg:block relative pt-2 pb-4">
+            <svg
+              className="absolute left-[6%] right-[6%] top-[46%] h-20 w-[88%] pointer-events-none"
+              viewBox="0 0 1000 80"
+              fill="none"
+              aria-hidden="true"
+              preserveAspectRatio="none"
+            >
+              <path
+                d="M40 48 C 140 48, 170 18, 280 18"
+                stroke="#f59e0b"
+                strokeWidth="5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M280 18 C 430 18, 470 10, 620 10"
+                stroke="#1e3a8a"
+                strokeWidth="5"
+                strokeLinecap="round"
+              />
+              <path
+                d="M620 10 C 760 10, 820 42, 960 42"
+                stroke="#4d7c0f"
+                strokeWidth="5"
+                strokeLinecap="round"
+              />
+            </svg>
+
+            <div className="grid grid-cols-4 relative">
+              {roadmapSteps.map((step) => (
+                <RoadmapColumn
+                  key={step.n}
+                  step={step}
+                  title={t(step.titleKey)}
+                  desc={t(step.descKey)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:hidden space-y-0">
+            {roadmapSteps.map((step, idx) => {
+              const styles = accentStyles[step.accent];
+              const Icon = step.icon;
+              return (
+                <div key={step.n} className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`relative z-10 rounded-full text-white flex items-center justify-center font-black shrink-0 ${styles.circle} ${
+                        step.featured
+                          ? "w-14 h-14 text-xl ring-[6px] ring-violet-100 dark:ring-violet-500/20 shadow-lg shadow-violet-700/25"
+                          : "w-11 h-11 text-base"
+                      }`}
+                    >
+                      {step.n}
+                    </div>
+                    {idx < roadmapSteps.length - 1 && (
+                      <div className={`w-1 flex-1 min-h-10 ${styles.line}`} />
+                    )}
+                  </div>
+                  <div className={`pb-8 ${step.featured ? "pt-0.5" : "pt-1"}`}>
+                    <div className="flex items-start gap-2.5">
+                      <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${styles.icon}`} />
+                      <div>
+                        <div
+                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-white text-xs font-extrabold ${styles.circle} ${
+                            step.featured ? "text-sm px-3 py-1.5" : ""
+                          }`}
+                        >
+                          {t(step.titleKey)}
+                        </div>
+                        <p className="mt-2 text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed max-w-sm">
+                          {t(step.descKey)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
         <section className="px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="p-5 rounded-2xl bg-amber-50/90 dark:bg-amber-900/30 border border-amber-200/80 text-amber-900 flex items-start gap-3.5 shadow-xs">
-            <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="p-5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-100 flex items-start gap-3.5">
+            <ShieldAlert className="w-5 h-5 text-amber-700 dark:text-amber-300 shrink-0 mt-0.5" />
             <div className="space-y-1 text-xs sm:text-sm">
-              <span className="font-extrabold block">
-                {t("safetyNoticeTitle")}
-              </span>
-              <p className="text-amber-800 font-medium leading-relaxed">
+              <span className="font-extrabold block">{t("safetyNoticeTitle")}</span>
+              <p className="text-amber-800 dark:text-amber-200 font-medium leading-relaxed">
                 {t("aiPreliminaryNotice")}
               </p>
             </div>
@@ -265,16 +397,11 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto bg-slate-900 text-slate-400 dark:text-slate-500 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
+      <footer className="mt-auto bg-slate-900 text-slate-400 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
-            <span className="font-extrabold text-white text-base block">
-              {t("appName")}
-            </span>
-            <p className="text-slate-400 dark:text-slate-500 text-xs">
-              {t("tagline")}
-            </p>
+            <span className="font-extrabold text-white text-base block">{t("appName")}</span>
+            <p className="text-slate-400 text-xs">{t("tagline")}</p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-300">
@@ -299,6 +426,314 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+type FeatureItem = {
+  titleKey: string;
+  descKey: string;
+  icon: LucideIcon;
+  href: string;
+};
+
+type RoadmapAccent = "violet" | "orange" | "navy" | "green";
+
+type RoadmapStep = {
+  n: number;
+  titleKey: string;
+  descKey: string;
+  icon: LucideIcon;
+  place: "top" | "bottom";
+  accent: RoadmapAccent;
+  featured?: boolean;
+};
+
+const accentStyles: Record<
+  RoadmapAccent,
+  { circle: string; line: string; icon: string; stem: string }
+> = {
+  violet: {
+    circle: "bg-[#6d28d9]",
+    line: "bg-[#f59e0b]",
+    icon: "text-[#6d28d9] dark:text-violet-300",
+    stem: "bg-[#6d28d9]",
+  },
+  orange: {
+    circle: "bg-[#ea580c]",
+    line: "bg-[#1e3a8a]",
+    icon: "text-[#ea580c] dark:text-orange-300",
+    stem: "bg-[#ea580c]",
+  },
+  navy: {
+    circle: "bg-[#1e3a8a]",
+    line: "bg-[#4d7c0f]",
+    icon: "text-[#1e3a8a] dark:text-sky-300",
+    stem: "bg-[#1e3a8a]",
+  },
+  green: {
+    circle: "bg-[#3f6212]",
+    line: "bg-[#3f6212]",
+    icon: "text-[#3f6212] dark:text-lime-300",
+    stem: "bg-[#3f6212]",
+  },
+};
+
+function FeatureRow({
+  href,
+  icon: Icon,
+  title,
+  desc,
+}: {
+  href: string;
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-start gap-3.5 rounded-2xl p-3 -mx-1 hover:bg-white/70 dark:hover:bg-teal-950/50 transition-colors cursor-pointer"
+    >
+      <div className="w-11 h-11 rounded-xl bg-white dark:bg-[#123038] border border-teal-100 dark:border-teal-700/50 shadow-sm flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5 text-teal-700 dark:text-teal-300" strokeWidth={1.75} />
+      </div>
+      <div className="min-w-0 pt-0.5">
+        <h3 className="font-bold text-sm text-slate-800 dark:text-white tracking-tight group-hover:text-teal-800 dark:group-hover:text-teal-200">
+          {title}
+        </h3>
+        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">{desc}</p>
+      </div>
+    </Link>
+  );
+}
+
+function EcosystemVisual({
+  patientLabel,
+  workerLabel,
+  doctorLabel,
+  facilityLabel,
+  brandName,
+  tagline,
+  footer,
+}: {
+  patientLabel: string;
+  workerLabel: string;
+  doctorLabel: string;
+  facilityLabel: string;
+  brandName: string;
+  tagline: string;
+  footer: string;
+}) {
+  return (
+    <div className="relative mx-auto w-full max-w-[380px] aspect-square">
+      <div className="absolute inset-0 overflow-hidden rounded-[2rem]">
+        <svg
+          viewBox="0 0 380 380"
+          className="absolute inset-0 w-full h-full dark:hidden"
+          aria-hidden="true"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <defs>
+            <linearGradient id="ecoSky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f7fcfa" />
+              <stop offset="55%" stopColor="#eaf6f1" />
+              <stop offset="100%" stopColor="#d4ebdf" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="380" fill="url(#ecoSky)" />
+          <path
+            d="M0 292 C 48 268, 78 304, 128 286 C 176 270, 198 304, 248 288 C 292 274, 330 298, 380 276 V 380 H 0 Z"
+            fill="#c8e6d6"
+          />
+          <path
+            d="M0 322 C 70 298, 120 336, 190 314 C 250 296, 300 328, 380 308 V 380 H 0 Z"
+            fill="#b4dcc8"
+          />
+          <g fill="#8fbfa3">
+            <rect x="42" y="318" width="18" height="14" rx="1" />
+            <polygon points="42,318 51,308 60,318" />
+            <rect x="318" y="312" width="16" height="12" rx="1" />
+            <polygon points="318,312 326,303 334,312" />
+          </g>
+        </svg>
+        <svg
+          viewBox="0 0 380 380"
+          className="absolute inset-0 w-full h-full hidden dark:block"
+          aria-hidden="true"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <defs>
+            <linearGradient id="ecoSkyDark" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0c2a30" />
+              <stop offset="55%" stopColor="#0a2429" />
+              <stop offset="100%" stopColor="#08201c" />
+            </linearGradient>
+          </defs>
+          <rect width="380" height="380" fill="url(#ecoSkyDark)" />
+          <path
+            d="M0 292 C 48 268, 78 304, 128 286 C 176 270, 198 304, 248 288 C 292 274, 330 298, 380 276 V 380 H 0 Z"
+            fill="#134037"
+          />
+          <path
+            d="M0 322 C 70 298, 120 336, 190 314 C 250 296, 300 328, 380 308 V 380 H 0 Z"
+            fill="#0f3530"
+          />
+          <g fill="#1d5a4e">
+            <rect x="42" y="318" width="18" height="14" rx="1" />
+            <polygon points="42,318 51,308 60,318" />
+            <rect x="318" y="312" width="16" height="12" rx="1" />
+            <polygon points="318,312 326,303 334,312" />
+          </g>
+        </svg>
+      </div>
+
+      <div className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 w-[58%] aspect-square rounded-full border-[1.5px] border-dashed border-teal-400/70 dark:border-teal-500/40 pointer-events-none" />
+
+      <div className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center text-center w-[42%]">
+        <div className="w-full aspect-square rounded-full bg-white dark:bg-[#102830] shadow-[0_10px_30px_rgba(15,70,70,0.12)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)] border border-teal-100 dark:border-teal-700/50 overflow-hidden flex items-center justify-center p-[8%]">
+          <Image
+            src="/logo.jpg"
+            alt={brandName}
+            width={160}
+            height={160}
+            className="w-[120%] h-[120%] max-w-none object-contain"
+            priority
+          />
+        </div>
+        <p className="mt-2 text-[10px] sm:text-[11px] font-semibold text-teal-800/80 dark:text-teal-200/80 tracking-wide">
+          {tagline}
+        </p>
+      </div>
+
+      <EcosystemNode
+        className="absolute left-[2%] top-[8%]"
+        icon={UserRound}
+        label={patientLabel}
+        align="left"
+      />
+      <EcosystemNode
+        className="absolute right-[2%] top-[8%]"
+        icon={HeartPulse}
+        label={workerLabel}
+        align="right"
+      />
+      <EcosystemNode
+        className="absolute left-[2%] top-[58%]"
+        icon={Stethoscope}
+        label={doctorLabel}
+        align="left"
+      />
+      <EcosystemNode
+        className="absolute right-[2%] top-[58%]"
+        icon={Building2}
+        label={facilityLabel}
+        align="right"
+      />
+
+      <div className="absolute left-1/2 top-[71%] -translate-x-1/2 z-10 text-teal-600 dark:text-teal-400">
+        <Sprout className="w-4 h-4" strokeWidth={1.75} />
+      </div>
+
+      <p className="absolute bottom-2 left-0 right-0 text-center text-[10px] sm:text-[11px] font-semibold tracking-wide text-teal-800/80 dark:text-teal-200/80">
+        {footer}
+      </p>
+    </div>
+  );
+}
+
+function EcosystemNode({
+  className,
+  icon: Icon,
+  label,
+  align,
+}: {
+  className: string;
+  icon: LucideIcon;
+  label: string;
+  align: "left" | "right";
+}) {
+  return (
+    <div className={`z-20 flex flex-col items-center gap-1.5 w-[30%] ${className}`}>
+      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white dark:bg-[#123038] border border-teal-100 dark:border-teal-700/60 shadow-md flex items-center justify-center">
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-teal-700 dark:text-teal-300" strokeWidth={1.7} />
+      </div>
+      <p
+        className={`text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-100 leading-tight ${
+          align === "left" ? "text-left" : "text-right"
+        }`}
+      >
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function RoadmapColumn({
+  step,
+  title,
+  desc,
+}: {
+  step: RoadmapStep;
+  title: string;
+  desc: string;
+}) {
+  const styles = accentStyles[step.accent];
+  const Icon = step.icon;
+  const card = (
+    <div className={`text-left max-w-[210px] ${step.place === "top" ? "mb-1" : "mt-1"}`}>
+      <div className="flex items-start gap-2">
+        <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${styles.icon}`} />
+        <div>
+          <div
+            className={`inline-flex items-center px-2.5 py-1 rounded-md text-white font-extrabold ${styles.circle} ${
+              step.featured ? "text-sm px-3 py-1.5 shadow-md shadow-violet-700/20" : "text-xs"
+            }`}
+          >
+            {title}
+          </div>
+          <p className="mt-2 text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
+            {desc}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const shift =
+    step.n === 1 ? "translate-y-8" : step.n === 2 ? "translate-y-2" : step.n === 4 ? "translate-y-6" : "";
+
+  return (
+    <div className={`flex flex-col items-center ${shift}`}>
+      <div className="min-h-[148px] flex flex-col items-center justify-end pb-1">
+        {step.place === "top" ? (
+          <>
+            {card}
+            <div className={`w-[2px] h-8 ${styles.stem}`} />
+          </>
+        ) : (
+          <div className="h-24" />
+        )}
+      </div>
+      <div
+        className={`relative z-10 rounded-full text-white flex items-center justify-center font-black ${styles.circle} ${
+          step.featured
+            ? "w-[4.25rem] h-[4.25rem] text-2xl ring-[6px] ring-[#f6fafa] dark:ring-[#0b1a1f] shadow-lg shadow-violet-800/30"
+            : "w-14 h-14 text-xl ring-4 ring-[#f6fafa] dark:ring-[#0b1a1f]"
+        }`}
+      >
+        {step.n}
+      </div>
+      <div className="min-h-[148px] flex flex-col items-center justify-start pt-1">
+        {step.place === "bottom" ? (
+          <>
+            <div className={`w-[2px] h-8 ${styles.stem}`} />
+            {card}
+          </>
+        ) : (
+          <div className="h-24" />
+        )}
+      </div>
     </div>
   );
 }
