@@ -58,7 +58,7 @@ export function LanguageSelector() {
   const currentOption = options.find((opt) => opt.id === language) || options[0];
 
   return (
-    <div className="relative inline-block text-left z-50" ref={selectorRef}>
+    <div className={`relative inline-block text-left ${isOpen ? "z-50" : "z-10"}`} ref={selectorRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

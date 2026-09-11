@@ -47,4 +47,17 @@
     background-color: #0b1a1f;
     color: #eaf4f2;
   }
+
+  a,
+  button,
+  label,
+  summary,
+  [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  a[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
