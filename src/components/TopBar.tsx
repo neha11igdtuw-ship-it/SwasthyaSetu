@@ -8,6 +8,8 @@ import {
   UserPlus,
   Search,
   LayoutDashboard,
+  MessageSquare,
+  LogOut,
 } from "lucide-react";
 import { RoleType, RoleBadge } from "./RoleBadge";
 import { LanguageSelector } from "@/components/shared/LanguageSelector";
@@ -16,7 +18,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { OfflinePill } from "@/components/shared/OfflinePill";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { getCurrentUserRole, isAuthenticated } from "@/lib/api/client";
+import { getCurrentUserRole, isAuthenticated, clearTokens } from "@/lib/api/client";
 import { dashboardPathForJwtRole, resolveSearchAudience } from "@/lib/search/searchService";
 
 interface TopBarProps {
@@ -54,9 +56,16 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
     };
   }, []);
 
+  const handleLogout = () => {
+    clearTokens();
+    setIsAuth(false);
+    setJwtRole(null);
+    window.dispatchEvent(new Event("storage"));
+  };
+
   const inAppShell = Boolean(role || userName);
   const showSignedOutActions = !isAuth && !inAppShell;
-  const showDashboardShortcut = isAuth && !inAppShell;
+  const showDashboardShortcut = isAuth || inAppShell;
   const searchAudience = resolveSearchAudience({ jwtRole, shellRole: role });
   const dashboardHref =
     dashboardPathForJwtRole(jwtRole) || (role ? SHELL_DASHBOARD_ROUTES[role] : "/patient/dashboard");
@@ -153,6 +162,15 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
             <ThemeToggle />
           </div>
 
+          <Link
+            href="/#feedback-section"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" aria-hidden="true" />
+            <span className="hidden sm:inline">{t("feedbackTitle")}</span>
+            <span className="sm:hidden">Feedback</span>
+          </Link>
+
           {showSignedOutActions ? (
             <div className="hidden sm:flex items-center gap-2">
               <Link
@@ -171,20 +189,31 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
               </Link>
             </div>
           ) : showDashboardShortcut ? (
-            <Link
-              href={dashboardHref}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-xs font-extrabold transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Dashboard</span>
-            </Link>
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                href={dashboardHref}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-xs font-extrabold transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Dashboard</span>
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Logout"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
+              >
+                <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Logout</span>
+              </button>
+            </div>
           ) : null}
 
           <ThreeDotMenu isAuthenticated={isAuth || inAppShell} />
         </div>
       </div>
 
-      {showSignedOutActions && (
+      {showSignedOutActions ? (
         <div className="sm:hidden max-w-7xl mx-auto mt-2 flex items-center gap-2">
           <Link
             href="/login"
@@ -201,7 +230,25 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
             <span>Sign Up</span>
           </Link>
         </div>
-      )}
+      ) : showDashboardShortcut ? (
+        <div className="sm:hidden max-w-7xl mx-auto mt-2 flex items-center gap-2">
+          <Link
+            href={dashboardHref}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 text-teal-200" aria-hidden="true" />
+            <span>Dashboard</span>
+          </Link>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200/80 dark:border-slate-700 cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>Logout</span>
+          </button>
+        </div>
+      ) : null}
 
       {isMobileSearchVisible && (
         <div className="lg:hidden mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">

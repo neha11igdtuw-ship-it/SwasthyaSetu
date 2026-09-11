@@ -11,6 +11,7 @@ import { derivePatientGaps } from "@/lib/careGaps";
 import { authApi, patientsApi, pregnanciesApi } from "@/lib/api/client";
 import type { PatientOut, PregnancyOut } from "@/lib/api/types";
 import { OfflinePill } from "@/components/shared/OfflinePill";
+import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import {
   ShieldAlert,
   PhoneCall,
@@ -20,18 +21,14 @@ import {
   Search,
   Filter,
   AlertTriangle,
-  MessageSquare,
-  Send,
-  CheckCircle2,
   Phone,
   Activity,
   Calendar,
   AlertOctagon,
-  Sparkles,
   HeartPulse,
   UserCheck,
   Building2,
-  Share2,
+  CheckCircle2,
 } from "lucide-react";
 
 interface DisplayHighRiskPatient {
@@ -76,28 +73,6 @@ export default function HWHighRiskPage() {
 
   // Followed Up tracking state
   const [followedUpIds, setFollowedUpIds] = useState<Record<string, string>>({});
-
-  // Feedback Form State
-  const [feedbackCategory, setFeedbackCategory] = useState("High-Risk Patient Escalation");
-  const [feedbackPriority, setFeedbackPriority] = useState<"Urgent" | "High" | "Normal">("Urgent");
-  const [feedbackPatientId, setFeedbackPatientId] = useState("");
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [feedbackContact, setFeedbackContact] = useState("ANM Sunita Devi (+91 98765 12345)");
-  const [feedbackSuccessMsg, setFeedbackSuccessMsg] = useState<string | null>(null);
-  const [submittingFeedback, setSubmittingFeedback] = useState(false);
-  const [feedbackHistory, setFeedbackHistory] = useState<FeedbackEntry[]>([]);
-
-  // Load Feedback History from LocalStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("swasthya_hw_feedback_history");
-      if (saved) {
-        setFeedbackHistory(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore storage errors
-    }
-  }, []);
 
   // Fetch backend high risk patients if authenticated
   useEffect(() => {
@@ -242,48 +217,6 @@ export default function HWHighRiskPage() {
       }
       return next;
     });
-  };
-
-  // Handle Feedback Submission
-  const handleSubmitFeedback = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!feedbackMessage.trim()) return;
-
-    setSubmittingFeedback(true);
-    setTimeout(() => {
-      const targetPatient = combinedPatients.find((p) => p.id === feedbackPatientId);
-      const newEntry: FeedbackEntry = {
-        id: `FB-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        category: feedbackCategory,
-        priority: feedbackPriority,
-        patientName: targetPatient ? `${targetPatient.name} (${targetPatient.village})` : undefined,
-        message: feedbackMessage.trim(),
-        submittedAt: new Date().toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        status: "Under Review",
-      };
-
-      const updatedHistory = [newEntry, ...feedbackHistory];
-      setFeedbackHistory(updatedHistory);
-      try {
-        localStorage.setItem("swasthya_hw_feedback_history", JSON.stringify(updatedHistory));
-      } catch {
-        // Ignore storage error
-      }
-
-      setSubmittingFeedback(false);
-      setFeedbackSuccessMsg(`Feedback submitted successfully (ID: ${newEntry.id}). Care team alerted.`);
-      setFeedbackMessage("");
-      setFeedbackPatientId("");
-
-      setTimeout(() => {
-        setFeedbackSuccessMsg(null);
-      }, 6000);
-    }, 600);
   };
 
   return (
@@ -587,162 +520,7 @@ export default function HWHighRiskPage() {
       )}
 
       {/* Embedded Feedback & Escalation Form */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-5 mt-8">
-        <div className="flex items-start justify-between border-b border-slate-100 dark:border-slate-700 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-700">
-              <MessageSquare className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="font-extrabold text-base md:text-lg text-slate-900 dark:text-white">
-                {t("feedbackTitle")}
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl mt-0.5">
-                {t("feedbackSubtitle")}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Feedback Success Toast */}
-        {feedbackSuccessMsg && (
-          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>{feedbackSuccessMsg}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmitFeedback} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Category */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                {t("feedbackCategory")}
-              </label>
-              <select
-                value={feedbackCategory}
-                onChange={(e) => setFeedbackCategory(e.target.value)}
-                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="High-Risk Patient Escalation">High-Risk Patient Escalation</option>
-                <option value="Medical Supply / Medicine Shortage">Medical Supply / Medicine Shortage</option>
-                <option value="Hospital Referral Delay">Hospital Referral Delay</option>
-                <option value="Technical / App Issue">Technical / App Issue</option>
-                <option value="General Suggestion">General Suggestion</option>
-              </select>
-            </div>
-
-            {/* Priority */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                {t("feedbackPriority")}
-              </label>
-              <select
-                value={feedbackPriority}
-                onChange={(e) => setFeedbackPriority(e.target.value as "Urgent" | "High" | "Normal")}
-                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="Urgent">Urgent (Immediate Medical Attention Required)</option>
-                <option value="High">High Priority</option>
-                <option value="Normal">Normal</option>
-              </select>
-            </div>
-
-            {/* Associated Patient */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                {t("feedbackPatientRef")}
-              </label>
-              <select
-                value={feedbackPatientId}
-                onChange={(e) => setFeedbackPatientId(e.target.value)}
-                className="w-full py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="">-- None (General Feedback) --</option>
-                {combinedPatients.map((pt) => (
-                  <option key={pt.id} value={pt.id}>
-                    {pt.name} ({pt.village})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Details / Message */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-              {t("feedbackMessage")}
-            </label>
-            <textarea
-              rows={3}
-              value={feedbackMessage}
-              onChange={(e) => setFeedbackMessage(e.target.value)}
-              placeholder="Describe the issue, required medical supply, patient complication, or feedback in detail..."
-              required
-              className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-medium bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          {/* Health worker contact signature */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Submitting as: <strong className="text-slate-800 dark:text-slate-200">{feedbackContact}</strong>
-            </div>
-
-            <button
-              type="submit"
-              disabled={submittingFeedback || !feedbackMessage.trim()}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 disabled:opacity-50 text-white font-extrabold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-            >
-              {submittingFeedback ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Logging Feedback…</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>{t("feedbackSubmit")}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-
-        {/* Previously Submitted Feedback History */}
-        {feedbackHistory.length > 0 && (
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Submitted Feedback & Support Requests ({feedbackHistory.length})
-            </h3>
-
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {feedbackHistory.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs space-y-1"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-slate-900 dark:text-slate-100">{item.id}</span>
-                      <span className="px-2 py-0.5 rounded-md bg-teal-100 dark:bg-teal-900/40 text-teal-800 dark:text-teal-200 text-[10px] font-bold">
-                        {item.category}
-                      </span>
-                      {item.patientName && (
-                        <span className="text-[11px] text-slate-500 font-medium">
-                          Ref: {item.patientName}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-semibold">{item.submittedAt}</span>
-                  </div>
-                  <p className="text-slate-700 dark:text-slate-300 font-medium">{item.message}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      <FeedbackFormSection className="mt-8" />
     </div>
   );
 }
