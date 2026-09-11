@@ -55,7 +55,7 @@ export function ReferralStatusStepper({ steps }: ReferralStatusStepperProps) {
                     ? "bg-teal-700 text-white shadow-xs"
                     : isCurrent
                     ? "bg-amber-400 text-slate-950 ring-4 ring-amber-100 font-extrabold"
-                    : "bg-slate-100 text-slate-400 border border-slate-200"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700"
                 }`}
               >
                 {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : index + 1}
@@ -68,13 +68,13 @@ export function ReferralStatusStepper({ steps }: ReferralStatusStepperProps) {
                       ? "text-amber-900 font-extrabold"
                       : isCompleted
                       ? "text-teal-900"
-                      : "text-slate-400"
+                      : "text-slate-400 dark:text-slate-500"
                   }`}
                 >
                   {mapStepName(step.name)}
                 </span>
                 {step.date && (
-                  <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
                     {step.date}
                   </span>
                 )}

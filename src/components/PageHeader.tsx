@@ -22,16 +22,16 @@ export function PageHeader({
   const displaySubtitle = subtitle ? (t(subtitle) || subtitle) : undefined;
 
   return (
-    <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
+    <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-700 pb-5">
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             {displayTitle}
           </h1>
           {roleBadge}
         </div>
         {displaySubtitle && (
-          <p className="text-slate-600 text-sm leading-relaxed">{displaySubtitle}</p>
+          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{displaySubtitle}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}

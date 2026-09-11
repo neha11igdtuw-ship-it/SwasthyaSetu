@@ -2,9 +2,11 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { RoleType, RoleBadge } from "./RoleBadge";
 import { LanguageSelector } from "@/components/shared/LanguageSelector";
 import { ThreeDotMenu } from "@/components/ThreeDotMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { WifiOff } from "lucide-react";
 
@@ -45,7 +47,7 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-4 py-2.5 sm:px-8">
+    <header className="sticky top-0 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-700 px-4 py-2.5 sm:px-8">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Left: Logo & Subtitle */}
         <div className="flex items-center gap-3">
@@ -54,11 +56,18 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
             aria-label="SwasthyaSetu Home"
             className="flex items-center gap-2.5 group"
           >
-            <div className="w-9 h-9 rounded-xl bg-teal-700 text-white flex items-center justify-center font-extrabold text-lg shadow-sm group-hover:bg-teal-800 transition-colors">
-              S
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+              <Image
+                src="/logo.jpg"
+                alt="SwasthyaSetu Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+                priority
+              />
             </div>
             <div>
-              <span className="font-extrabold text-lg tracking-tight text-slate-900 block leading-none">
+              <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white block leading-none">
                 {t("appName")}
               </span>
               <span className="text-[10px] text-teal-700 font-semibold tracking-wide uppercase">
@@ -74,9 +83,9 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
         <div className="flex items-center gap-2 sm:gap-3">
           {localizedUserName && (
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-xs font-bold text-slate-900">{localizedUserName}</span>
+              <span className="text-xs font-bold text-slate-900 dark:text-white">{localizedUserName}</span>
               {localizedLocation && (
-                <span className="text-[11px] text-slate-500">{localizedLocation}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">{localizedLocation}</span>
               )}
             </div>
           )}
@@ -88,6 +97,9 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
 
           {/* Language Selector */}
           <LanguageSelector />
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           {/* Discovery Three-Dot Menu */}
           <ThreeDotMenu />

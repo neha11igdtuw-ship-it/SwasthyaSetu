@@ -108,6 +108,8 @@ export interface NearbyFacility {
   doctorAvailability: string;
   status: "Available" | "Unavailable";
   lastUpdated: string;
+  contactPhone: string;
+  address: string;
 }
 
 export interface HealthWorkerPatient {
@@ -355,6 +357,8 @@ export const priyaPatientMock = {
       doctorAvailability: "3 Gynecologists Available",
       status: "Available",
       lastUpdated: "Today at 9:00 AM",
+      contactPhone: "+91 512 234 5678",
+      address: "Civil Lines Road, Near District Court, Kanpur Dehat, UP 209101",
     },
     {
       id: "FAC-02",
@@ -365,6 +369,8 @@ export const priyaPatientMock = {
       doctorAvailability: "Medical Officer on Duty",
       status: "Available",
       lastUpdated: "Today at 8:30 AM",
+      contactPhone: "+91 512 267 8901",
+      address: "Kalyanpur Main Road, Kanpur Dehat, UP 209111",
     },
     {
       id: "FAC-03",
@@ -375,6 +381,8 @@ export const priyaPatientMock = {
       doctorAvailability: "ANM Sunita Devi Available",
       status: "Available",
       lastUpdated: "Today at 8:00 AM",
+      contactPhone: "+91 943 512 6620",
+      address: "Rampur Village Health Post, Kanpur Dehat, UP 209112",
     },
   ] as NearbyFacility[],
 
