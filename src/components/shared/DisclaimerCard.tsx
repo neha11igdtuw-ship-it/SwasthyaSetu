@@ -15,14 +15,14 @@ export function DisclaimerCard({
 
   const displayText = text || t("aiPreliminaryNotice");
 
-  let styles = "bg-amber-50/80 border-amber-200/90 text-amber-950";
+  let styles = "bg-amber-50/80 dark:bg-amber-900/30 border-amber-200/90 text-amber-950";
   let iconColor = "text-amber-600";
 
   if (variant === "info") {
-    styles = "bg-teal-50/80 border-teal-200/90 text-teal-950";
+    styles = "bg-teal-50/80 dark:bg-teal-900/30 border-teal-200/90 text-teal-950";
     iconColor = "text-teal-600";
   } else if (variant === "rose") {
-    styles = "bg-rose-50/80 border-rose-200/90 text-rose-950";
+    styles = "bg-rose-50/80 dark:bg-rose-900/30 border-rose-200/90 text-rose-950";
     iconColor = "text-rose-600";
   }
 

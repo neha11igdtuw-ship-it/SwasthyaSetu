@@ -52,17 +52,17 @@ export function NextActionCard({
     : t(doctorAvailability);
 
   return (
-    <div className="bg-white rounded-2xl p-6 border border-teal-500/60 shadow-sm space-y-4 ring-1 ring-teal-500/20">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-teal-500/60 shadow-sm space-y-4 ring-1 ring-teal-500/20">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs">
+          <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 border border-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs">
             1
           </div>
           <div>
             <span className="text-[10px] font-extrabold text-teal-800 uppercase tracking-wide block">
               {t("whatYouShouldDoNext")}
             </span>
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+            <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
               {displayAction}
             </h3>
           </div>
@@ -70,13 +70,13 @@ export function NextActionCard({
       </div>
 
       <div className="space-y-3">
-        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 space-y-2">
+        <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200/70 dark:border-slate-700 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
                 {t("recommendedHospital")}
               </span>
-              <p className="text-sm font-bold text-slate-900">
+              <p className="text-sm font-bold text-slate-900 dark:text-white">
                 {displayFacility}
               </p>
             </div>
@@ -85,7 +85,7 @@ export function NextActionCard({
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
             <span className="inline-flex items-center gap-1 font-medium">
               <Building2 className="w-3.5 h-3.5 text-teal-700" />
               {displayFacilityType}
@@ -94,23 +94,23 @@ export function NextActionCard({
         </div>
 
         <div>
-          <span className="text-xs font-bold text-slate-700 block mb-1">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
             {t("doctorAvailability")}
           </span>
-          <p className="text-xs text-slate-600 font-medium">
+          <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
             {displayDoctor}
           </p>
         </div>
 
         <div>
-          <span className="text-xs font-bold text-slate-700 block mb-1">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
             {t("servicesAvailable")}
           </span>
           <div className="flex flex-wrap gap-1.5">
             {availableServices.map((srv, idx) => (
               <span
                 key={idx}
-                className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1"
+                className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-teal-50 dark:bg-teal-900/30 text-teal-800 border border-teal-100 flex items-center gap-1"
               >
                 <CheckCircle className="w-3 h-3 text-teal-600" />
                 {mapService(srv)}
@@ -120,12 +120,12 @@ export function NextActionCard({
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-1">
-          <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
           <span>{t("lastUpdated")}: {lastUpdated}</span>
         </div>
-        <div className="flex items-center gap-1 text-slate-400 font-medium italic">
+        <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 font-medium italic">
           <Info className="w-3 h-3" />
           <span>{t("savedInformation")}</span>
         </div>

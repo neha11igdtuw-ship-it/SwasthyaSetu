@@ -23,18 +23,18 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
   const { t } = useLanguage();
 
-  let badgeStyle = "bg-slate-100 text-slate-700 border-slate-200";
+  let badgeStyle = "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
 
   switch (status) {
     case "High Risk":
     case "Overdue":
-      badgeStyle = "bg-rose-50 text-rose-800 border-rose-200 font-bold";
+      badgeStyle = "bg-rose-50 dark:bg-rose-900/30 text-rose-800 border-rose-200 font-bold";
       break;
     case "Watch / Moderate":
     case "Waiting for action":
     case "Pending Acceptance":
     case "Limited":
-      badgeStyle = "bg-amber-50 text-amber-800 border-amber-200 font-semibold";
+      badgeStyle = "bg-amber-50 dark:bg-amber-900/30 text-amber-800 border-amber-200 font-semibold";
       break;
     case "Normal":
     case "Low Risk":
@@ -42,7 +42,7 @@ export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
     case "Completed":
     case "In Stock":
     case "Available":
-      badgeStyle = "bg-emerald-50 text-emerald-800 border-emerald-200 font-semibold";
+      badgeStyle = "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 border-emerald-200 font-semibold";
       break;
   }
 

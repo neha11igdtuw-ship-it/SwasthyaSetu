@@ -1,6 +1,6 @@
 import React from "react";
 import { NearbyFacility } from "@/lib/mockData";
-import { Building2, MapPin, CheckCircle, Clock } from "lucide-react";
+import { Building2, MapPin, CheckCircle, Clock, Phone } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface FacilityCardProps {
@@ -26,50 +26,67 @@ export function FacilityCard({ facility }: FacilityCardProps) {
     : t(facility.doctorAvailability);
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:border-teal-500/50 transition-all space-y-3">
-      <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-teal-500/50 transition-all space-y-3">
+      <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
         <div>
           <div className="flex items-center gap-1.5 text-xs text-teal-700 font-bold mb-0.5">
             <Building2 className="w-3.5 h-3.5" />
             <span>{t("healthcareFacility")}</span>
           </div>
-          <h4 className="font-extrabold text-slate-900 text-base">
+          <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
             {displayName}
           </h4>
         </div>
         <span
           className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${
             isAvailable
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-rose-50 text-rose-800 border-rose-200"
+              ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 border-emerald-200"
+              : "bg-rose-50 dark:bg-rose-900/30 text-rose-800 border-rose-200"
           }`}
         >
           {isAvailable ? t("available") : t("unavailable")}
         </span>
       </div>
 
-      <div className="space-y-2 text-xs text-slate-600">
+      <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
         <div className="flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5 text-teal-700 shrink-0" />
           <span>{t("distance")}: <strong>{facility.distance}</strong></span>
         </div>
 
+        {facility.address && (
+          <div className="flex items-start gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+            <span className="text-slate-500 dark:text-slate-400">{facility.address}</span>
+          </div>
+        )}
+
+        {facility.contactPhone && (
+          <a
+            href={`tel:${facility.contactPhone.replace(/\s+/g, "")}`}
+            className="flex items-center gap-1.5 font-bold text-teal-700 hover:text-teal-800 w-fit"
+          >
+            <Phone className="w-3.5 h-3.5 shrink-0" />
+            <span>{facility.contactPhone}</span>
+          </a>
+        )}
+
         <div>
-          <span className="font-bold text-slate-800 block mb-1">
+          <span className="font-bold text-slate-800 dark:text-slate-100 block mb-1">
             {t("doctorAvailability")}
           </span>
-          <p className="text-slate-600">{displayDoctor}</p>
+          <p className="text-slate-600 dark:text-slate-300">{displayDoctor}</p>
         </div>
 
         <div>
-          <span className="font-bold text-slate-800 block mb-1">
+          <span className="font-bold text-slate-800 dark:text-slate-100 block mb-1">
             {t("servicesAvailable")}
           </span>
           <div className="flex flex-wrap gap-1">
             {facility.availableServices.map((srv, idx) => (
               <span
                 key={idx}
-                className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 flex items-center gap-1"
+                className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-1"
               >
                 <CheckCircle className="w-3 h-3 text-teal-600" />
                 {srv}
@@ -79,7 +96,7 @@ export function FacilityCard({ facility }: FacilityCardProps) {
         </div>
       </div>
 
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" /> {t("updated")}: {t("todayAt")} 8:00 AM
         </span>

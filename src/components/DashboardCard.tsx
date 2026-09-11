@@ -23,19 +23,19 @@ export function DashboardCard({
 }: DashboardCardProps) {
   return (
     <div
-      className={`bg-white rounded-2xl p-5 border shadow-sm flex flex-col justify-between transition-all ${
+      className={`bg-white dark:bg-slate-800 rounded-2xl p-5 border shadow-sm flex flex-col justify-between transition-all ${
         highlight
           ? "border-teal-500/80 ring-1 ring-teal-500/20"
-          : "border-slate-200/80 hover:border-slate-300"
+          : "border-slate-200/80 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
       } ${className}`}
     >
       <div>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             {title}
           </span>
           {Icon && (
-            <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
+            <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 border border-teal-100 flex items-center justify-center text-teal-700">
               <Icon className="w-4 h-4" aria-hidden="true" />
             </div>
           )}
@@ -43,7 +43,7 @@ export function DashboardCard({
 
         {value !== undefined && (
           <div className="flex items-baseline gap-2 mb-1">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {value}
             </span>
             {badge}
@@ -51,11 +51,11 @@ export function DashboardCard({
         )}
 
         {subtitle && (
-          <p className="text-xs text-slate-600 leading-relaxed">{subtitle}</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{subtitle}</p>
         )}
       </div>
 
-      {children && <div className="mt-4 pt-3 border-t border-slate-100">{children}</div>}
+      {children && <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">{children}</div>}
     </div>
   );
 }
