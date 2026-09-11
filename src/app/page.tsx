@@ -28,7 +28,7 @@ export default function LandingPage() {
       titleKey: "tellUsProblemTitle",
       descKey: "tellUsProblemDesc",
       icon: MessageSquare,
-      color: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
+      color: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 border-emerald-200/80",
       iconBg: "bg-emerald-600 text-white",
       href: "/patient/symptoms",
     },
@@ -36,7 +36,7 @@ export default function LandingPage() {
       titleKey: "findRightCareTitle",
       descKey: "findRightCareDesc",
       icon: Search,
-      color: "bg-teal-50 text-teal-800 border-teal-200/80",
+      color: "bg-teal-50 dark:bg-teal-900/30 text-teal-800 border-teal-200/80",
       iconBg: "bg-teal-600 text-white",
       href: "/patient/facilities",
     },
@@ -44,7 +44,7 @@ export default function LandingPage() {
       titleKey: "continueCareTitle",
       descKey: "continueCareDesc",
       icon: Calendar,
-      color: "bg-sky-50 text-sky-800 border-sky-200/80",
+      color: "bg-sky-50 dark:bg-sky-900/30 text-sky-800 border-sky-200/80",
       iconBg: "bg-sky-600 text-white",
       href: "/patient/follow-ups",
     },
@@ -52,7 +52,7 @@ export default function LandingPage() {
       titleKey: "getSupportTitle",
       descKey: "getSupportDesc",
       icon: AlertCircle,
-      color: "bg-amber-50 text-amber-900 border-amber-200/80",
+      color: "bg-amber-50 dark:bg-amber-900/30 text-amber-900 border-amber-200/80",
       iconBg: "bg-amber-600 text-white",
       href: "/hw/high-risk",
     },
@@ -84,7 +84,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f6fafa]">
+    <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
       <TopBar />
 
       <main className="flex-1 space-y-12 sm:space-y-16 pb-16">
@@ -116,7 +116,7 @@ export default function LandingPage() {
 
                 <a
                   href="#care-journey"
-                  className="px-6 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition-colors text-center border border-white/20 backdrop-blur-md"
+                  className="px-6 py-3.5 rounded-2xl bg-white/10 dark:bg-slate-800 hover:bg-white/20 dark:hover:bg-slate-800 text-white font-bold text-sm transition-colors text-center border border-white/20 backdrop-blur-md"
                 >
                   {t("seeHowItWorks")}
                 </a>
@@ -125,21 +125,21 @@ export default function LandingPage() {
 
             {/* Visual connected care graphic element */}
             <div className="hidden lg:flex absolute right-8 top-1/2 -translate-y-1/2 gap-4 items-center opacity-85 pointer-events-none">
-              <div className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
+              <div className="p-4 rounded-2xl bg-white/10 dark:bg-slate-800 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
                 <User className="w-6 h-6 mx-auto text-teal-300" />
                 <span className="text-xs font-bold block">{t("patient")}</span>
               </div>
 
               <div className="w-8 h-0.5 bg-teal-400/60" />
 
-              <div className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
+              <div className="p-4 rounded-2xl bg-white/10 dark:bg-slate-800 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
                 <HeartPulse className="w-6 h-6 mx-auto text-emerald-300" />
                 <span className="text-xs font-bold block">{t("healthWorker")}</span>
               </div>
 
               <div className="w-8 h-0.5 bg-teal-400/60" />
 
-              <div className="p-4 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
+              <div className="p-4 rounded-2xl bg-white/10 dark:bg-slate-800 border border-white/20 backdrop-blur-md text-white text-center w-32 space-y-1">
                 <Stethoscope className="w-6 h-6 mx-auto text-sky-300" />
                 <span className="text-xs font-bold block">{t("doctor")}</span>
               </div>
@@ -164,16 +164,16 @@ export default function LandingPage() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="font-extrabold text-base text-slate-900 tracking-tight">
+                      <h3 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
                         {t(tile.titleKey)}
                       </h3>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed mt-1">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed mt-1">
                         {t(tile.descKey)}
                       </p>
                     </div>
                   </div>
 
-                  <div className="inline-flex items-center text-xs font-bold text-slate-900 gap-1 pt-2 border-t border-slate-200/50">
+                  <div className="inline-flex items-center text-xs font-bold text-slate-900 dark:text-white gap-1 pt-2 border-t border-slate-200/50 dark:border-slate-700">
                     <span>{t("viewDetails")}</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </div>
@@ -186,10 +186,10 @@ export default function LandingPage() {
         {/* Simple Care Journey */}
         <section id="care-journey" className="px-4 sm:px-8 max-w-7xl mx-auto space-y-6 scroll-mt-20">
           <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {t("yourCareJourneyConnected")}
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-medium">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
               {t("corePurposeStatement")}
             </p>
           </div>
@@ -198,15 +198,15 @@ export default function LandingPage() {
             {journeySteps.map((step, idx) => (
               <div
                 key={idx}
-                className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3 relative"
+                className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-3 relative"
               >
                 <div className="text-2xl font-black text-teal-700/30 font-mono">
                   {step.step}
                 </div>
-                <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
                   {t(step.titleKey)}
                 </h3>
-                <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
                   {step.desc}
                 </p>
               </div>
@@ -216,12 +216,12 @@ export default function LandingPage() {
 
         {/* Rural Support Benefits Section */}
         <section className="px-4 sm:px-8 max-w-7xl mx-auto space-y-6">
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-xs space-y-6">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 border border-slate-200/80 dark:border-slate-700 shadow-xs space-y-6">
             <div className="max-w-xl space-y-1">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 {t("ruralSupportSectionTitle")}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
                 {t("landingHeroDescription")}
               </p>
             </div>
@@ -230,15 +230,15 @@ export default function LandingPage() {
               {ruralBenefits.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                  <div key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-200/60">
+                  <div key={index} className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700">
                     <div className="p-2.5 rounded-xl bg-teal-100 text-teal-800 shrink-0">
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="font-bold text-sm text-slate-900">
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-white">
                         {t(item.titleKey)}
                       </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
                         {item.desc}
                       </p>
                     </div>
@@ -251,7 +251,7 @@ export default function LandingPage() {
 
         {/* Important Safety Notice */}
         <section className="px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="p-5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 flex items-start gap-3.5 shadow-xs">
+          <div className="p-5 rounded-2xl bg-amber-50/90 dark:bg-amber-900/30 border border-amber-200/80 text-amber-900 flex items-start gap-3.5 shadow-xs">
             <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
             <div className="space-y-1 text-xs sm:text-sm">
               <span className="font-extrabold block">
@@ -266,13 +266,13 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto bg-slate-900 text-slate-400 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
+      <footer className="mt-auto bg-slate-900 text-slate-400 dark:text-slate-500 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
             <span className="font-extrabold text-white text-base block">
               {t("appName")}
             </span>
-            <p className="text-slate-400 text-xs">
+            <p className="text-slate-400 dark:text-slate-500 text-xs">
               {t("tagline")}
             </p>
           </div>

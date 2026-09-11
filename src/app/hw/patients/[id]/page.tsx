@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
-import { hwPatientsList } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { useAppState } from "@/lib/store/AppStateProvider";
+import { derivePatientGaps } from "@/lib/careGaps";
+import { patientsApi, ApiError } from "@/lib/api/client";
+import type { PatientOut } from "@/lib/api/types";
 import {
   User,
   PhoneCall,
@@ -27,13 +30,54 @@ export default function HWPatientDetailPage() {
   const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
+  const { patients, referrals, hwFollowUps, patientMedicines } = useAppState();
+
   const patientId = (params?.id as string) || "P-7821";
 
-  // Find matching patient or fallback to Priya Sharma
-  const patient =
-    hwPatientsList.find((p) => p.id === patientId) || hwPatientsList[0];
+  // Find matching patient from local mock context, or fall back to the first entry.
+  const localPatient = patients.find((p) => p.id === patientId) || patients[0];
+
+  const [remotePatient, setRemotePatient] = useState<PatientOut | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await patientsApi.get(patientId);
+        if (!cancelled) setRemotePatient(data);
+      } catch (err) {
+        if (!cancelled) {
+          setRemotePatient(null);
+          setLoadError(
+            err instanceof ApiError
+              ? `Server record unavailable (${err.message}); showing locally cached details.`
+              : null
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [patientId]);
+
+  // Overlay real backend fields (name/phone/village) onto the richer mock shape
+  // used by the rest of this page (vitals, care pathway, etc. are not yet in the API).
+  const patient = remotePatient
+    ? {
+        ...localPatient,
+        id: remotePatient.id,
+        name: remotePatient.full_name,
+        phone: remotePatient.phone || localPatient.phone,
+        village: remotePatient.village || localPatient.village,
+      }
+    : localPatient;
 
   const [contacted, setContacted] = useState(false);
+
+  // Derived gaps
+  const derivedGaps = derivePatientGaps(patient, referrals, hwFollowUps, patientMedicines);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -44,7 +88,7 @@ export default function HWPatientDetailPage() {
         action={
           <Link
             href="/hw/patients"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>{t("backToPeopleList")}</span>
@@ -52,13 +96,19 @@ export default function HWPatientDetailPage() {
         }
       />
 
+      {loadError && (
+        <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 text-amber-900 text-xs font-semibold">
+          {loadError}
+        </div>
+      )}
+
       {contacted && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold flex items-center justify-between">
           <span>{t("visitRecordedSuccess")} ({patient.name})</span>
           <button
             type="button"
             onClick={() => setContacted(false)}
-            className="text-[10px] underline font-bold"
+            className="text-[10px] underline font-bold cursor-pointer"
           >
             Dismiss
           </button>
@@ -66,20 +116,20 @@ export default function HWPatientDetailPage() {
       )}
 
       {/* Main Profile Header Card */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center font-bold text-lg">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/30 border border-teal-100 text-teal-700 flex items-center justify-center font-bold text-lg">
               <User className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-extrabold text-slate-900 text-xl">
+                <h2 className="font-extrabold text-slate-900 dark:text-white text-xl">
                   {patient.name}
                 </h2>
                 <StatusBadge status={patient.riskLevel} />
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {patient.age} {t("ageYears")} • {t("carePathwayLabelFull")}: <strong>{patient.carePathway === "Maternal Care" ? t("maternalCare") : patient.carePathway}</strong>
               </p>
             </div>
@@ -90,7 +140,7 @@ export default function HWPatientDetailPage() {
             <button
               type="button"
               onClick={() => router.push(`/hw/screening/${patient.id}`)}
-              className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-xs"
+              className="px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Stethoscope className="w-4 h-4" />
               <span>{t("startHealthCheck")}</span>
@@ -108,31 +158,31 @@ export default function HWPatientDetailPage() {
 
         {/* Info Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block mb-0.5">{t("phoneLabelFull")}</span>
-            <span className="font-bold text-slate-900 flex items-center gap-1">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-0.5">{t("phoneLabelFull")}</span>
+            <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
               <PhoneCall className="w-3 h-3 text-teal-700" />
               {patient.phone}
             </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block mb-0.5">{t("villageLabelFull")}</span>
-            <span className="font-bold text-slate-900 flex items-center gap-1">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-0.5">{t("villageLabelFull")}</span>
+            <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
               <MapPin className="w-3 h-3 text-teal-700" />
               {patient.village}
             </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block mb-0.5">{t("preferredLanguageLabelFull")}</span>
-            <span className="font-bold text-slate-900">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-0.5">{t("preferredLanguageLabelFull")}</span>
+            <span className="font-bold text-slate-900 dark:text-white">
               {patient.preferredLanguage}
             </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 block mb-0.5">{t("nextVisitLabel")}</span>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 block mb-0.5">{t("nextVisitLabel")}</span>
             <span className="font-bold text-teal-800 flex items-center gap-1">
               <Calendar className="w-3 h-3 text-teal-700" />
               {patient.nextFollowUp}
@@ -143,20 +193,20 @@ export default function HWPatientDetailPage() {
 
       {/* Grid: Care Gaps & Recent Vitals */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Identified Care Gaps */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+        {/* Identified Care Gaps (Derived Live) */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3">
+          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
             <AlertTriangle className="w-5 h-5 text-amber-600" />
-            <h3 className="font-extrabold text-slate-900 text-base">
-              {t("careGapsTitle")}
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
+              {t("careGapsTitle")} (Derived Live)
             </h3>
           </div>
 
           <div className="space-y-2 text-xs">
-            {patient.careGaps.map((cg, idx) => (
+            {derivedGaps.map((cg, idx) => (
               <div
                 key={idx}
-                className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-950 font-medium flex items-center gap-2"
+                className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-900/30 border border-amber-200 text-amber-950 font-medium flex items-center gap-2"
               >
                 <Clock className="w-4 h-4 text-amber-700 shrink-0" />
                 <span>{cg}</span>
@@ -168,7 +218,7 @@ export default function HWPatientDetailPage() {
             <button
               type="button"
               onClick={() => setContacted(true)}
-              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-100 text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4 text-teal-700" />
               <span>{t("recordVisitCompleted")}</span>
@@ -177,37 +227,38 @@ export default function HWPatientDetailPage() {
         </div>
 
         {/* Vitals & Recent Symptoms */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
             <div className="flex items-center gap-2">
               <Activity className="w-5 h-5 text-teal-700" />
-              <h3 className="font-extrabold text-slate-900 text-base">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
                 {t("latestHealthVitals")}
               </h3>
             </div>
-            <span className="text-[10px] text-teal-800 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
+            <span className="text-[10px] text-teal-800 font-bold bg-teal-50 dark:bg-teal-900/30 px-2 py-0.5 rounded border border-teal-100">
               {t("savedOnThisDevice")}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-500 block">{t("bloodPressure")}</span>
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400 block">{t("bloodPressure")}</span>
               <span className="text-sm font-extrabold text-rose-700">
-                {patient.vitals.bp} mmHg
+                {patient.vitals?.bp || "120/80"} mmHg
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-slate-500 block">{t("hemoglobinLevel")}</span>
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400 block">{t("hemoglobinLevel")}</span>
               <span className="text-sm font-extrabold text-rose-700">
-                {patient.vitals.hemoglobin} g/dL
+                {patient.vitals?.hemoglobin || "11.0"} g/dL
               </span>
             </div>
           </div>
 
-          {patient.pregnancyWeek && (
-            <div className="p-3 rounded-xl bg-teal-50/70 border border-teal-100 text-xs space-y-1">
+          {/* Maternal Details section shown ONLY for Maternal Care pathway */}
+          {patient.carePathway === "Maternal Care" && patient.pregnancyWeek && (
+            <div className="p-3 rounded-xl bg-teal-50/70 dark:bg-teal-900/30 border border-teal-100 text-xs space-y-1">
               <span className="font-bold text-teal-900 block">{t("sectionMaternalDetails")}:</span>
               <p className="text-teal-800">
                 {t("pregnancyWeekLabel")}: <strong>Week {patient.pregnancyWeek}</strong> (EDD: {patient.edd})
@@ -215,37 +266,37 @@ export default function HWPatientDetailPage() {
             </div>
           )}
 
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/70 text-xs space-y-1">
-            <span className="font-bold text-slate-800 block">{t("reportedSymptoms")}</span>
-            <p className="text-slate-600 font-medium">
-              {patient.latestSymptoms.join(", ")}
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-xs space-y-1">
+            <span className="font-bold text-slate-800 dark:text-slate-100 block">{t("reportedSymptoms")}</span>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">
+              {patient.latestSymptoms?.join(", ") || "None"}
             </p>
           </div>
         </div>
       </div>
 
       {/* Documents & Screening Action Row */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-teal-700" />
-            <h3 className="font-extrabold text-slate-900 text-base">
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
               {t("savedDocumentsAndRecords")}
             </h3>
           </div>
-          <span className="text-xs text-slate-500">
-            {patient.uploadedDocuments.length} Documents Saved
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {patient.uploadedDocuments?.length || 0} Documents Saved
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          {patient.uploadedDocuments.map((doc, idx) => (
+          {patient.uploadedDocuments?.map((doc, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between"
+              className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between"
             >
-              <span className="font-bold text-slate-800">{doc}</span>
-              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span className="font-bold text-slate-800 dark:text-slate-100">{doc}</span>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded border border-emerald-200">
                 {t("available")}
               </span>
             </div>
@@ -256,7 +307,7 @@ export default function HWPatientDetailPage() {
           <button
             type="button"
             onClick={() => router.push(`/hw/screening/${patient.id}`)}
-            className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-2 shadow-xs"
+            className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors inline-flex items-center gap-2 shadow-xs cursor-pointer"
           >
             <Stethoscope className="w-4 h-4" />
             <span>{t("performHealthCheckBtn")}</span>
