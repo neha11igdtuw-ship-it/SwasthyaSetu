@@ -14,10 +14,10 @@ export function RoleBadge({ role, className = "" }: RoleBadgeProps) {
   const { t } = useLanguage();
 
   const roleStyles: Record<RoleType, string> = {
-    Patient: "bg-emerald-50 text-emerald-800 border-emerald-200",
-    "Health Worker": "bg-teal-50 text-teal-800 border-teal-200",
-    Doctor: "bg-sky-50 text-sky-800 border-sky-200",
-    "Healthcare Facility": "bg-indigo-50 text-indigo-800 border-indigo-200",
+    Patient: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 border-emerald-200",
+    "Health Worker": "bg-teal-50 dark:bg-teal-900/30 text-teal-800 border-teal-200",
+    Doctor: "bg-sky-50 dark:bg-sky-900/30 text-sky-800 border-sky-200",
+    "Healthcare Facility": "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-800 border-indigo-200",
   };
 
   const roleLabels: Record<RoleType, string> = {

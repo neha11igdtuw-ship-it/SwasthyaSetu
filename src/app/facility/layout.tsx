@@ -13,10 +13,10 @@ import {
 
 const facilityNavItems: NavItem[] = [
   { labelKey: "overview", defaultLabel: "Facility Overview", href: "/facility/dashboard", icon: LayoutDashboard },
-  { labelKey: "referrals", defaultLabel: "New Care Requests", href: "/facility/dashboard", icon: Inbox },
-  { labelKey: "records", defaultLabel: "People Expected Today", href: "/hw/patients", icon: Users },
-  { labelKey: "diagnostics", defaultLabel: "Services Available", href: "/facility/dashboard", icon: Activity },
-  { labelKey: "medicines", defaultLabel: "Medicine Stock", href: "/facility/dashboard", icon: PackageCheck },
+  { labelKey: "referrals", defaultLabel: "New Care Requests", href: "/facility/care-requests", icon: Inbox },
+  { labelKey: "records", defaultLabel: "People Expected Today", href: "/facility/patients", icon: Users },
+  { labelKey: "diagnostics", defaultLabel: "Lab Results", href: "/facility/lab-results", icon: Activity },
+  { labelKey: "medicines", defaultLabel: "Medicine Stock", href: "/facility/medicines", icon: PackageCheck },
 ];
 
 export default function FacilityLayout({

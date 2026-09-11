@@ -20,7 +20,7 @@ export default function PatientEmergencyHelpPage() {
         roleBadge={<RoleBadge role="Patient" />}
       />
 
-      <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-bold flex items-start gap-3">
+      <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-900 text-xs font-bold flex items-start gap-3">
         <ShieldAlert className="w-5 h-5 text-rose-700 shrink-0 mt-0.5" />
         <div>
           <span className="block text-sm font-extrabold mb-0.5">
@@ -36,15 +36,15 @@ export default function PatientEmergencyHelpPage() {
       <EmergencyHelpCard ashaPhone={p.profile.assignedASHAPhone} />
 
       {/* Emergency Symptoms Checklist */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
           <AlertTriangle className="w-5 h-5 text-rose-600" />
-          <h3 className="font-extrabold text-slate-900 text-base">
+          <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
             {t("maternalDangerSignsGetHelp")}
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-800 dark:text-slate-100">
           {[
             t("severeContinuousHeadache"),
             t("blurredVisionOrSpots"),
@@ -55,7 +55,7 @@ export default function PatientEmergencyHelpPage() {
           ].map((symptom, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-xl bg-rose-50/60 border border-rose-100 flex items-start gap-2"
+              className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-900/30 border border-rose-100 flex items-start gap-2"
             >
               <CheckCircle2 className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <span className="font-bold">{symptom}</span>
@@ -66,14 +66,14 @@ export default function PatientEmergencyHelpPage() {
 
       {/* Direct Quick Dial Action Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
             {t("callASHA")}
           </span>
-          <h4 className="font-extrabold text-slate-900 text-base">
+          <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
             {t("sunitaDeviWorker")}
           </h4>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             {t("rampurLocation")}
           </p>
           <a
@@ -85,14 +85,14 @@ export default function PatientEmergencyHelpPage() {
           </a>
         </div>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-2">
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200 dark:border-slate-700 shadow-sm space-y-2">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
             {t("nearestHospital")}
           </span>
-          <h4 className="font-extrabold text-slate-900 text-base">
+          <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
             {t("districtHospitalName")}
           </h4>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-600 dark:text-slate-300">
             24/7 Maternal Emergency Unit (8.5 km away)
           </p>
           <a

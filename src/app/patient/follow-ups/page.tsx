@@ -30,7 +30,7 @@ export default function PatientFollowUpsPage() {
       />
 
       {needHelp && (
-        <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 text-xs font-semibold flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-900/30 border border-teal-200 text-teal-900 text-xs font-semibold flex items-center justify-between">
           <span>{t("referralUpdateSent")}</span>
           <button
             type="button"
@@ -44,8 +44,8 @@ export default function PatientFollowUpsPage() {
 
       {/* Follow-ups List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-          <h3 className="font-extrabold text-slate-900 text-lg">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+          <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">
             {t("upcomingScheduledVisits")}
           </h3>
           <button
