@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
 import { derivePatientGaps } from "@/lib/careGaps";
 import { patientsApi, referralsApi, careGapsApi } from "@/lib/api/client";
+import { OfflinePill } from "@/components/shared/OfflinePill";
 import {
   Users,
   AlertTriangle,
@@ -21,7 +22,6 @@ import {
   ShieldAlert,
   UserPlus,
   AlertOctagon,
-  WifiOff,
   CheckCircle2,
 } from "lucide-react";
 
@@ -407,9 +407,7 @@ export default function HealthWorkerDashboardPage() {
       {/* 7. Update Information / Device Records Banner */}
       <div className="p-5 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-teal-400 flex items-center justify-center shrink-0">
-            <WifiOff className="w-5 h-5" />
-          </div>
+          <OfflinePill />
           <div>
             <h3 className="font-bold text-sm text-white flex items-center gap-2">
               <span>{t("deviceSavedRecordsTitle")}</span>
