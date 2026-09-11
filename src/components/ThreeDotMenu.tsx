@@ -15,7 +15,7 @@ import {
   Check,
 } from "lucide-react";
 
-export function ThreeDotMenu() {
+export function ThreeDotMenu({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
   const { t } = useLanguage();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -92,8 +92,8 @@ export function ThreeDotMenu() {
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl p-2.5 space-y-3 text-xs z-50">
-          {/* Section: Account */}
-          <div className="space-y-1">
+          {!isAuthenticated && (
+            <div className="space-y-1">
             <div className="px-3 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               {t("accountSection")}
             </div>
@@ -142,8 +142,9 @@ export function ThreeDotMenu() {
               </div>
             </Link>
           </div>
+          )}
 
-          <div className="border-t border-slate-100 dark:border-slate-700" />
+          {!isAuthenticated && <div className="border-t border-slate-100 dark:border-slate-700" />}
 
           {/* Section: Choose your space */}
           <div className="space-y-1">
