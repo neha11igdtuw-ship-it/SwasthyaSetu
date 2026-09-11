@@ -623,3 +623,40 @@ INSERT INTO facility_services (
     'Available',
     'ANM Sunita Devi'
 );
+
+
+-- ============================================================
+-- 17. FACILITY INVENTORY
+-- ============================================================
+
+INSERT INTO facility_inventory (
+    facility_id,
+    item_name,
+    quantity,
+    availability
+)
+VALUES
+(
+    '00000000-0000-0000-0000-000000000001',
+    'Blood Bank Units',
+    24,
+    'In Stock'
+),
+(
+    '00000000-0000-0000-0000-000000000001',
+    'Maternal ICU Beds',
+    4,
+    'Available'
+),
+(
+    '00000000-0000-0000-0000-000000000001',
+    'Oxytocin',
+    NULL,
+    'Adequate'
+),
+(
+    '00000000-0000-0000-0000-000000000001',
+    'Essential Medicines',
+    NULL,
+    'In Stock'
+);
