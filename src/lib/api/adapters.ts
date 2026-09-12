@@ -1,8 +1,3 @@
-// Adapters that map real backend API shapes (PatientOut, ReferralOut) onto the
-// richer mock-data shapes (HealthWorkerPatient, HWReferral) the existing UI expects.
-// The backend does not yet track risk level, vitals, care pathway, etc. — those
-// fields are filled with safe defaults until the backend schema grows them.
-
 import type { HealthWorkerPatient, HWReferral } from "@/lib/mockData";
 import type { PatientOut, ReferralOut } from "./types";
 
@@ -15,20 +10,23 @@ function calcAge(dob: string | null): number {
 }
 
 export function patientOutToHealthWorkerPatient(p: PatientOut): HealthWorkerPatient {
+  const maternal = (p.care_pathway || "").toLowerCase().includes("maternal") || (p.pregnancy_week ?? 0) >= 20;
   return {
     id: p.id,
     name: p.full_name,
     age: calcAge(p.date_of_birth),
     village: p.village || "-",
     phone: p.phone || "-",
-    carePathway: "General Primary Care",
-    riskLevel: "Low Risk",
+    carePathway: (p.care_pathway ||
+      (maternal ? "Maternal Care" : "General Primary Care")) as HealthWorkerPatient["carePathway"],
+    pregnancyWeek: p.pregnancy_week ?? undefined,
+    riskLevel: maternal && (p.pregnancy_week ?? 0) >= 20 ? "High Risk" : "Low Risk",
     lastVisit: "-",
     nextFollowUp: "-",
     referralStatus: "None",
     careGaps: [],
     requiredAction: "",
-    preferredLanguage: "Hindi",
+    preferredLanguage: p.preferred_language || "Hindi",
     vitals: { bp: "-", hemoglobin: "-" },
     latestSymptoms: [],
     uploadedDocuments: [],
@@ -60,6 +58,6 @@ export function referralOutToHWReferral(
     expectedVisitDate: "-",
     status: REFERRAL_STATUS_MAP[r.status] || "Pending Acceptance",
     createdDate: "-",
-    currentStep: r.status === "COMPLETED" ? "Closed" : r.status === "ACCEPTED" ? "Accepted" : "Created",
+    currentStep: r.status === "COMPLETED" ? "Closed" : r.status === "ACCEPTED" || r.status === "IN_TRANSIT" ? "Accepted" : "Created",
   };
 }

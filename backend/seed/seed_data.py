@@ -1,7 +1,7 @@
 """Seed script for local/dev Postgres.
 
 Run with:  python -m seed.seed_data
-Idempotent: re-running skips rows that already exist (matched by email / name).
+Idempotent: re-running updates demo identities and skips rows that already exist.
 """
 
 import asyncio
@@ -31,14 +31,24 @@ from app.models.referral import Referral
 from app.models.staff import DoctorAvailability, HealthWorkerProfile
 from app.models.user import User
 
+PHC_NAMES = ("Sub-Centre Rampur", "Rampur PHC")
+HOSPITAL_NAMES = (
+    "District Civil Hospital & Maternal Care Centre",
+    "District Hospital Lucknow",
+)
+
+
+async def _get_facility(db, names: tuple[str, ...]) -> Facility | None:
+    result = await db.execute(select(Facility).where(Facility.name.in_(names)))
+    return result.scalar_one_or_none()
+
 
 async def seed() -> None:
     async with AsyncSessionLocal() as db:
-        result = await db.execute(select(Facility).where(Facility.name == "Rampur PHC"))
-        phc = result.scalar_one_or_none()
+        phc = await _get_facility(db, PHC_NAMES)
         if phc is None:
             phc = Facility(
-                name="Rampur PHC",
+                name="Sub-Centre Rampur",
                 facility_type="PHC",
                 village="Rampur",
                 district="Barabanki",
@@ -49,23 +59,26 @@ async def seed() -> None:
             )
             db.add(phc)
             await db.flush()
+        else:
+            phc.name = "Sub-Centre Rampur"
+            phc.village = "Rampur"
 
-        result = await db.execute(
-            select(Facility).where(Facility.name == "District Hospital Lucknow")
-        )
-        hospital = result.scalar_one_or_none()
+        hospital = await _get_facility(db, HOSPITAL_NAMES)
         if hospital is None:
             hospital = Facility(
-                name="District Hospital Lucknow",
+                name="District Civil Hospital & Maternal Care Centre",
                 facility_type="HOSPITAL",
                 district="Lucknow",
                 state="Uttar Pradesh",
                 latitude=26.85,
                 longitude=80.95,
-                capabilities="cardiology,pulmonology,general surgery,orthopedics",
+                capabilities="obstetrics,maternal ICU,cardiology,general surgery",
             )
             db.add(hospital)
             await db.flush()
+        else:
+            hospital.name = "District Civil Hospital & Maternal Care Centre"
+            hospital.capabilities = "obstetrics,maternal ICU,cardiology,general surgery"
 
         result = await db.execute(select(User).where(User.email == "worker@swasthyasetu.dev"))
         worker = result.scalar_one_or_none()
@@ -73,12 +86,15 @@ async def seed() -> None:
             worker = User(
                 email="worker@swasthyasetu.dev",
                 hashed_password=hash_password("ChangeMe123!"),
-                full_name="Asha Health Worker",
+                full_name="ANM Sunita Devi",
                 role=Role.HEALTH_WORKER,
                 facility_id=phc.id,
             )
             db.add(worker)
             await db.flush()
+        else:
+            worker.full_name = "ANM Sunita Devi"
+            worker.facility_id = phc.id
 
         result = await db.execute(select(User).where(User.email == "doctor@swasthyasetu.dev"))
         doctor = result.scalar_one_or_none()
@@ -86,12 +102,15 @@ async def seed() -> None:
             doctor = User(
                 email="doctor@swasthyasetu.dev",
                 hashed_password=hash_password("ChangeMe123!"),
-                full_name="Dr. Priya Sharma",
+                full_name="Dr. Meera Singh",
                 role=Role.DOCTOR,
                 facility_id=hospital.id,
             )
             db.add(doctor)
             await db.flush()
+        else:
+            doctor.full_name = "Dr. Meera Singh"
+            doctor.facility_id = hospital.id
 
         result = await db.execute(select(User).where(User.email == "admin@swasthyasetu.dev"))
         admin = result.scalar_one_or_none()
@@ -99,64 +118,68 @@ async def seed() -> None:
             admin = User(
                 email="admin@swasthyasetu.dev",
                 hashed_password=hash_password("ChangeMe123!"),
-                full_name="Platform Admin",
+                full_name="District Civil Hospital Admin",
                 role=Role.ADMIN,
+                facility_id=hospital.id,
             )
             db.add(admin)
             await db.flush()
+        else:
+            admin.full_name = "District Civil Hospital Admin"
+            admin.facility_id = hospital.id
 
-        result = await db.execute(
-            select(User).where(User.email == "patient@swasthyasetu.dev")
-        )
+        result = await db.execute(select(User).where(User.email == "patient@swasthyasetu.dev"))
         patient_user = result.scalar_one_or_none()
         if patient_user is None:
             patient_user = User(
                 email="patient@swasthyasetu.dev",
                 hashed_password=hash_password("Patient@123"),
-                full_name="Ram Kumar",
+                full_name="Priya Sharma",
                 role=Role.PATIENT,
                 facility_id=phc.id,
             )
             db.add(patient_user)
             await db.flush()
+        else:
+            patient_user.full_name = "Priya Sharma"
+            patient_user.facility_id = phc.id
 
-        result = await db.execute(select(Patient).where(Patient.full_name == "Ram Kumar"))
+        result = await db.execute(select(Patient).where(Patient.user_id == patient_user.id))
         patient = result.scalar_one_or_none()
         if patient is None:
+            result = await db.execute(
+                select(Patient).where(Patient.full_name.in_(("Priya Sharma", "Ram Kumar")))
+            )
+            patient = result.scalar_one_or_none()
+
+        dob = datetime.utcnow().date().replace(year=datetime.utcnow().year - 26)
+        if patient is None:
             patient = Patient(
-                full_name="Ram Kumar",
-                gender="M",
-                village="Rampur",
+                full_name="Priya Sharma",
+                gender="F",
+                village="Rampur Village",
                 phone="9876500000",
+                date_of_birth=dob,
+                care_pathway="Maternal Care",
+                pregnancy_week=28,
+                preferred_language="Hindi",
                 facility_id=phc.id,
                 registered_by_id=worker.id,
                 user_id=patient_user.id,
             )
             db.add(patient)
             await db.flush()
-        elif patient.user_id is None:
+        else:
+            patient.full_name = "Priya Sharma"
+            patient.gender = "F"
+            patient.village = "Rampur Village"
+            patient.date_of_birth = patient.date_of_birth or dob
+            patient.care_pathway = "Maternal Care"
+            patient.pregnancy_week = 28
+            patient.preferred_language = patient.preferred_language or "Hindi"
+            patient.facility_id = phc.id
             patient.user_id = patient_user.id
             await db.flush()
-
-            db.add(
-                Referral(
-                    patient_id=patient.id,
-                    from_facility_id=phc.id,
-                    to_facility_id=hospital.id,
-                    reason="Suspected cardiac condition",
-                    specialty_needed="cardiology",
-                    status=ReferralStatus.PENDING,
-                    created_by_id=worker.id,
-                )
-            )
-            db.add(
-                CareGap(
-                    patient_id=patient.id,
-                    gap_type="overdue_bp_check",
-                    description="Blood pressure recheck overdue by 3 months",
-                    status=CareGapStatus.OPEN,
-                )
-            )
 
         result = await db.execute(
             select(InventoryItem).where(
@@ -193,21 +216,58 @@ async def seed() -> None:
             db.add(ifa)
             await db.flush()
 
-        # --- Health worker profile for the seeded worker -----------------------
+        result = await db.execute(
+            select(InventoryItem).where(
+                InventoryItem.facility_id == hospital.id, InventoryItem.name == "Iron Folic Acid"
+            )
+        )
+        hospital_ifa = result.scalar_one_or_none()
+        if hospital_ifa is None:
+            hospital_ifa = InventoryItem(
+                facility_id=hospital.id,
+                name="Iron Folic Acid",
+                sku="MED-IFA-HOSP",
+                unit="tablet",
+                quantity=120,
+                reorder_level=40,
+            )
+            db.add(hospital_ifa)
+            await db.flush()
+
+        result = await db.execute(
+            select(InventoryItem).where(
+                InventoryItem.facility_id == hospital.id, InventoryItem.name == "Methyldopa 250mg"
+            )
+        )
+        if result.scalar_one_or_none() is None:
+            db.add(
+                InventoryItem(
+                    facility_id=hospital.id,
+                    name="Methyldopa 250mg",
+                    sku="MED-METH-250",
+                    unit="tablet",
+                    quantity=80,
+                    reorder_level=20,
+                )
+            )
+
         result = await db.execute(
             select(HealthWorkerProfile).where(HealthWorkerProfile.user_id == worker.id)
         )
-        if result.scalar_one_or_none() is None:
+        profile = result.scalar_one_or_none()
+        if profile is None:
             db.add(
                 HealthWorkerProfile(
                     user_id=worker.id,
                     facility_id=phc.id,
-                    cadre=HealthWorkerCadre.ASHA,
-                    area="Rampur village cluster",
+                    cadre=HealthWorkerCadre.ANM,
+                    area="Rampur Village",
                 )
             )
+        else:
+            profile.cadre = HealthWorkerCadre.ANM
+            profile.area = "Rampur Village"
 
-        # --- One doctor availability slot for the seeded doctor -----------------
         result = await db.execute(
             select(DoctorAvailability).where(DoctorAvailability.doctor_id == doctor.id)
         )
@@ -225,19 +285,17 @@ async def seed() -> None:
             db.add(availability)
             await db.flush()
 
-        # --- High-risk pregnancy + encounter + symptoms/vitals/screening/referral,
-        # appointment, diagnostic order+report, and a prescription -----------------
         result = await db.execute(select(Pregnancy).where(Pregnancy.patient_id == patient.id))
         if result.scalar_one_or_none() is None:
             pregnancy = Pregnancy(
                 patient_id=patient.id,
-                expected_delivery_date=(datetime.utcnow() + timedelta(days=120)).date(),
+                expected_delivery_date=(datetime.utcnow() + timedelta(days=84)).date(),
                 gravida=2,
                 para=1,
                 risk_level=RiskLevel.HIGH,
                 risk_flags="hypertension,anemia",
                 status=PregnancyStatus.ACTIVE,
-                notes="High-risk pregnancy, needs specialist follow-up.",
+                notes="High-risk pregnancy week 28; needs specialist follow-up.",
             )
             db.add(pregnancy)
             await db.flush()
@@ -247,7 +305,7 @@ async def seed() -> None:
                 facility_id=phc.id,
                 author_id=worker.id,
                 encounter_type="ANTENATAL",
-                notes="Routine antenatal visit; flagged elevated BP.",
+                notes="ANC visit; flagged elevated BP and headache.",
             )
             db.add(encounter)
             await db.flush()
@@ -256,7 +314,7 @@ async def seed() -> None:
                 Symptom(
                     encounter_id=encounter.id,
                     description="Persistent headache and swelling in feet",
-                    severity="MODERATE",
+                    severity="MEDIUM",
                 )
             )
             db.add(
@@ -284,14 +342,24 @@ async def seed() -> None:
                 patient_id=patient.id,
                 from_facility_id=phc.id,
                 to_facility_id=hospital.id,
-                reason="Suspected pre-eclampsia in high-risk pregnancy",
+                reason="Suspected pre-eclampsia in high-risk pregnancy, week 28",
                 specialty_needed="obstetrics",
+                urgency="URGENT",
                 status=ReferralStatus.PENDING,
                 created_by_id=worker.id,
                 screening_id=screening.id,
             )
             db.add(referral)
             await db.flush()
+
+            db.add(
+                CareGap(
+                    patient_id=patient.id,
+                    gap_type="overdue_bp_check",
+                    description="Blood pressure recheck due this week",
+                    status=CareGapStatus.OPEN,
+                )
+            )
 
             db.add(
                 Appointment(
@@ -301,13 +369,13 @@ async def seed() -> None:
                     availability_id=availability.id,
                     scheduled_at=availability.start_time,
                     status=AppointmentStatus.SCHEDULED,
-                    reason="Obstetrics consult for pre-eclampsia risk",
+                    reason="Obstetrics consult with Dr. Meera Singh",
                 )
             )
 
             order = DiagnosticOrder(
                 patient_id=patient.id,
-                facility_id=phc.id,
+                facility_id=hospital.id,
                 encounter_id=encounter.id,
                 screening_id=screening.id,
                 referral_id=referral.id,
@@ -330,18 +398,50 @@ async def seed() -> None:
             db.add(
                 Prescription(
                     patient_id=patient.id,
-                    facility_id=phc.id,
+                    facility_id=hospital.id,
                     encounter_id=encounter.id,
-                    inventory_item_id=ifa.id,
-                    prescribed_by_id=worker.id,
+                    inventory_item_id=hospital_ifa.id,
+                    prescribed_by_id=doctor.id,
                     quantity=30,
                     dosage_instructions="1 tablet daily with food",
                 )
             )
-            ifa.quantity -= 30
+            hospital_ifa.quantity -= 30
+        else:
+            result = await db.execute(select(Pregnancy).where(Pregnancy.patient_id == patient.id))
+            pregnancy = result.scalar_one_or_none()
+            if pregnancy is not None:
+                pregnancy.risk_level = RiskLevel.HIGH
+                pregnancy.notes = "High-risk pregnancy week 28; needs specialist follow-up."
+
+        # Keep one demo care request for Priya (pre-eclampsia → district hospital).
+        result = await db.execute(
+            select(Referral).where(Referral.patient_id == patient.id, Referral.is_deleted.is_(False))
+        )
+        existing_refs = list(result.scalars().all())
+        preferred = next(
+            (r for r in existing_refs if "pre-eclampsia" in (r.reason or "").lower()),
+            existing_refs[0] if existing_refs else None,
+        )
+        if preferred is not None:
+            preferred.reason = "Suspected pre-eclampsia in high-risk pregnancy, week 28"
+            preferred.specialty_needed = "obstetrics"
+            preferred.urgency = "URGENT"
+            preferred.to_facility_id = hospital.id
+            preferred.from_facility_id = phc.id
+            if preferred.status in (
+                ReferralStatus.CREATED,
+                ReferralStatus.PENDING,
+                ReferralStatus.REJECTED,
+            ):
+                preferred.status = ReferralStatus.PENDING
+            for extra in existing_refs:
+                if extra.id != preferred.id:
+                    extra.is_deleted = True
+                    extra.status = ReferralStatus.CANCELLED
 
         await db.commit()
-        print("Seed complete.")
+        print("Seed complete. Demo users: Priya Sharma, ANM Sunita Devi, Dr. Meera Singh.")
 
 
 if __name__ == "__main__":

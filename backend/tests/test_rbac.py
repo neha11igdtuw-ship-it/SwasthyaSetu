@@ -7,6 +7,7 @@ facility (one of which has a linked login account with role=PATIENT).
 
 import pytest
 import pytest_asyncio
+from sqlalchemy import select
 
 from app.models.enums import Role
 from app.models.facility import Facility
@@ -77,11 +78,10 @@ async def tenants(client, db_session):
     )
 
     # Patient registered at facility A, with a linked PATIENT-role login.
-    patient_a = Patient(full_name="Patient A", facility_id=fac_a.id)
+    # AuthService.register(role=PATIENT) now creates the care record itself.
     patient_b = Patient(full_name="Patient B", facility_id=fac_b.id)
-    db_session.add_all([patient_a, patient_b])
+    db_session.add(patient_b)
     await db_session.commit()
-    await db_session.refresh(patient_a)
     await db_session.refresh(patient_b)
 
     patient_a_user = await AuthService(db_session).register(
@@ -90,11 +90,12 @@ async def tenants(client, db_session):
             password="StrongPass123",
             full_name="Patient A",
             role=Role.PATIENT,
+            facility_id=fac_a.id,
         )
     )
-    patient_a.user_id = patient_a_user.id
-    db_session.add(patient_a)
-    await db_session.commit()
+    patient_a = (
+        await db_session.execute(select(Patient).where(Patient.user_id == patient_a_user.id))
+    ).scalar_one()
     resp = await client.post(
         "/api/v1/auth/login",
         json={"email": "patient.a@rbac.example.com", "password": "StrongPass123"},

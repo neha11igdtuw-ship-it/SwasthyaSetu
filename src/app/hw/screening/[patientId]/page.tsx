@@ -81,8 +81,8 @@ export default function HWScreeningPage() {
 
   const [validated, setValidated] = useState(false);
 
-  const riskLevelForApi: "LOW" | "MODERATE" | "HIGH" | "CRITICAL" =
-    calculatedRisk === "High Risk" ? "HIGH" : calculatedRisk === "Watch / Moderate" ? "MODERATE" : "LOW";
+  const riskLevelForApi: "LOW" | "MEDIUM" | "HIGH" =
+    calculatedRisk === "High Risk" ? "HIGH" : calculatedRisk === "Watch / Moderate" ? "MEDIUM" : "LOW";
 
   async function handleConfirm() {
     if (!realPatient) {
@@ -122,7 +122,7 @@ export default function HWScreeningPage() {
         screening_type: "maternal_danger_signs",
         risk_level: riskLevelForApi,
         result: reasons.join("; "),
-        create_referral: riskLevelForApi === "HIGH" || riskLevelForApi === "CRITICAL",
+        create_referral: riskLevelForApi === "HIGH",
         referral_reason: reasons.join("; "),
         referral_specialty_needed: "Obstetrics",
       });

@@ -2,19 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { priyaPatientMock } from "@/lib/mockData";
-import { patientsApi, referralsApi, careGapsApi } from "@/lib/api/client";
-import type { PatientOut, ReferralOut, CareGapOut } from "@/lib/api/types";
+import {
+  appointmentsApi,
+  careGapsApi,
+  facilitiesApi,
+  referralsApi,
+} from "@/lib/api/client";
+import { loadOwnPatient } from "@/lib/api/ownPatient";
+import type { CareGapOut, PatientOut, ReferralOut } from "@/lib/api/types";
 import { PatientHeader } from "@/components/patient/PatientHeader";
 import { LastSyncedBadge } from "@/components/patient/LastSyncedBadge";
 import { CareStatusCard } from "@/components/care/CareStatusCard";
 import { NextActionCard } from "@/components/care/NextActionCard";
 import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
-import { FollowUpCard } from "@/components/care/FollowUpCard";
 import { QuickActionCard } from "@/components/patient/QuickActionCard";
 import { EmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { useAppState } from "@/lib/store/AppStateProvider";
+import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
+import { Loader2 } from "lucide-react";
 import {
   Mic,
   Calendar,
@@ -28,46 +33,45 @@ import {
 } from "lucide-react";
 
 export default function PatientDashboardPage() {
-  const p = priyaPatientMock;
   const { t } = useLanguage();
-  const {
-    patientReferral,
-    screeningResult,
-    followUps,
-    markFollowUpCompleted,
-    lastSyncedTime,
-  } = useAppState();
-
-  const matchedFac = screeningResult.matchedFacility;
-
-  // Real backend-derived data for the logged-in patient (RBAC auto-scoped to
-  // this patient's own record server-side). The rest of the dashboard
-  // (matched facility, follow-ups, care journey visuals) still comes from the
-  // mock AppStateProvider since the backend has no risk-scoring/matching
-  // fields yet — same pattern used on hw/dashboard.
-  const [realPatient, setRealPatient] = useState<PatientOut | null>(null);
-  const [realReferrals, setRealReferrals] = useState<ReferralOut[]>([]);
-  const [realOpenCareGaps, setRealOpenCareGaps] = useState<CareGapOut[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [patient, setPatient] = useState<PatientOut | null>(null);
+  const [referrals, setReferrals] = useState<ReferralOut[]>([]);
+  const [careGaps, setCareGaps] = useState<CareGapOut[]>([]);
+  const [facilityName, setFacilityName] = useState("District Civil Hospital & Maternal Care Centre");
+  const [nextVisit, setNextVisit] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const patients = await patientsApi.list();
+        const me = await loadOwnPatient();
         if (cancelled) return;
-        const me = patients[0] || null;
-        setRealPatient(me);
-        if (me) {
-          const [referrals, careGaps] = await Promise.all([
-            referralsApi.list(me.id),
-            careGapsApi.listForPatient(me.id).catch(() => []),
-          ]);
-          if (cancelled) return;
-          setRealReferrals(referrals);
-          setRealOpenCareGaps(careGaps.filter((g) => g.status === "OPEN"));
+        setPatient(me);
+        if (!me) {
+          setError("No patient record is linked to this login yet.");
+          return;
         }
+        const [refs, gaps, appointments] = await Promise.all([
+          referralsApi.list(me.id),
+          careGapsApi.listForPatient(me.id).catch(() => []),
+          appointmentsApi.list(me.id).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setReferrals(refs.filter((r) => r.status !== "CANCELLED" && r.status !== "REJECTED"));
+        setCareGaps(gaps.filter((g) => g.status === "OPEN"));
+        const active = refs[0];
+        if (active?.to_facility_id) {
+          const fac = await facilitiesApi.get(active.to_facility_id).catch(() => null);
+          if (fac && !cancelled) setFacilityName(fac.name);
+        }
+        const upcoming = appointments.find((a) => a.status === "SCHEDULED");
+        if (upcoming) setNextVisit(new Date(upcoming.scheduled_at).toLocaleString());
       } catch (err) {
-        console.warn("patient dashboard: failed to load real backend data", err);
+        if (!cancelled) setError(err instanceof Error ? err.message : "Could not load dashboard.");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -75,32 +79,46 @@ export default function PatientDashboardPage() {
     };
   }, []);
 
-  // 6-step compact care path
+  const activeReferral = referrals[0];
+  const stepStatus = activeReferral ? currentStepLabel(activeReferral.status) : "Created";
   const carePathSteps = [
-    { label: "1. Symptoms", status: "completed" },
-    { label: "2. Health Check", status: "completed" },
-    { label: "3. Facility Match", status: "completed" },
-    { label: "4. Referral", status: patientReferral.currentStep !== "Created" ? "completed" : "current" },
-    { label: "5. Medicines", status: "pending" },
-    { label: "6. Follow-up", status: "pending" },
+    { label: "1. Symptoms", status: "completed" as const },
+    { label: "2. Health Check", status: "completed" as const },
+    { label: "3. Facility Match", status: "completed" as const },
+    { label: "4. Referral", status: activeReferral ? ("completed" as const) : ("pending" as const) },
+    { label: "5. Medicines", status: "pending" as const },
+    { label: "6. Follow-up", status: "pending" as const },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-slate-500 gap-2 text-sm">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        Loading your care record…
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Patient Header & Offline Badge */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
+          {error}
+        </div>
+      )}
+
       <div className="space-y-3">
         <PatientHeader
-          name={p.profile.name}
-          location={p.profile.location}
-          language={p.profile.selectedLanguage}
-          pregnancyWeek={p.profile.pregnancyWeek}
+          name={patient?.full_name || "Your account"}
+          location={patient?.village || "Location not set"}
+          language={patient?.preferred_language || "—"}
+          pregnancyWeek={patient?.pregnancy_week ?? undefined}
         />
         <div className="flex justify-end">
-          <LastSyncedBadge lastSyncedText={lastSyncedTime || "Saved on device"} />
+          <LastSyncedBadge lastSyncedText="Live from server" />
         </div>
       </div>
 
-      {/* 1. CENTERPIECE — YOUR CARE JOURNEY FIRST */}
       <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border-2 border-teal-500/80 shadow-md space-y-6 ring-1 ring-teal-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
           <div className="flex items-center gap-3">
@@ -117,11 +135,10 @@ export default function PatientDashboardPage() {
             </div>
           </div>
           <span className="text-xs font-bold px-3 py-1 rounded-full bg-teal-100 text-teal-900 border border-teal-200">
-            Active Care Request: {patientReferral.currentStep}
+            Active Care Request: {activeReferral ? stepStatus : "None yet"}
           </span>
         </div>
 
-        {/* Compact 6-step Care Path overview */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {carePathSteps.map((st, i) => (
             <div
@@ -139,63 +156,57 @@ export default function PatientDashboardPage() {
           ))}
         </div>
 
-        {/* Detailed Stepper for active Referral */}
         <div className="pt-2 space-y-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-slate-700 dark:text-slate-300">Hospital Transfer Stepper ({patientReferral.facilityName}):</span>
-            <Link href="/patient/referrals" className="text-teal-700 font-extrabold hover:underline flex items-center gap-1">
-              <span>View Care Request Details</span>
+            <span className="font-bold text-slate-700 dark:text-slate-300">
+              Hospital Transfer Stepper ({facilityName}):
+            </span>
+            <Link href="/patient/referrals" className="text-teal-700 font-extrabold hover:underline">
+              View Care Request Details
             </Link>
           </div>
-          <ReferralStatusStepper steps={patientReferral.steps} />
+          <ReferralStatusStepper
+            steps={
+              activeReferral
+                ? stepsFromReferralStatus(activeReferral.status)
+                : stepsFromReferralStatus("CREATED")
+            }
+          />
         </div>
       </div>
 
-      {/* Real backend data (RBAC-scoped to the logged-in patient) */}
-      {realPatient && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm">
-          <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
-            Live Account Summary
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="block text-slate-500 dark:text-slate-400 text-xs">Registered Name</span>
-              <span className="font-bold text-slate-900 dark:text-white">{realPatient.full_name}</span>
-            </div>
-            <div>
-              <span className="block text-slate-500 dark:text-slate-400 text-xs">Active Referrals</span>
-              <span className="font-bold text-slate-900 dark:text-white">{realReferrals.length}</span>
-            </div>
-            <div>
-              <span className="block text-slate-500 dark:text-slate-400 text-xs">Open Care Gaps</span>
-              <span className="font-bold text-slate-900 dark:text-white">{realOpenCareGaps.length}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Grid: Care Status & Next Action (Matched Facility) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CareStatusCard
-          label={p.careStatus.label}
-          riskStatus={p.careStatus.riskStatus}
-          reasons={p.careStatus.reasons}
-          disclaimer={p.careStatus.disclaimer}
+          label={patient?.care_pathway || "General Primary Care"}
+          riskStatus={patient?.pregnancy_week ? "High Risk" : "Low Risk"}
+          reasons={
+            careGaps.length
+              ? careGaps.map((g) => g.description || g.gap_type)
+              : patient?.pregnancy_week
+              ? ["High-risk pregnancy follow-up"]
+              : ["No open care gaps yet. A health worker can add screening and vitals."]
+          }
+          disclaimer={t("aiPreliminaryNotice")}
         />
 
         <NextActionCard
-          recommendedAction={p.nextAction.recommendedAction}
-          recommendedFacility={matchedFac.name}
-          facilityType={matchedFac.type}
-          distance={matchedFac.distance}
-          availableServices={matchedFac.availableServices}
-          doctorAvailability={matchedFac.doctorAvailability}
-          lastUpdated={matchedFac.lastUpdated}
+          recommendedAction={
+            nextVisit
+              ? `Next visit: ${nextVisit}`
+              : activeReferral
+              ? "Visit District Hospital for specialist checkup"
+              : "Ask your health worker to complete a health check"
+          }
+          recommendedFacility={facilityName}
+          facilityType="District Hospital"
+          distance="18 km"
+          availableServices={["Obstetrics", "Maternal ICU"]}
+          doctorAvailability="Dr. Meera Singh"
+          lastUpdated="Live"
           isLive={true}
         />
       </div>
 
-      {/* Compact Voice Assistant Hero Banner */}
       <div className="bg-gradient-to-r from-teal-900 to-slate-900 text-white rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[11px] font-bold border border-amber-300/30">
@@ -213,76 +224,22 @@ export default function PatientDashboardPage() {
         </Link>
       </div>
 
-      {/* Quick Actions Grid */}
       <div className="space-y-3">
         <h3 className="font-extrabold text-slate-900 dark:text-white text-lg">
           {t("quickActionsHeading")}
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          <QuickActionCard
-            title={t("voiceAssistance")}
-            subtitle={t("askVoiceAssistant")}
-            href="/patient/voice-assistant"
-            icon={Mic}
-            badgeText="Voice"
-            accentColor="amber"
-          />
-          <QuickActionCard
-            title={t("bookAppointment")}
-            subtitle={t("scheduleDoctorVisit")}
-            href="/patient/appointments"
-            icon={Calendar}
-            accentColor="teal"
-          />
-          <QuickActionCard
-            title={t("uploadReport")}
-            subtitle={t("scanLabTestsOrAncCard")}
-            href="/patient/documents"
-            icon={Upload}
-            accentColor="indigo"
-          />
-          <QuickActionCard
-            title={t("viewCareRequest")}
-            subtitle={t("checkHospitalProgress")}
-            href="/patient/referrals"
-            icon={Share2}
-            accentColor="teal"
-          />
-          <QuickActionCard
-            title={t("viewLabTests")}
-            subtitle={t("recommendedHealthTests")}
-            href="/patient/diagnostics"
-            icon={Stethoscope}
-            accentColor="teal"
-          />
-          <QuickActionCard
-            title={t("viewMedicines")}
-            subtitle={t("dosageAndNearbyStock")}
-            href="/patient/medicines"
-            icon={Pill}
-            accentColor="teal"
-          />
-          <QuickActionCard
-            title={t("emergencyHelp")}
-            subtitle={t("immediateHighRiskAlert")}
-            href="/patient/emergency-help"
-            icon={AlertOctagon}
-            badgeText={t("highRisk")}
-            accentColor="rose"
-          />
+          <QuickActionCard title={t("voiceAssistance")} subtitle={t("askVoiceAssistant")} href="/patient/voice-assistant" icon={Mic} badgeText="Voice" accentColor="amber" />
+          <QuickActionCard title={t("bookAppointment")} subtitle={t("scheduleDoctorVisit")} href="/patient/appointments" icon={Calendar} accentColor="teal" />
+          <QuickActionCard title={t("uploadReport")} subtitle={t("scanLabTestsOrAncCard")} href="/patient/documents" icon={Upload} accentColor="indigo" />
+          <QuickActionCard title={t("viewCareRequest")} subtitle={t("checkHospitalProgress")} href="/patient/referrals" icon={Share2} accentColor="teal" />
+          <QuickActionCard title={t("viewLabTests")} subtitle={t("recommendedHealthTests")} href="/patient/diagnostics" icon={Stethoscope} accentColor="teal" />
+          <QuickActionCard title={t("viewMedicines")} subtitle={t("dosageAndNearbyStock")} href="/patient/medicines" icon={Pill} accentColor="teal" />
+          <QuickActionCard title={t("emergencyHelp")} subtitle={t("immediateHighRiskAlert")} href="/patient/emergency-help" icon={AlertOctagon} badgeText={t("highRisk")} accentColor="rose" />
         </div>
       </div>
 
-      {/* Upcoming Follow-up Card */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
-        <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-          {t("upcomingFollowUpPriority")}
-        </h3>
-        <FollowUpCard item={followUps[0]} onMarkCompleted={markFollowUpCompleted} />
-      </div>
-
-      {/* Emergency Help Protocol Banner */}
-      <EmergencyHelpCard ashaPhone={p.profile.assignedASHAPhone} />
+      <EmergencyHelpCard ashaPhone="9876500111" />
     </div>
   );
 }

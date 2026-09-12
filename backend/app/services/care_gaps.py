@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,7 +29,7 @@ class CareGapService:
         gap = await self.repo.apply_update(
             gap_id,
             base_version,
-            {"status": CareGapStatus.CLOSED, "closed_at": datetime.utcnow()},
+            {"status": CareGapStatus.CLOSED, "closed_at": datetime.now(timezone.utc)},
         )
         await self.db.commit()
         return gap

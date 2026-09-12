@@ -195,7 +195,7 @@ export function FeedbackFormSection({ className = "" }: { className?: string }) 
       setTimeout(() => {
         setSuccessMsg(null);
       }, 7000);
-    } catch (err) {
+    } catch {
       setSubmitting(false);
       setErrorMsg("Unable to submit feedback. Please try again.");
     }

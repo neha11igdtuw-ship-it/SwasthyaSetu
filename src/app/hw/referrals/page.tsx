@@ -6,7 +6,6 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { useAppState } from "@/lib/store/AppStateProvider";
 import { patientsApi, referralsApi, facilitiesApi, ApiError } from "@/lib/api/client";
 import { referralOutToHWReferral } from "@/lib/api/adapters";
 import type { PatientOut, FacilityOut } from "@/lib/api/types";
@@ -14,7 +13,6 @@ import { Share2, Clock, ArrowRight, Plus, CheckCircle2, X, Loader2 } from "lucid
 
 export default function HWReferralsPage() {
   const { t } = useLanguage();
-  const { createReferral: createLocalReferral } = useAppState();
   const [activeTab, setActiveTab] = useState<string>("All");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState(false);
@@ -95,23 +93,8 @@ export default function HWReferralsPage() {
         patient_id: selectedPatientId,
         to_facility_id: selectedFacilityId,
         reason,
-        urgency: priority === "High" ? "URGENT" : priority === "Routine" ? "ROUTINE" : "ROUTINE",
+        urgency: priority === "High" ? "URGENT" : priority === "Medium" ? "MEDIUM" : "ROUTINE",
       });
-
-      const p = remotePatients.find((item) => item.id === selectedPatientId);
-      const f = facilities.find((item) => item.id === selectedFacilityId);
-      if (p && f) {
-        // Keep the local mock store / offline outbox in sync for the rest of the UI.
-        createLocalReferral({
-          patientId: p.id,
-          patientName: p.full_name,
-          facilityName: f.name,
-          reason,
-          priority,
-          expectedVisitDate: expectedDate,
-          status: "Pending Acceptance",
-        });
-      }
 
       await loadData();
       setShowCreateModal(false);

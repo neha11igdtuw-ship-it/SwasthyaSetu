@@ -21,6 +21,7 @@ from app.schemas.symptom_summary import (
     SymptomSummarizeRequest,
     SymptomSummarizeResponse,
 )
+from app.services.duration_extract import resolve_duration
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,10 @@ the patient. Rules:
 1. Do not diagnose any disease.
 2. Do not invent symptoms, duration, severity, or medical history.
 3. Do not recommend medicines.
-4. If duration or severity is not mentioned, return 'Not specified'.
+4. Copy duration exactly when the patient mentions relative time, including 'last night', \
+'since last night', 'yesterday', 'one day', 'a day', 'this morning', 'कल रात', 'एक दिन', \
+or quantified spans like '2 days' / '3 hours'. Use 'Not specified' only when no time \
+reference exists.
 5. Preserve the user's selected language.
 6. Keep the output concise and suitable for review by a health worker or doctor.
 7. Clearly flag emergency warning signs only when directly supported by the patient's words.
@@ -125,13 +129,7 @@ def _build_fallback_summary(data: SymptomSummarizeRequest) -> AISymptomSummary:
         if kw in text.lower() and label not in reported:
             reported.append(label)
 
-    # Smart regex duration extraction (e.g., "2 days", "two days", "3 weeks", "1 month")
-    duration = data.duration or "Not specified"
-    if duration == "Not specified":
-        import re
-        dur_match = re.search(r'(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(days?|weeks?|months?|hours?|दिन|दिनों|हफ़्ते|महीने)', text, re.IGNORECASE)
-        if dur_match:
-            duration = dur_match.group(0)
+    duration = resolve_duration(data.duration, text)
 
     # Severity extraction
     severity = data.severity or "Not specified"
@@ -203,6 +201,10 @@ class SymptomSummaryService:
                 ai_summary=None,
                 ai_summary_error="AI summary response was invalid and could not be parsed.",
             )
+
+        filled_duration = resolve_duration(summary.duration, data.transcript)
+        if filled_duration != summary.duration:
+            summary = summary.model_copy(update={"duration": filled_duration})
 
         return SymptomSummarizeResponse(
             transcript=data.transcript,

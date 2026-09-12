@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { authApi, ApiError } from "@/lib/api/client";
+import type { Role } from "@/lib/api/types";
+import { Loader2 } from "lucide-react";
 import {
   User,
   HeartPulse,
@@ -17,14 +20,35 @@ import {
 
 type RoleType = "patient" | "hw" | "doctor" | "facility";
 
+const ROLE_TO_API: Record<RoleType, Role> = {
+  patient: "PATIENT",
+  hw: "HEALTH_WORKER",
+  doctor: "DOCTOR",
+  facility: "FACILITY_STAFF",
+};
+
+const ROLE_TO_ROUTE: Record<Role, string> = {
+  PATIENT: "/patient/dashboard",
+  HEALTH_WORKER: "/hw/dashboard",
+  DOCTOR: "/doctor/dashboard",
+  FACILITY_STAFF: "/facility/dashboard",
+  FACILITY_ADMIN: "/facility/dashboard",
+  ADMIN: "/facility/dashboard",
+};
+
 export default function RegisterPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<RoleType>("patient");
-  const [fullName, setFullName] = useState("Priya Sharma");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [mobile, setMobile] = useState("9876543210");
   const [location, setLocation] = useState("Rampur Village");
   const [preferredLang, setPreferredLang] = useState("Hindi");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const roles = [
     {
@@ -57,11 +81,29 @@ export default function RegisterPage() {
     },
   ];
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const roleObj = roles.find((r) => r.id === selectedRole);
-    if (roleObj) {
-      router.push(roleObj.route);
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+    try {
+      const role = ROLE_TO_API[selectedRole];
+      await authApi.register({
+        email,
+        password,
+        full_name: fullName,
+        role,
+        phone: mobile,
+        village: location,
+        preferred_language: preferredLang,
+      });
+      await authApi.login({ email, password });
+      setSuccess("Account created. Opening your dashboard…");
+      router.push(ROLE_TO_ROUTE[role]);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not create account. Try a different email.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,6 +189,35 @@ export default function RegisterPage() {
                 />
               </div>
 
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -194,13 +265,31 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            {error && (
+              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
+                {success}
+              </div>
+            )}
+
             {/* Primary Action Button */}
             <button
               type="submit"
-              className="w-full py-3.5 px-6 rounded-2xl bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+              disabled={loading}
+              className="w-full py-3.5 px-6 rounded-2xl bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white font-extrabold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
-              <span>{t("createAccountTitle")}</span>
-              <ArrowRight className="w-4 h-4" />
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <span>{t("createAccountTitle")}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 

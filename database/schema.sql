@@ -1,5 +1,14 @@
 -- ============================================================
--- SwasthyaSetu Database Schema
+-- LEGACY / REFERENCE ONLY — do not apply to the live database.
+--
+-- Authoritative schema: backend SQLAlchemy models
+--   (backend/app/models/) + Alembic migrations
+--   (backend/alembic/versions/).
+-- Live data path: Frontend → FastAPI → Postgres.
+-- Apply schema with:  cd backend && alembic upgrade head
+-- ============================================================
+-- SwasthyaSetu Database Schema (design sketch, may conflict with
+-- the running backend)
 -- PostgreSQL 18
 -- ============================================================
 

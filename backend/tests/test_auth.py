@@ -61,3 +61,32 @@ async def test_refresh_token(client):
     resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": refresh_token})
     assert resp.status_code == 200
     assert "access_token" in resp.json()
+
+
+async def test_register_patient_creates_care_record(client):
+    resp = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "neha@example.com",
+            "password": "StrongPass123",
+            "full_name": "Neha",
+            "role": "PATIENT",
+            "phone": "9876543210",
+            "village": "Rampur Village",
+            "preferred_language": "Hindi",
+        },
+    )
+    assert resp.status_code == 201, resp.text
+
+    login = await client.post(
+        "/api/v1/auth/login", json={"email": "neha@example.com", "password": "StrongPass123"}
+    )
+    token = login.json()["access_token"]
+    patients = await client.get(
+        "/api/v1/patients", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert patients.status_code == 200, patients.text
+    body = patients.json()
+    assert len(body) == 1
+    assert body[0]["full_name"] == "Neha"
+    assert body[0]["village"] == "Rampur Village"

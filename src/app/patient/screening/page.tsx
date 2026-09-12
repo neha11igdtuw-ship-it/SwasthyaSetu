@@ -9,8 +9,12 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
-import { patientsApi, encountersApi } from "@/lib/api/client";
+import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { encountersApi } from "@/lib/api/client";
 import type { ScreeningOut, VitalOut } from "@/lib/api/types";
+import { matchReferralFacility } from "@/lib/referralMatching";
+import { assessMaternalRisk } from "@/lib/symptoms/assessRisk";
+import { isUnspecifiedDuration } from "@/lib/symptoms/duration";
 import {
   Building2,
   Share2,
@@ -35,8 +39,7 @@ function ScreeningContent() {
     let cancelled = false;
     (async () => {
       try {
-        const patients = await patientsApi.list();
-        const me = patients[0];
+        const me = await loadOwnPatient();
         if (!me || cancelled) return;
         const encounters = await encountersApi.list(me.id);
         if (cancelled || encounters.length === 0) return;
@@ -66,27 +69,90 @@ function ScreeningContent() {
     };
   }, []);
 
-  const risk =
-    latestScreening?.risk_level === "HIGH" || latestScreening?.risk_level === "CRITICAL"
+  const queryRisk = searchParams.get("risk");
+  const queryBp = searchParams.get("bp");
+  const queryWeek = searchParams.get("week");
+  const queryDuration = searchParams.get("duration") || "";
+  const queryNotes = searchParams.get("notes") || "";
+  const fromThisCheck = Boolean(queryRisk && queryBp);
+
+  const [sys, dia] = (queryBp || screeningResult.bp || "120/80")
+    .split("/")
+    .map((v) => parseInt(v.trim(), 10));
+
+  const thisCheck = assessMaternalRisk({
+    systolicBp: sys,
+    diastolicBp: dia,
+    headache: searchParams.get("headache") === "yes",
+    blurredVision: searchParams.get("vision") === "yes",
+    swelling: searchParams.get("swelling") === "yes",
+    bleeding: searchParams.get("bleeding") === "yes",
+    abdominalPain: searchParams.get("abdominal") === "yes",
+    fever: searchParams.get("fever") === "yes",
+    reducedFetalMovement: searchParams.get("fetal") === "yes",
+  });
+
+  const risk = fromThisCheck
+    ? thisCheck.riskLevel
+    : latestScreening?.risk_level === "HIGH"
       ? "High Risk"
-      : latestScreening?.risk_level === "MODERATE"
-      ? "Watch / Moderate"
-      : searchParams.get("risk") || screeningResult.risk || "High Risk";
-  const bp =
-    latestVital?.systolic_bp && latestVital?.diastolic_bp
+      : latestScreening?.risk_level === "MEDIUM"
+        ? "Watch / Moderate"
+        : latestScreening?.risk_level === "LOW"
+          ? "Low Risk"
+          : searchParams.get("risk") || screeningResult.risk || "Low Risk";
+
+  const bp = fromThisCheck
+    ? queryBp || screeningResult.bp
+    : latestVital?.systolic_bp && latestVital?.diastolic_bp
       ? `${latestVital.systolic_bp}/${latestVital.diastolic_bp}`
-      : searchParams.get("bp") || screeningResult.bp || "145/92";
-  const week = searchParams.get("week") || screeningResult.week || "28";
+      : queryBp || screeningResult.bp || "120/80";
+  const week = queryWeek || screeningResult.week || "28";
 
-  const matchedFacility = screeningResult.matchedFacility;
+  const liveMatch = matchReferralFacility({
+    riskLevel: risk,
+    systolicBp: sys,
+    diastolicBp: dia,
+    symptoms: [
+      thisCheck.flags.headache ? "Headache" : "",
+      thisCheck.flags.blurredVision ? "Blurred vision" : "",
+      thisCheck.flags.swelling ? "Swelling" : "",
+      thisCheck.flags.bleeding ? "Bleeding" : "",
+    ].filter(Boolean),
+    carePathway: "Maternal Care",
+  });
 
-  const reasons = latestScreening
-    ? (latestScreening.result || "").split(";").map((s) => s.trim()).filter(Boolean)
-    : [
-        `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})`,
-        t("persistentHeadache"),
-        t("swellingFaceHandsFeet"),
-      ];
+  const matchedFacility = fromThisCheck ? liveMatch.facility : screeningResult.matchedFacility;
+  const matchReason = fromThisCheck ? liveMatch.matchReason : screeningResult.matchReason;
+
+  const reasons = fromThisCheck
+    ? [
+        `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})${
+          thisCheck.highBp ? "" : ` — ${t("bpWithinNormalRange")}`
+        }`,
+        thisCheck.highBp ? t("highBpDetected") : null,
+        thisCheck.flags.headache ? t("persistentHeadache") : null,
+        thisCheck.flags.blurredVision ? t("blurredVision") : null,
+        thisCheck.flags.swelling ? t("swellingFaceHandsFeet") : null,
+        thisCheck.flags.bleeding ? t("vaginalBleedingDischarge") : null,
+        thisCheck.flags.abdominalPain ? t("severeAbdominalPain") : null,
+        thisCheck.flags.reducedFetalMovement ? t("reducedFetalMovement") : null,
+        queryDuration && !isUnspecifiedDuration(queryDuration)
+          ? `${t("durationLabel")}: ${queryDuration}`
+          : null,
+        queryNotes ? queryNotes : null,
+      ].filter((item): item is string => Boolean(item))
+    : latestScreening
+      ? (latestScreening.result || "").split(";").map((s) => s.trim()).filter(Boolean)
+      : [
+          `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})`,
+          t("persistentHeadache"),
+          t("swellingFaceHandsFeet"),
+        ];
+
+  if (fromThisCheck && risk === "Low Risk") {
+    reasons.push(t("noSevereDangerSigns"));
+  }
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -143,7 +209,7 @@ function ScreeningContent() {
               {matchedFacility.name.includes("District") ? t("districtHospitalName") : matchedFacility.name} ({matchedFacility.distance})
             </span>
             <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              {screeningResult.matchReason}
+              {matchReason}
             </p>
           </div>
         </div>

@@ -30,6 +30,18 @@ class InventoryItemOut(ORMBase):
     version: int
 
 
+class NearbyInventoryOut(BaseModel):
+    item_id: uuid.UUID
+    name: str
+    facility_id: uuid.UUID
+    facility_name: str
+    quantity: int
+    reorder_level: int
+    unit: str
+    status: str
+    distance_km: float | None = None
+
+
 class InventoryTransactionOut(ORMBase):
     id: uuid.UUID
     item_id: uuid.UUID

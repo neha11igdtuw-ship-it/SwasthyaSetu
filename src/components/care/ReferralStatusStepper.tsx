@@ -18,6 +18,8 @@ export function ReferralStatusStepper({ steps }: ReferralStatusStepperProps) {
 
   const mapStepName = (stepName: ReferralStep) => {
     switch (stepName) {
+      case "Sent":
+        return "Sent";
       case "Created":
         return t("created");
       case "Accepted":

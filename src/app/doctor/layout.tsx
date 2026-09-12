@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AppShell } from "@/components/AppShell";
+import { RequireAuth } from "@/components/RequireAuth";
 import { NavItem } from "@/components/Sidebar";
 import {
   LayoutDashboard,
@@ -25,13 +26,15 @@ export default function DoctorLayout({
   children: React.ReactNode;
 }) {
   return (
+    <RequireAuth>
     <AppShell
       role="Doctor"
-      userName="Dr. Ananya Rao"
-      facilityOrLocation="District Civil Hospital"
+      userName="Dr. Meera Singh"
+      facilityOrLocation="District Civil Hospital & Maternal Care Centre"
       navItems={doctorNavItems}
     >
       {children}
     </AppShell>
+    </RequireAuth>
   );
 }

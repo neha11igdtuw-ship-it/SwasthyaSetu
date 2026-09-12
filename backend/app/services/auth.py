@@ -10,7 +10,9 @@ from app.core.security import (
     hash_password,
     verify_password,
 )
+from app.models.enums import Role
 from app.models.user import User
+from app.repositories.patients import PatientRepository
 from app.repositories.users import UserRepository
 from app.schemas.auth import TokenPair, UserRegister
 
@@ -32,6 +34,15 @@ class AuthService:
             phone=data.phone,
             facility_id=data.facility_id,
         )
+        if data.role == Role.PATIENT:
+            await PatientRepository(self.db).create(
+                full_name=data.full_name,
+                phone=data.phone,
+                village=data.village,
+                preferred_language=data.preferred_language,
+                user_id=user.id,
+                facility_id=data.facility_id,
+            )
         await self.db.commit()
         return user
 

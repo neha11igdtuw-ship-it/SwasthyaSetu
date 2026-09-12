@@ -9,7 +9,7 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
 import { derivePatientGaps } from "@/lib/careGaps";
 import { authApi, patientsApi, pregnanciesApi } from "@/lib/api/client";
-import type { PatientOut, PregnancyOut } from "@/lib/api/types";
+import type { PregnancyOut } from "@/lib/api/types";
 import { OfflinePill } from "@/components/shared/OfflinePill";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import {
@@ -23,7 +23,6 @@ import {
   AlertTriangle,
   Phone,
   Activity,
-  Calendar,
   AlertOctagon,
   HeartPulse,
   UserCheck,
@@ -47,16 +46,6 @@ interface DisplayHighRiskPatient {
   requiredAction: string;
   isRealBackend: boolean;
   notes?: string;
-}
-
-interface FeedbackEntry {
-  id: string;
-  category: string;
-  priority: "Urgent" | "High" | "Normal";
-  patientName?: string;
-  message: string;
-  submittedAt: string;
-  status: "Under Review" | "Acknowledged" | "Action Taken";
 }
 
 export default function HWHighRiskPage() {
@@ -116,7 +105,7 @@ export default function HWHighRiskPage() {
         });
         setApiHighRisk(fetched);
         setIsOfflineMode(false);
-      } catch (err) {
+      } catch {
         // Soft fallback to local/mock mode without showing error text
         setIsOfflineMode(true);
       } finally {

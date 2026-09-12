@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     database_url: str = ""
     test_database_url: str = ""
 
-    jwt_secret_key: str = "insecure-dev-secret-change-me"
+    jwt_secret_key: str = "insecure-dev-secret-change-me-32bytes-min!"
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 30
