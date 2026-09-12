@@ -135,6 +135,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     rameshChandraName: "Ramesh Chandra",
     sunitaDeviWorker: "ANM Sunita Devi",
     drAnanyaRao: "Dr. Ananya Rao",
+    drMeeraSingh: "Dr. Meera Singh",
     subCentreRampur: "Sub-Centre Rampur",
     districtHospitalName: "District Civil Hospital & Maternal Care Centre",
     chcKalyanpur: "Community Health Centre Kalyanpur",
@@ -145,6 +146,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     preEclampsiaReason: "Pre-eclampsia screening & Anemia Management",
 
     // Voice Assistant Page
+    userProfileMetadata: "Profile Metadata",
     multilingualVoiceAssistanceTitle: "Multilingual Voice Assistance",
     multilingualVoiceAssistanceSubtitle: "Tell us your symptoms by speaking in your local language",
     voiceDisclaimer: "Voice assistance helps users tell symptoms easily. Final health assessment requires doctor or health worker review.",
@@ -155,6 +157,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     stopRecording: "Stop",
     listeningToVoice: "Listening to your voice...",
     clickToSpeakSymptoms: "Click to speak symptoms",
+    voiceKeepListeningHint: "Listening — pauses are OK",
+    voicePauseOkHint: "Keep speaking. Short silences will not stop the mic. Tap Stop when you are done.",
+    voiceAppendHint: "Tap the mic again to add more. Previous words are kept.",
     voiceMessageRecordedHindi: "Voice Message Recorded (Hindi):",
     audioPreview: "Audio Preview",
     englishTranslationLabel: "English Translation:",
@@ -378,6 +383,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     hemoglobin: "Hemoglobin",
     reportedSymptoms: "Reported symptoms",
     persistentHeadache: "Persistent headache",
+    highBpDetected: "High blood pressure detected",
+    bpWithinNormalRange: "within normal range",
+    noSevereDangerSigns: "No severe maternal danger signs identified",
     blurredVision: "Blurred vision",
     moderateAnemia: "Moderate anemia",
 
@@ -716,6 +724,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     rameshChandraName: "रमेश चंद्र",
     sunitaDeviWorker: "एएनएम सुनीता देवी",
     drAnanyaRao: "डॉ. अनन्या राव",
+    drMeeraSingh: "डॉ. मीरा सिंह",
     subCentreRampur: "सब-सेंटर रामपुर",
     districtHospitalName: "जिला नागरिक अस्पताल व मातृ देखभाल केंद्र",
     chcKalyanpur: "सामुदायिक स्वास्थ्य केंद्र कल्याणपुर",
@@ -726,6 +735,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     preEclampsiaReason: "प्री-एक्लेमप्सिया जांच व एनीमिया प्रबंधन",
 
     // Voice Assistant Page
+    userProfileMetadata: "प्रोफ़ाइल विवरण",
     multilingualVoiceAssistanceTitle: "बहुभाषी आवाज़ सहायता",
     multilingualVoiceAssistanceSubtitle: "अपनी स्थानीय भाषा में बोलकर अपने लक्षण बताएं",
     voiceDisclaimer: "आवाज़ सहायता उपयोगकर्ताओं को लक्षण आसानी से बताने में मदद करती है। अंतिम स्वास्थ्य मूल्यांकन के लिए डॉक्टर या स्वास्थ्य कार्यकर्ता की समीक्षा आवश्यक है।",
@@ -736,6 +746,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     stopRecording: "रोकें",
     listeningToVoice: "आपकी आवाज़ सुनी जा रही है...",
     clickToSpeakSymptoms: "लक्षण बोलने के लिए क्लिक करें",
+    voiceKeepListeningHint: "सुन रहे हैं — रुकना ठीक है",
+    voicePauseOkHint: "बोलते रहें। छोटी चुप्पी माइक नहीं रोकेगी। पूरा होने पर Stop दबाएं।",
+    voiceAppendHint: "और जोड़ने के लिए माइक फिर दबाएं। पिछली बात बनी रहेगी।",
     voiceMessageRecordedHindi: "रिकॉर्ड किया गया आवाज़ संदेश (हिंदी):",
     audioPreview: "ऑडियो प्रिव्यू",
     englishTranslationLabel: "अंग्रेज़ी अनुवाद:",
@@ -959,6 +972,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     hemoglobin: "हीमोग्लोबिन",
     reportedSymptoms: "बताए गए लक्षण",
     persistentHeadache: "लगातार सिरदर्द",
+    highBpDetected: "उच्च रक्तचाप पाया गया",
+    bpWithinNormalRange: "सामान्य सीमा में",
+    noSevereDangerSigns: "कोई गंभीर मातृ खतरे के संकेत नहीं मिले",
     blurredVision: "धुंधला दिखाई देना",
     moderateAnemia: "मध्यम खून की कमी",
 
@@ -1296,6 +1312,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     rameshChandraName: "रमेश चंद्र",
     sunitaDeviWorker: "एएनएम सुनिता देवी",
     drAnanyaRao: "डॉ. अनन्या राव",
+    drMeeraSingh: "डॉ. मीरा सिंह",
     subCentreRampur: "उप-केंद्र रामपूर",
     districtHospitalName: "जिल्हा नागरी रुग्णालय व माता काळजी केंद्र",
     chcKalyanpur: "समुदाय आरोग्य केंद्र कल्याणपूर",
@@ -1306,6 +1323,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     preEclampsiaReason: "प्री-एक्लेमप्सिया तपासणी व अॅनिमिया व्यवस्थापन",
 
     // Voice Assistant Page
+    userProfileMetadata: "प्रोफाइल तपशील",
     multilingualVoiceAssistanceTitle: "बहुभाषिक आवाज सहाय्य",
     multilingualVoiceAssistanceSubtitle: "तुमच्या स्थानिक भाषेत बोलून तुमची लक्षणे सांगा",
     voiceDisclaimer: "आवाज सहाय्य वापरकर्त्यांना लक्षणे सहज सांगण्यास मदत करते. अंतिम तपासणीसाठी डॉक्टरांची पुनरावलोकन आवश्यक आहे.",
@@ -1316,6 +1334,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     stopRecording: "थांबा",
     listeningToVoice: "तुमचा आवाज ऐकत आहे...",
     clickToSpeakSymptoms: "लक्षणे सांगण्यासाठी क्लिक करा",
+    voiceKeepListeningHint: "ऐकत आहे — थांबणे चालेल",
+    voicePauseOkHint: "बोलत रहा. छोटी शांतता माइक बंद करणार नाही. झाल्यावर Stop दाबा.",
+    voiceAppendHint: "अधिक जोडण्यासाठी माइक पुन्हा दाबा. आधीचे शब्द राहतील.",
     voiceMessageRecordedHindi: "रेकॉर्ड केलेला आवाज संदेश:",
     audioPreview: "ऑडिओ प्रिव्ह्यू",
     englishTranslationLabel: "इंग्रजी भाषांतर:",
@@ -1539,6 +1560,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     hemoglobin: "हिमोग्लोबिन",
     reportedSymptoms: "नमुद केलेली लक्षणे",
     persistentHeadache: "सतत डोकेदुखी",
+    highBpDetected: "उच्च रक्तदाब आढळला",
+    bpWithinNormalRange: "सामान्य मर्यादेत",
+    noSevereDangerSigns: "गंभीर मातृ धोक्याची चिन्हे आढळली नाहीत",
     blurredVision: "अस्पष्ट दिसणे",
     moderateAnemia: "मध्यम अॅनिमिया",
 
@@ -1745,6 +1769,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     rameshChandraName: "Ramesh Chandra (रमेश चंद्र)",
     sunitaDeviWorker: "ANM Sunita Devi",
     drAnanyaRao: "Dr. Ananya Rao",
+    drMeeraSingh: "Dr. Meera Singh",
     subCentreRampur: "Sub-Centre Rampur",
     districtHospitalName: "District Civil Hospital & Maternal Care Centre",
     chcKalyanpur: "Community Health Centre Kalyanpur",
@@ -1755,6 +1780,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     preEclampsiaReason: "Pre-eclampsia screening & Anemia Management",
 
     // Voice Assistant Page
+    userProfileMetadata: "Profile Metadata",
     multilingualVoiceAssistanceTitle: "Multilingual Voice Assistance (बोलकर बताएं)",
     multilingualVoiceAssistanceSubtitle: "Apni local bhasha me bolkar symptoms batayein",
     voiceDisclaimer: "Voice assistance helps users tell symptoms easily. Final health assessment requires doctor or health worker review.",
@@ -1765,6 +1791,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     stopRecording: "Stop",
     listeningToVoice: "Listening to your voice...",
     clickToSpeakSymptoms: "Click to speak symptoms",
+    voiceKeepListeningHint: "Listening — pauses are OK",
+    voicePauseOkHint: "Keep speaking. Short silences will not stop the mic. Tap Stop when you are done.",
+    voiceAppendHint: "Tap the mic again to add more. Previous words are kept.",
     voiceMessageRecordedHindi: "Voice Message Recorded:",
     audioPreview: "Audio Preview",
     englishTranslationLabel: "English Translation:",
@@ -1987,6 +2016,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     hemoglobin: "Hemoglobin",
     reportedSymptoms: "Reported symptoms",
     persistentHeadache: "Sir dard (Headache)",
+    highBpDetected: "High BP mila",
+    bpWithinNormalRange: "normal range mein",
+    noSevereDangerSigns: "Koi serious maternal danger sign nahi mila",
     blurredVision: "Dhundhla dikhna (Blurred vision)",
     moderateAnemia: "Anemia (Khoon ki kami)",
 

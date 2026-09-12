@@ -47,8 +47,9 @@ export function NextActionCard({
     return t(srv);
   };
 
-  const displayDoctor = doctorAvailability.includes("Ananya Rao")
-    ? `${t("drAnanyaRao")} — On Duty Today`
+  const displayDoctor =
+    doctorAvailability.includes("Ananya Rao") || doctorAvailability.includes("Meera Singh")
+    ? `${t("drMeeraSingh")} — On Duty Today`
     : t(doctorAvailability);
 
   return (

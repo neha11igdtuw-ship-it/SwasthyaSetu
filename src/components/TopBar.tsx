@@ -10,6 +10,8 @@ import {
   LayoutDashboard,
   MessageSquare,
   LogOut,
+  Menu,
+  X,
 } from "lucide-react";
 import { RoleType, RoleBadge } from "./RoleBadge";
 import { LanguageSelector } from "@/components/shared/LanguageSelector";
@@ -17,14 +19,18 @@ import { ThreeDotMenu } from "@/components/ThreeDotMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { OfflinePill } from "@/components/shared/OfflinePill";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
+import { UserProfileAvatarMenu } from "@/components/UserProfileAvatarMenu";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { getCurrentUserRole, isAuthenticated, clearTokens } from "@/lib/api/client";
+import { useRouter } from "next/navigation";
+import { getCurrentUserRole, isAuthenticated, clearTokens, AUTH_CHANGED_EVENT } from "@/lib/api/client";
 import { dashboardPathForJwtRole, resolveSearchAudience } from "@/lib/search/searchService";
 
 interface TopBarProps {
   role?: RoleType;
   userName?: string;
   facilityOrLocation?: string;
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
 }
 
 const SHELL_DASHBOARD_ROUTES: Record<RoleType, string> = {
@@ -34,8 +40,15 @@ const SHELL_DASHBOARD_ROUTES: Record<RoleType, string> = {
   "Healthcare Facility": "/facility/dashboard",
 };
 
-export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
+export function TopBar({
+  role,
+  userName,
+  facilityOrLocation,
+  onToggleSidebar,
+  isSidebarOpen,
+}: TopBarProps) {
   const { t } = useLanguage();
+  const router = useRouter();
 
   const [isAuth, setIsAuth] = useState(false);
   const [jwtRole, setJwtRole] = useState<string | null>(null);
@@ -50,9 +63,11 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
     checkAuth();
     window.addEventListener("storage", checkAuth);
     window.addEventListener("focus", checkAuth);
+    window.addEventListener(AUTH_CHANGED_EVENT, checkAuth);
     return () => {
       window.removeEventListener("storage", checkAuth);
       window.removeEventListener("focus", checkAuth);
+      window.removeEventListener(AUTH_CHANGED_EVENT, checkAuth);
     };
   }, []);
 
@@ -60,7 +75,7 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
     clearTokens();
     setIsAuth(false);
     setJwtRole(null);
-    window.dispatchEvent(new Event("storage"));
+    router.replace("/login");
   };
 
   const inAppShell = Boolean(role || userName);
@@ -75,8 +90,8 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
       ? t("priyaSharmaName")
       : userName === "ANM Sunita Devi" || userName === "Sunita Devi"
       ? t("sunitaDeviWorker")
-      : userName === "Dr. Ananya Rao"
-      ? t("drAnanyaRao")
+      : userName === "Dr. Ananya Rao" || userName === "Dr. Meera Singh"
+      ? t("drMeeraSingh")
       : userName
       ? t(userName)
       : undefined;
@@ -101,6 +116,22 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
     <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-700 px-3 sm:px-6 py-2.5">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
+              title={isSidebarOpen ? "Close sidebar menu" : "Open sidebar menu"}
+              className="p-2 rounded-xl bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-900/70 text-teal-800 dark:text-teal-200 transition-all border border-teal-200/80 dark:border-teal-700/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-center shadow-2xs"
+            >
+              {isSidebarOpen ? (
+                <X className="w-5 h-5 text-teal-800 dark:text-teal-200" />
+              ) : (
+                <Menu className="w-5 h-5 text-teal-800 dark:text-teal-200" />
+              )}
+            </button>
+          )}
+
           <Link
             href="/"
             aria-label="SwasthyaSetu Home"
@@ -189,23 +220,14 @@ export function TopBar({ role, userName, facilityOrLocation }: TopBarProps) {
               </Link>
             </div>
           ) : showDashboardShortcut ? (
-            <div className="hidden sm:flex items-center gap-2">
-              <Link
-                href={dashboardHref}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-xs font-extrabold transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Dashboard</span>
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                title="Logout"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
-              >
-                <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>Logout</span>
-              </button>
+            <div className="flex items-center gap-2">
+              <UserProfileAvatarMenu
+                userName={localizedUserName || "Priya Sharma"}
+                role={role || "Patient"}
+                facilityOrLocation={localizedLocation || "Rampur Village"}
+                dashboardHref={dashboardHref}
+                onLogout={handleLogout}
+              />
             </div>
           ) : null}
 

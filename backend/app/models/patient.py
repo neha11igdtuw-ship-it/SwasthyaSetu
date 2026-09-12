@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, String
+from sqlalchemy import Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -17,6 +17,9 @@ class Patient(SyncableMixin, Base):
     gender: Mapped[str | None] = mapped_column(String(16), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     village: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    care_pathway: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    pregnancy_week: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    preferred_language: Mapped[str | None] = mapped_column(String(32), nullable=True)
     abha_id: Mapped[str | None] = mapped_column(String(64), nullable=True, unique=True)
     facility_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("facilities.id"), nullable=True
@@ -31,6 +34,7 @@ class Patient(SyncableMixin, Base):
         unique=True,
         doc="Linked login account for this patient (role=PATIENT), if any.",
     )
+    emergency_contact: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     referrals = relationship("Referral", back_populates="patient")
     care_gaps = relationship("CareGap", back_populates="patient")

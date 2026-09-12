@@ -3,12 +3,13 @@ import uuid
 from fastapi import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import ForbiddenError, UnauthorizedError
+from app.core.errors import ForbiddenError, NotFoundError, UnauthorizedError
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.enums import FACILITY_SCOPED_ROLES, Role
 from app.models.patient import Patient
 from app.models.user import User
+from app.repositories.patients import PatientRepository
 from app.repositories.users import UserRepository
 
 
@@ -101,3 +102,28 @@ def assert_referral_access(user: User, referral) -> None:
         referral.to_facility_id,
     }:
         raise ForbiddenError("You do not have access to this referral")
+
+
+async def get_own_patient(db: AsyncSession, user: User) -> Patient:
+    """Return the care record linked to a PATIENT login.
+
+    Existing accounts created before self-provisioning still get a linked
+    row from the login profile instead of a 404 on every /me action.
+    """
+    if user.role != Role.PATIENT:
+        raise ForbiddenError("Only patients can use this action")
+    repo = PatientRepository(db)
+    rows = await repo.list_active(user_id=user.id)
+    if rows:
+        return rows[0]
+    patient = await repo.create(
+        full_name=user.full_name,
+        phone=user.phone,
+        village=None,
+        preferred_language=None,
+        user_id=user.id,
+        facility_id=user.facility_id,
+    )
+    await db.commit()
+    await db.refresh(patient)
+    return patient

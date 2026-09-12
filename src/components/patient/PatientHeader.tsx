@@ -20,14 +20,15 @@ export function PatientHeader({
 }: PatientHeaderProps) {
   const { t } = useLanguage();
 
-  const displayName = name === "Priya Sharma" ? t("priyaSharmaName") : t(name);
+  const displayName = name === "Priya Sharma" ? t("priyaSharmaName") : name;
   const displayLocation =
     location === "Rampur Village" || location === "Rampur"
       ? t("rampurLocation")
-      : t(location);
+      : location;
+  const isMaternal = Boolean(pregnancyWeek);
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm mb-6 space-y-3">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
         <div>
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -35,13 +36,15 @@ export function PatientHeader({
               {displayName}
             </h1>
             <RoleBadge role="Patient" />
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-800 border border-rose-200 text-[11px] font-bold">
-              <HeartPulse className="w-3 h-3 text-rose-600" />
-              {t("demoPathwayMaternal")}
-            </span>
+            {isMaternal && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-800 border border-rose-200 text-[11px] font-bold">
+                <HeartPulse className="w-3 h-3 text-rose-600" />
+                {t("demoPathwayMaternal")}
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            {t("personalMaternalPortal")}
+            {isMaternal ? t("personalMaternalPortal") : "Personal health portal"}
           </p>
         </div>
 

@@ -3,10 +3,10 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import assert_patient_access, get_current_user
+from app.api.deps import assert_patient_access, get_current_user, get_own_patient
 from app.core.errors import ForbiddenError
 from app.db.session import get_db
-from app.models.enums import Role
+from app.models.enums import DiagnosticOrderStatus, Role
 from app.models.user import User
 from app.repositories.care import DiagnosticOrderRepository, DiagnosticReportRepository
 from app.repositories.patients import PatientRepository
@@ -21,6 +21,30 @@ from app.schemas.care import (
 router = APIRouter(prefix="/diagnostics", tags=["diagnostics"])
 
 
+async def _orders_with_reports(db: AsyncSession, patient_id: uuid.UUID) -> list[DiagnosticOrderOut]:
+    orders = await DiagnosticOrderRepository(db).list_active(patient_id=patient_id)
+    reports = DiagnosticReportRepository(db)
+    out: list[DiagnosticOrderOut] = []
+    for order in orders:
+        payload = DiagnosticOrderOut.model_validate(order)
+        linked = await reports.list_active(diagnostic_order_id=order.id)
+        if linked:
+            payload = payload.model_copy(
+                update={"report_id": linked[0].id, "result_summary": linked[0].result_summary}
+            )
+        out.append(payload)
+    return out
+
+
+@router.get("/me", response_model=list[DiagnosticOrderOut])
+async def list_my_orders(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    patient = await get_own_patient(db, user)
+    return await _orders_with_reports(db, patient.id)
+
+
 @router.get("/orders", response_model=list[DiagnosticOrderOut])
 async def list_orders(
     patient_id: uuid.UUID,
@@ -29,7 +53,7 @@ async def list_orders(
 ):
     patient = await PatientRepository(db).get_or_404(patient_id)
     assert_patient_access(user, patient)
-    return await DiagnosticOrderRepository(db).list_active(patient_id=patient_id)
+    return await _orders_with_reports(db, patient_id)
 
 
 @router.post("/orders", response_model=DiagnosticOrderOut, status_code=201)
@@ -39,12 +63,18 @@ async def create_order(
     user: User = Depends(get_current_user),
 ):
     if user.role == Role.PATIENT:
-        raise ForbiddenError("Patients cannot order diagnostics")
-    patient = await PatientRepository(db).get_or_404(data.patient_id)
-    assert_patient_access(user, patient)
+        own = await get_own_patient(db, user)
+        if data.patient_id != own.id:
+            raise ForbiddenError("Patients can only request tests for themselves")
+        patient = own
+    else:
+        patient = await PatientRepository(db).get_or_404(data.patient_id)
+        assert_patient_access(user, patient)
     payload = data.model_dump()
     if user.facility_id is not None:
         payload["facility_id"] = payload.get("facility_id") or user.facility_id
+    elif patient.facility_id is not None:
+        payload["facility_id"] = payload.get("facility_id") or patient.facility_id
     repo = DiagnosticOrderRepository(db)
     order = await repo.create(**payload, ordered_by_id=user.id)
     await db.commit()
@@ -94,8 +124,18 @@ async def create_report(
     order = await DiagnosticOrderRepository(db).get_or_404(data.diagnostic_order_id)
     patient = await PatientRepository(db).get_or_404(order.patient_id)
     assert_patient_access(user, patient)
+    payload = data.model_dump(exclude={"result_status"})
+    if data.result_status:
+        summary = payload.get("result_summary") or ""
+        payload["result_summary"] = (
+            f"[{data.result_status}] {summary}".strip() if summary else f"[{data.result_status}]"
+        )
     repo = DiagnosticReportRepository(db)
-    report = await repo.create(**data.model_dump(), reported_by_id=user.id)
+    report = await repo.create(**payload, reported_by_id=user.id)
+    if order.status != DiagnosticOrderStatus.COMPLETED:
+        await DiagnosticOrderRepository(db).apply_update(
+            order.id, order.version, {"status": DiagnosticOrderStatus.COMPLETED}
+        )
     await db.commit()
     return report
 

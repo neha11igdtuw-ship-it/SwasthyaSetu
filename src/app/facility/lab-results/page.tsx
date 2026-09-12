@@ -6,7 +6,8 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { authApi, patientsApi, diagnosticsApi, ApiError } from "@/lib/api/client";
 import type { DiagnosticOrderOut, PatientOut } from "@/lib/api/types";
-import { FlaskConical, Loader2 } from "lucide-react";
+import { LabReportForm } from "@/components/care/LabReportForm";
+import { FlaskConical, Loader2, Plus } from "lucide-react";
 
 // The backend only exposes /diagnostics/orders scoped to a single patient_id
 // (see backend/app/api/routes/diagnostics.py) — there is no facility-wide
@@ -19,26 +20,32 @@ export default function FacilityLabResultsPage() {
   const [orders, setOrders] = useState<(DiagnosticOrderOut & { patientName: string })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    const me = await authApi.me();
+    const patients: PatientOut[] = await patientsApi.list(me.facility_id ?? undefined);
+    const perPatient = await Promise.all(
+      patients.map(async (p) => {
+        try {
+          const orders = await diagnosticsApi.listOrders(p.id);
+          return orders.map((o) => ({ ...o, patientName: p.full_name }));
+        } catch {
+          return [];
+        }
+      })
+    );
+    setOrders(perPatient.flat());
+  };
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const me = await authApi.me();
-        const patients: PatientOut[] = await patientsApi.list(me.facility_id ?? undefined);
-        const perPatient = await Promise.all(
-          patients.map(async (p) => {
-            try {
-              const orders = await diagnosticsApi.listOrders(p.id);
-              return orders.map((o) => ({ ...o, patientName: p.full_name }));
-            } catch {
-              return [];
-            }
-          })
-        );
-        if (!cancelled) setOrders(perPatient.flat());
+        await load();
       } catch (err) {
         if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load lab results from server.");
       } finally {
@@ -56,7 +63,22 @@ export default function FacilityLabResultsPage() {
         title="Lab Results"
         subtitle="Diagnostic orders for this facility's patients"
         roleBadge={<RoleBadge role="Healthcare Facility" />}
+        action={
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Add Lab Test / Upload Report
+          </button>
+        }
       />
+
+      {success && (
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
+          {success}
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
@@ -101,6 +123,23 @@ export default function FacilityLabResultsPage() {
             )}
           </div>
         </div>
+      )}
+
+      {showForm && (
+        <LabReportForm
+          onClose={() => setShowForm(false)}
+          onSaved={async () => {
+            setShowForm(false);
+            setSuccess("Report uploaded. The patient will see it on Lab Tests after refresh.");
+            try {
+              await load();
+            } catch (err) {
+              setError(err instanceof ApiError ? err.message : "Uploaded, but failed to refresh the list.");
+            } finally {
+              setLoading(false);
+            }
+          }}
+        />
       )}
     </div>
   );

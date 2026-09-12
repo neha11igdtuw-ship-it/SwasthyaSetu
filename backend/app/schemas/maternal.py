@@ -77,6 +77,22 @@ class SymptomOut(ORMBase):
     is_deleted: bool
 
 
+class SelfVitalCreate(BaseModel):
+    systolic_bp: int | None = None
+    diastolic_bp: int | None = None
+    pulse: int | None = None
+    temperature_c: float | None = None
+    weight_kg: float | None = None
+    spo2: int | None = None
+    notes: str | None = None
+
+
+class SelfSymptomCreate(BaseModel):
+    description: str
+    severity: str | None = None
+    notes: str | None = None
+
+
 class VitalCreate(BaseModel):
     encounter_id: uuid.UUID
     systolic_bp: int | None = None

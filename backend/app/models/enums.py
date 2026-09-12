@@ -33,7 +33,11 @@ class ReferralStatus(str, enum.Enum):
 
 # Allowed transitions for the referral state machine.
 REFERRAL_TRANSITIONS: dict[ReferralStatus, set[ReferralStatus]] = {
-    ReferralStatus.CREATED: {ReferralStatus.PENDING, ReferralStatus.CANCELLED},
+    ReferralStatus.CREATED: {
+        ReferralStatus.PENDING,
+        ReferralStatus.ACCEPTED,
+        ReferralStatus.CANCELLED,
+    },
     ReferralStatus.PENDING: {
         ReferralStatus.ACCEPTED,
         ReferralStatus.REJECTED,

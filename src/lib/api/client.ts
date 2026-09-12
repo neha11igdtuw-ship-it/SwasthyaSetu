@@ -17,6 +17,7 @@ import type {
   PregnancyOut,
   PrescriptionOut,
   ReferralCreate,
+  CareRequestCreate,
   ReferralOut,
   ReferralStatusUpdate,
   ScreeningCreate,
@@ -31,8 +32,17 @@ import type {
   TokenPair,
   UserLogin,
   UserOut,
+  UserRegister,
   VitalCreate,
   VitalOut,
+  AppointmentCreate,
+  AppointmentOut,
+  AppointmentStatusUpdate,
+  NearbyInventoryOut,
+  DiagnosticOrderCreate,
+  DiagnosticReportCreate,
+  SelfVitalCreate,
+  SelfSymptomCreate,
 } from "./types";
 
 const API_ROOT =
@@ -71,16 +81,25 @@ export function getRefreshToken(): string | null {
   return window.localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
+export const AUTH_CHANGED_EVENT = "ss-auth-changed";
+
+function notifyAuthChanged() {
+  if (!isBrowser()) return;
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}
+
 export function setTokens(tokens: TokenPair) {
   if (!isBrowser()) return;
   window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access_token);
   window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
+  notifyAuthChanged();
 }
 
 export function clearTokens() {
   if (!isBrowser()) return;
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  notifyAuthChanged();
 }
 
 export function isAuthenticated(): boolean {
@@ -201,6 +220,8 @@ export const authApi = {
     setTokens(tokens);
     return tokens;
   },
+  register: (data: UserRegister) =>
+    request<UserOut>("/auth/register", { method: "POST", body: data, auth: false }),
   me: () => request<UserOut>("/auth/me"),
   logout: () => clearTokens(),
 };
@@ -210,8 +231,10 @@ export const authApi = {
 export const patientsApi = {
   list: (facilityId?: string) =>
     request<PatientOut[]>(`/patients${facilityId ? `?facility_id=${facilityId}` : ""}`),
+  me: () => request<PatientOut>("/patients/me"),
   get: (id: string) => request<PatientOut>(`/patients/${id}`),
   create: (data: PatientCreate) => request<PatientOut>("/patients", { method: "POST", body: data }),
+  updateMe: (data: PatientUpdate) => request<PatientOut>("/patients/me", { method: "PATCH", body: data }),
   update: (id: string, data: PatientUpdate) =>
     request<PatientOut>(`/patients/${id}`, { method: "PATCH", body: data }),
   remove: (id: string, baseVersion: number) =>
@@ -223,10 +246,15 @@ export const patientsApi = {
 export const referralsApi = {
   list: (patientId?: string) =>
     request<ReferralOut[]>(`/referrals${patientId ? `?patient_id=${patientId}` : ""}`),
+  me: () => request<ReferralOut[]>("/referrals/me"),
   get: (id: string) => request<ReferralOut>(`/referrals/${id}`),
   create: (data: ReferralCreate) => request<ReferralOut>("/referrals", { method: "POST", body: data }),
+  requestCare: (data: CareRequestCreate) =>
+    request<ReferralOut>("/referrals/request-care", { method: "POST", body: data }),
   transition: (id: string, data: ReferralStatusUpdate) =>
     request<ReferralOut>(`/referrals/${id}/transition`, { method: "POST", body: data }),
+  updateStatus: (id: string, data: ReferralStatusUpdate) =>
+    request<ReferralOut>(`/referrals/${id}/status`, { method: "PATCH", body: data }),
   matchCandidates: (params: { from_facility_id?: string; specialty_needed?: string; limit?: number }) => {
     const qs = new URLSearchParams();
     if (params.from_facility_id) qs.set("from_facility_id", params.from_facility_id);
@@ -258,8 +286,13 @@ export const facilitiesApi = {
 
 export const encountersApi = {
   list: (patientId: string) => request<EncounterOut[]>(`/encounters?patient_id=${patientId}`),
+  me: () => request<EncounterOut[]>("/encounters/me"),
   get: (id: string) => request<EncounterOut>(`/encounters/${id}`),
   create: (data: EncounterCreate) => request<EncounterOut>("/encounters", { method: "POST", body: data }),
+  createMine: (data: EncounterCreate) => request<EncounterOut>("/encounters/me", { method: "POST", body: data }),
+  addMyVitals: (data: SelfVitalCreate) => request<VitalOut>("/vitals/me", { method: "POST", body: data }),
+  addMySymptom: (data: SelfSymptomCreate) =>
+    request<SymptomOut>("/encounters/me/symptoms", { method: "POST", body: data }),
   addSymptom: (encounterId: string, data: SymptomCreate) =>
     request<SymptomOut>(`/encounters/${encounterId}/symptoms`, { method: "POST", body: data }),
   listSymptoms: (encounterId: string) => request<SymptomOut[]>(`/encounters/${encounterId}/symptoms`),
@@ -276,7 +309,12 @@ export const encountersApi = {
 export const diagnosticsApi = {
   listOrders: (patientId: string) =>
     request<DiagnosticOrderOut[]>(`/diagnostics/orders?patient_id=${patientId}`),
+  me: () => request<DiagnosticOrderOut[]>("/diagnostics/me"),
   getOrder: (id: string) => request<DiagnosticOrderOut>(`/diagnostics/orders/${id}`),
+  createOrder: (data: DiagnosticOrderCreate) =>
+    request<DiagnosticOrderOut>("/diagnostics/orders", { method: "POST", body: data }),
+  createReport: (data: DiagnosticReportCreate) =>
+    request<DiagnosticReportOut>("/diagnostics/reports", { method: "POST", body: data }),
   getReport: (id: string) => request<DiagnosticReportOut>(`/diagnostics/reports/${id}`),
 };
 
@@ -284,6 +322,7 @@ export const diagnosticsApi = {
 
 export const prescriptionsApi = {
   list: (patientId: string) => request<PrescriptionOut[]>(`/prescriptions?patient_id=${patientId}`),
+  me: () => request<PrescriptionOut[]>("/prescriptions/me"),
   get: (id: string) => request<PrescriptionOut>(`/prescriptions/${id}`),
 };
 
@@ -299,9 +338,26 @@ export const pregnanciesApi = {
 export const inventoryApi = {
   list: (facilityId: string) => request<InventoryItemOut[]>(`/inventory?facility_id=${facilityId}`),
   lowStock: (facilityId: string) => request<InventoryItemOut[]>(`/inventory/low-stock?facility_id=${facilityId}`),
+  nearby: () => request<NearbyInventoryOut[]>("/inventory/nearby"),
+  search: (query: string) =>
+    request<NearbyInventoryOut[]>(`/inventory/search?query=${encodeURIComponent(query)}`),
+  adjust: (itemId: string, data: { delta: number; reason: string }) =>
+    request<{ id: string; item_id: string; delta: number; resulting_quantity: number }>(
+      `/inventory/${itemId}/adjust`,
+      { method: "POST", body: data }
+    ),
 };
 
 // ---- Doctor availability ----
+
+export const appointmentsApi = {
+  list: (patientId: string) => request<AppointmentOut[]>(`/appointments?patient_id=${patientId}`),
+  me: () => request<AppointmentOut[]>("/appointments/me"),
+  create: (data: AppointmentCreate) =>
+    request<AppointmentOut>("/appointments", { method: "POST", body: data }),
+  updateStatus: (id: string, data: AppointmentStatusUpdate) =>
+    request<AppointmentOut>(`/appointments/${id}/status`, { method: "PATCH", body: data }),
+};
 
 export const doctorAvailabilityApi = {
   list: (facilityId: string) =>

@@ -9,7 +9,9 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
 import { derivePatientGaps } from "@/lib/careGaps";
-import { patientsApi, referralsApi, careGapsApi } from "@/lib/api/client";
+import { patientsApi, referralsApi, careGapsApi, facilitiesApi } from "@/lib/api/client";
+import { patientOutToHealthWorkerPatient, referralOutToHWReferral } from "@/lib/api/adapters";
+import type { HealthWorkerPatient, HWReferral } from "@/lib/mockData";
 import { OfflinePill } from "@/components/shared/OfflinePill";
 import {
   Users,
@@ -27,20 +29,14 @@ import {
 
 export default function HealthWorkerDashboardPage() {
   const { t } = useLanguage();
-  const {
-    patients,
-    referrals,
-    hwFollowUps,
-    patientMedicines,
-    outboxCount,
-  } = useAppState();
+  const { outboxCount } = useAppState();
 
   const [filterRisk, setFilterRisk] = useState<string>("All");
+  const [patients, setPatients] = useState<HealthWorkerPatient[]>([]);
+  const [referrals, setReferrals] = useState<HWReferral[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Real backend-derived aggregate counts (RBAC-scoped to this health
-  // worker's facility server-side). The rest of the dashboard (follow-ups,
-  // per-patient care-gap text, risk levels) still comes from the mock
-  // AppStateProvider since the backend has no risk-level/vitals fields yet.
   const [realPatientCount, setRealPatientCount] = useState<number | null>(null);
   const [realReferralCount, setRealReferralCount] = useState<number | null>(null);
   const [realCareGapCount, setRealCareGapCount] = useState<number | null>(null);
@@ -49,11 +45,24 @@ export default function HealthWorkerDashboardPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [realPatients, realReferrals] = await Promise.all([
+        const [realPatients, realReferrals, facilityList] = await Promise.all([
           patientsApi.list(),
           referralsApi.list(),
+          facilitiesApi.list().catch(() => []),
         ]);
         if (cancelled) return;
+        const facilityNameById = new Map(facilityList.map((f) => [f.id, f.name]));
+        const patientNameById = new Map(realPatients.map((p) => [p.id, p.full_name]));
+        setPatients(realPatients.map(patientOutToHealthWorkerPatient));
+        setReferrals(
+          realReferrals.map((r) =>
+            referralOutToHWReferral(
+              r,
+              patientNameById.get(r.patient_id) || "Patient",
+              facilityNameById.get(r.to_facility_id || "") || "Facility"
+            )
+          )
+        );
         setRealPatientCount(realPatients.length);
         setRealReferralCount(
           realReferrals.filter((r) => r.status === "CREATED" || r.status === "PENDING").length
@@ -67,7 +76,11 @@ export default function HealthWorkerDashboardPage() {
         const openGaps = gapLists.flat().filter((g) => g.status === "OPEN");
         setRealCareGapCount(openGaps.length);
       } catch (err) {
-        console.warn("hw dashboard: failed to load real backend counts", err);
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Could not load dashboard from server.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -81,7 +94,7 @@ export default function HealthWorkerDashboardPage() {
   ).length;
 
   const highRiskSectionPatients = patients.filter((p) => {
-    const gaps = derivePatientGaps(p, referrals, hwFollowUps, patientMedicines);
+    const gaps = derivePatientGaps(p, referrals, [], []);
     if (filterRisk === "All") return true;
     if (filterRisk === "High Risk") return p.riskLevel === "High Risk";
     if (filterRisk === "Medium Risk") return p.riskLevel === "Watch / Moderate";
@@ -100,7 +113,7 @@ export default function HealthWorkerDashboardPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Welcome Section */}
       <PageHeader
-        title={`${t("welcomeWorker")}, Sunita Devi`}
+        title={`${t("welcomeWorker")}, ANM Sunita Devi`}
         subtitle={`${t("assignedVillage")} Rampur Block • Sub-Centre Area 2 • Date: Sunday, Sep 6, 2026`}
         roleBadge={<RoleBadge role="Health Worker" />}
         action={
@@ -113,6 +126,18 @@ export default function HealthWorkerDashboardPage() {
           </Link>
         }
       />
+
+      {loading && (
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-slate-600 text-xs font-semibold flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          Loading patients and care requests from server…
+        </div>
+      )}
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
+          {error}
+        </div>
+      )}
 
       {/* Summary Cards Grid showing exact simple user-friendly labels */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -136,7 +161,7 @@ export default function HealthWorkerDashboardPage() {
         {/* 3. Visits due */}
         <DashboardCard
           title={t("visitsDue")}
-          value={hwFollowUps.filter((f) => f.status === "Due Today").length}
+          value={realCareGapCount ?? 0}
           subtitle={t("scheduledHomeAndClinicVisits")}
           icon={Calendar}
         />
@@ -144,7 +169,7 @@ export default function HealthWorkerDashboardPage() {
         {/* 4. Missed visits */}
         <DashboardCard
           title={t("missedVisits")}
-          value={hwFollowUps.filter((f) => f.status === "Missed").length}
+          value={0}
           subtitle={t("followUpRequired")}
           icon={Clock}
         />
@@ -193,7 +218,7 @@ export default function HealthWorkerDashboardPage() {
           {patients
             .filter((p) => p.riskLevel === "High Risk")
             .map((patient) => {
-              const gaps = derivePatientGaps(patient, referrals, hwFollowUps, patientMedicines);
+              const gaps = derivePatientGaps(patient, referrals, [], []);
               return (
                 <div
                   key={patient.id}
@@ -271,7 +296,7 @@ export default function HealthWorkerDashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {highRiskSectionPatients.map((p) => {
-            const gaps = derivePatientGaps(p, referrals, hwFollowUps, patientMedicines);
+            const gaps = derivePatientGaps(p, referrals, [], []);
             return (
               <div
                 key={p.id}
@@ -382,7 +407,7 @@ export default function HealthWorkerDashboardPage() {
 
           <div className="space-y-2.5 text-xs">
             {patients.slice(0, 3).map((p) => {
-              const gaps = derivePatientGaps(p, referrals, hwFollowUps, patientMedicines);
+              const gaps = derivePatientGaps(p, referrals, [], []);
               return (
                 <div
                   key={p.id}

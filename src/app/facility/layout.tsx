@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AppShell } from "@/components/AppShell";
+import { RequireAuth } from "@/components/RequireAuth";
 import { NavItem } from "@/components/Sidebar";
 import {
   LayoutDashboard,
@@ -25,13 +26,15 @@ export default function FacilityLayout({
   children: React.ReactNode;
 }) {
   return (
+    <RequireAuth>
     <AppShell
       role="Healthcare Facility"
-      userName="District Civil Hospital"
-      facilityOrLocation="Kalyanpur District"
+      userName="District Civil Hospital Admin"
+      facilityOrLocation="District Civil Hospital & Maternal Care Centre"
       navItems={facilityNavItems}
     >
       {children}
     </AppShell>
+    </RequireAuth>
   );
 }

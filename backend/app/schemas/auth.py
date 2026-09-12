@@ -13,6 +13,8 @@ class UserRegister(BaseModel):
     role: Role
     phone: str | None = None
     facility_id: uuid.UUID | None = None
+    village: str | None = None
+    preferred_language: str | None = None
 
 
 class UserLogin(BaseModel):

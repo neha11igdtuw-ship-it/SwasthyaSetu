@@ -17,6 +17,14 @@ still had sync-stack code and were rewritten:
 No other files had sync-stack assumptions (models, `errors.py` were already
 framework-agnostic).
 
+## Schema source of truth
+
+The live schema is **SQLAlchemy models + Alembic migrations**
+(`backend/app/models/`, `backend/alembic/versions/`). Apply with
+`alembic upgrade head`. Files under `database/` (`schema.sql`, `seed.sql`,
+`DATABASE_DESIGN.md`) are legacy/reference only and must not be applied to
+the running database.
+
 ## What was built
 
 Full app under `backend/app/`: models (User, Facility, Patient, Referral,
@@ -191,16 +199,12 @@ Regenerated once after adding `index=True` to FK columns so the indexes
 autogenerate found them instead of being hand-added. Applied clean with
 `alembic upgrade head`.
 
-**Seed data** (`seed/seed_data.py`): added a `doctor@swasthyasetu.dev` user
-(role `DOCTOR`, at the hospital facility) plus, for the existing "Ram Kumar"
-patient: a high-risk `Pregnancy` (risk_flags `hypertension,anemia`), an
-`Encounter` with a `Symptom`, a `Vital` (BP 152/98), a `Screening`
-("pre-eclampsia risk", HIGH) that creates and links a `Referral`, an
-`Appointment` against a seeded `DoctorAvailability` slot, a `DiagnosticOrder`
-+ `DiagnosticReport`, a `Prescription` against a newly seeded "Iron Folic
-Acid" inventory item (decrementing its stock), and a `HealthWorkerProfile`
-for the seeded worker. Ran twice against live Postgres — idempotent both
-times.
+**Seed data** (`seed/seed_data.py`): upserts the connected demo story — patient
+Priya Sharma (Rampur, week 28, high-risk maternal care), ANM Sunita Devi,
+Dr. Meera Singh, and District Civil Hospital & Maternal Care Centre — plus a
+high-risk `Pregnancy`, encounter/vitals/screening, pending referral, appointment,
+diagnostic order + report, and hospital IFA prescription. Re-running the seed
+renames older identities (e.g. Ram Kumar) to this story.
 
 **Tests** (16 new, full suite now 47/47 passing): `tests/test_maternal.py`
 (pregnancy/encounter/symptom/vital CRUD, plus the screening→referral

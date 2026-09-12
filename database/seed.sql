@@ -1,5 +1,11 @@
 -- ============================================================
--- SwasthyaSetu Seed Data
+-- LEGACY / REFERENCE ONLY — do not run against live Postgres.
+-- Authoritative demo seed: backend/seed/seed_data.py
+--   python -m seed.seed_data
+-- Demo people: Priya Sharma, ANM Sunita Devi, Dr. Meera Singh,
+-- District Civil Hospital & Maternal Care Centre.
+-- ============================================================
+-- SwasthyaSetu Seed Data (frontend mock-derived, outdated)
 -- PostgreSQL 18
 -- ============================================================
 --

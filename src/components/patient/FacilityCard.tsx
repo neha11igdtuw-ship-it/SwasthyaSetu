@@ -5,9 +5,11 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface FacilityCardProps {
   facility: NearbyFacility;
+  distanceOverride?: string;
+  locationSource?: string;
 }
 
-export function FacilityCard({ facility }: FacilityCardProps) {
+export function FacilityCard({ facility, distanceOverride, locationSource }: FacilityCardProps) {
   const { t } = useLanguage();
   const isAvailable = facility.status === "Available";
 
@@ -19,8 +21,9 @@ export function FacilityCard({ facility }: FacilityCardProps) {
     ? t("subCentreRampur")
     : t(facility.name);
 
-  const displayDoctor = facility.doctorAvailability.includes("Ananya Rao")
-    ? `${t("drAnanyaRao")} — On Duty Today`
+  const displayDoctor = facility.doctorAvailability.includes("Ananya Rao") ||
+    facility.doctorAvailability.includes("Meera Singh")
+    ? `${t("drMeeraSingh")} — On Duty Today`
     : facility.doctorAvailability.includes("Sunita Devi")
     ? `${t("sunitaDeviWorker")} — Available Daily`
     : t(facility.doctorAvailability);
@@ -49,9 +52,16 @@ export function FacilityCard({ facility }: FacilityCardProps) {
       </div>
 
       <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-        <div className="flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-teal-700 shrink-0" />
-          <span>{t("distance")}: <strong>{facility.distance}</strong></span>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+            <span>{t("distance")}: <strong>{distanceOverride || facility.distance}</strong></span>
+          </div>
+          {locationSource && (
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 border border-teal-200 dark:border-teal-800">
+              {locationSource}
+            </span>
+          )}
         </div>
 
         {facility.address && (
