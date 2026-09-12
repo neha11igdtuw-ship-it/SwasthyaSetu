@@ -1,49 +1,41 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
-import { Mic, MicOff, Send, ArrowRight, Volume2, Sparkles, Loader2, RotateCcw, AlertTriangle, Copy, Download, Check } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Send,
+  ArrowRight,
+  Volume2,
+  Sparkles,
+  Loader2,
+  RotateCcw,
+  AlertTriangle,
+  Copy,
+  Download,
+  Check,
+  Radio,
+  Info,
+} from "lucide-react";
 import type { AISymptomSummary } from "@/lib/api/types";
-
-interface SpeechRecognitionInstance {
-  lang: string;
-  onresult: (event: { results: Array<Array<{ transcript: string }>> }) => void;
-  onerror: () => void;
-  onend: () => void;
-  start: () => void;
-}
-
-interface SpeechRecognitionConstructor {
-  new (): SpeechRecognitionInstance;
-}
-
-interface WindowWithSpeech extends Window {
-  webkitSpeechRecognition?: SpeechRecognitionConstructor;
-  SpeechRecognition?: SpeechRecognitionConstructor;
-}
-
-// Maps the app's language selector to a BCP-47 speech-recognition locale.
-// Previously this was hardcoded to "hi-IN" regardless of the selected app
-// language — a real bug for English/Marathi users.
-const SPEECH_LANG_BY_APP_LANGUAGE: Record<string, string> = {
-  en: "en-IN",
-  hi: "hi-IN",
-  mr: "mr-IN",
-  local: "hi-IN",
-};
+import { useSpeechRecognition } from "@/lib/speech/useSpeechRecognition";
+import { extractDuration, resolveDuration } from "@/lib/symptoms/duration";
 
 export default function VoiceAssistantPage() {
   const { t, language } = useLanguage();
   const { submitSymptomSummary } = useAppState();
-  const [isRecording, setIsRecording] = useState(false);
+
   const [textInput, setTextInput] = useState("");
   const [transcript, setTranscript] = useState("");
   const [hasUserEdited, setHasUserEdited] = useState(false);
+  const transcriptRef = useRef("");
+  transcriptRef.current = transcript;
 
   // Sync default sample transcript with chosen language if user hasn't typed/recorded custom text
   useEffect(() => {
@@ -52,8 +44,18 @@ export default function VoiceAssistantPage() {
     }
   }, [language, t, hasUserEdited]);
 
-  // Confirmation / submission state for the confirmed-transcript -> AI
-  // summary pipeline shared with the manual symptom checklist.
+  const { isRecording, speechError, start: startRecording, stop: stopRecording } =
+    useSpeechRecognition({
+      language,
+      getText: () => transcriptRef.current,
+      isPlaceholder: (text) => !text || text === t("sampleVoiceTranscript"),
+      onText: (text) => {
+        setTranscript(text);
+        setHasUserEdited(true);
+      },
+    });
+
+  // Confirmation / submission state for the confirmed-transcript -> AI summary pipeline
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [summary, setSummary] = useState<AISymptomSummary | null>(null);
@@ -62,34 +64,11 @@ export default function VoiceAssistantPage() {
   const [copied, setCopied] = useState(false);
 
   const toggleRecording = () => {
-    if (typeof window !== "undefined") {
-      const win = window as unknown as WindowWithSpeech;
-      if (!isRecording && (win.webkitSpeechRecognition || win.SpeechRecognition)) {
-        try {
-          const SpeechRecognitionClass = win.webkitSpeechRecognition || win.SpeechRecognition;
-          if (SpeechRecognitionClass) {
-            const recognition = new SpeechRecognitionClass();
-            recognition.lang = SPEECH_LANG_BY_APP_LANGUAGE[language] || "en-IN";
-            recognition.onresult = (event) => {
-              const res = event.results[0][0].transcript;
-              if (res) {
-                setTranscript(res);
-                setHasUserEdited(true);
-              }
-              setIsRecording(false);
-            };
-            recognition.onerror = () => setIsRecording(false);
-            recognition.onend = () => setIsRecording(false);
-            setIsRecording(true);
-            recognition.start();
-            return;
-          }
-        } catch (e) {
-          console.warn("Speech recognition error:", e);
-        }
-      }
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
     }
-    setIsRecording(!isRecording);
   };
 
   const getFormattedSummaryText = (sum: AISymptomSummary) => {
@@ -99,7 +78,9 @@ export default function VoiceAssistantPage() {
       `Reported Symptoms: ${sum.reportedSymptoms.join(", ") || "None"}`,
       `Duration: ${sum.duration}`,
       `Severity: ${sum.severity}`,
-      sum.possibleWarningSigns.length > 0 ? `Warning Signs: ${sum.possibleWarningSigns.join(", ")}` : null,
+      sum.possibleWarningSigns.length > 0
+        ? `Warning Signs: ${sum.possibleWarningSigns.join(", ")}`
+        : null,
       `Language: ${sum.language}`,
       `---------------------------------------`,
       `Original Transcript: ${transcript}`,
@@ -128,7 +109,9 @@ export default function VoiceAssistantPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `SwasthyaSetu_Symptom_Summary_${new Date().toISOString().slice(0, 10)}.txt`;
+    link.download = `SwasthyaSetu_Symptom_Summary_${new Date()
+      .toISOString()
+      .slice(0, 10)}.txt`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -143,19 +126,28 @@ export default function VoiceAssistantPage() {
   };
 
   const handleConfirmTranscript = async (customText?: string) => {
-    const textToSubmit = typeof customText === "string" ? customText : transcript;
+    const textToSubmit =
+      typeof customText === "string" ? customText : transcript;
     if (!textToSubmit.trim()) return;
+
+    if (isRecording) {
+      stopRecording();
+    }
+
     setConfirmed(true);
     setSubmitting(true);
     setSummaryError(null);
     setSummary(null);
     setQueuedOffline(false);
 
+    const spokenDuration = extractDuration(textToSubmit);
+
     const result = await submitSymptomSummary({
       transcript: textToSubmit,
       selected_symptoms: [],
       manual_symptoms: [],
       language,
+      duration: spokenDuration,
     });
 
     setSubmitting(false);
@@ -164,54 +156,45 @@ export default function VoiceAssistantPage() {
       if (result.error) setSummaryError(result.error);
       return;
     }
-    if (result.response) {
-      if (result.response.ai_summary) {
-        setSummary(result.response.ai_summary);
-      } else {
-        const text = textToSubmit.toLowerCase();
-        let extractedDuration = "Not specified";
-        const durMatch = textToSubmit.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(days?|weeks?|months?|hours?)/i);
-        if (durMatch) extractedDuration = durMatch[0];
 
-        let extractedSeverity = "Not specified";
-        if (text.includes("severe") || text.includes("high") || text.includes("bad")) extractedSeverity = "Severe";
-        else if (text.includes("mild") || text.includes("slight")) extractedSeverity = "Mild";
+    const fallbackDuration = resolveDuration(null, textToSubmit);
+    const applyDuration = (sum: AISymptomSummary): AISymptomSummary => ({
+      ...sum,
+      duration: resolveDuration(sum.duration, textToSubmit),
+    });
 
-        const reported = [];
-        if (text.includes("headache")) reported.push("Headache");
-        if (text.includes("fever")) reported.push("Fever");
-        if (text.includes("stress")) reported.push("Stress");
-        if (text.includes("pain")) reported.push("Pain");
-        if (reported.length === 0) reported.push("Reported Symptom");
-
-        const isHighRisk = text.includes("headache") || text.includes("head ache") || text.includes("severe") || text.includes("pain") || text.includes("fever") || text.includes("bleed");
-
-        setSummary({
-          reportedSymptoms: reported,
-          duration: extractedDuration,
-          severity: extractedSeverity,
-          additionalContext: "Symptoms recorded successfully.",
-          possibleWarningSigns: isHighRisk ? ["Persistent Headache / Pain Reported"] : [],
-          summary: `Patient reported: ${textToSubmit}`,
-          language,
-        });
-      }
-    } else {
-      const text = textToSubmit.toLowerCase();
-      let extractedDuration = "Not specified";
-      const durMatch = textToSubmit.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(days?|weeks?|months?|hours?)/i);
-      if (durMatch) extractedDuration = durMatch[0];
-
-      setSummary({
-        reportedSymptoms: text.includes("headache") ? ["Headache"] : ["Reported Symptom"],
-        duration: extractedDuration,
-        severity: "Not specified",
-        additionalContext: "Symptoms saved on device.",
-        possibleWarningSigns: [],
-        summary: `Patient reported: ${textToSubmit}`,
-        language,
-      });
+    if (result.response?.ai_summary) {
+      setSummary(applyDuration(result.response.ai_summary));
+      return;
     }
+
+    const text = textToSubmit.toLowerCase();
+    let extractedSeverity = "Not specified";
+    if (text.includes("severe") || text.includes("high") || text.includes("bad"))
+      extractedSeverity = "Severe";
+    else if (text.includes("mild") || text.includes("slight"))
+      extractedSeverity = "Mild";
+
+    const reported: string[] = [];
+    if (text.includes("headache") || text.includes("सिरदर्द") || text.includes("डोकेदुखी"))
+      reported.push("Headache");
+    if (text.includes("fever") || text.includes("बुखार")) reported.push("Fever");
+    if (text.includes("stress")) reported.push("Stress");
+    if (text.includes("dizzy") || text.includes("चक्कर")) reported.push("Dizziness");
+    if (text.includes("pain") || text.includes("दर्द")) reported.push("Pain");
+    if (reported.length === 0) reported.push("Reported Symptom");
+
+    setSummary({
+      reportedSymptoms: reported,
+      duration: fallbackDuration,
+      severity: extractedSeverity,
+      additionalContext: result.response
+        ? "Symptoms recorded successfully."
+        : "Symptoms saved on device.",
+      possibleWarningSigns: [],
+      summary: `Patient reported: ${textToSubmit}`,
+      language,
+    });
   };
 
   return (
@@ -222,10 +205,7 @@ export default function VoiceAssistantPage() {
         roleBadge={<RoleBadge role="Patient" />}
       />
 
-      <DisclaimerCard
-        text={t("voiceDisclaimer")}
-        variant="amber"
-      />
+      <DisclaimerCard text={t("voiceDisclaimer")} variant="amber" />
 
       {/* Voice Interaction Main Box */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-sm text-center space-y-6">
@@ -240,6 +220,14 @@ export default function VoiceAssistantPage() {
             {t("speakInDialectInstructions")}
           </p>
         </div>
+
+        {/* Speech Error Banner */}
+        {speechError && (
+          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-semibold flex items-center justify-center gap-2 text-left">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{speechError}</span>
+          </div>
+        )}
 
         {/* Large Microphone Button */}
         <div className="py-4 flex flex-col items-center justify-center">
@@ -256,18 +244,40 @@ export default function VoiceAssistantPage() {
             {isRecording ? (
               <>
                 <MicOff className="w-10 h-10 mb-1" />
-                <span className="text-[10px] font-extrabold uppercase">{t("stopRecording")}</span>
+                <span className="text-[10px] font-extrabold uppercase">
+                  {t("stopRecording")}
+                </span>
               </>
             ) : (
               <>
                 <Mic className="w-10 h-10 mb-1" />
-                <span className="text-[10px] font-extrabold uppercase">{t("tapAndSpeak")}</span>
+                <span className="text-[10px] font-extrabold uppercase">
+                  {t("tapAndSpeak")}
+                </span>
               </>
             )}
           </button>
-          <span className="text-xs font-semibold text-slate-600 mt-3">
-            {isRecording ? t("listeningToVoice") : t("clickToSpeakSymptoms")}
-          </span>
+
+          <div className="mt-3 flex flex-col items-center space-y-1">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              {isRecording ? (
+                <>
+                  <Radio className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+                  <span className="text-rose-700">{t("voiceKeepListeningHint")}</span>
+                </>
+              ) : (
+                <span>{t("clickToSpeakSymptoms")}</span>
+              )}
+            </span>
+            {isRecording ? (
+              <span className="text-[11px] text-slate-500 max-w-sm flex items-center gap-1">
+                <Info className="w-3 h-3 text-teal-600 shrink-0" />
+                {t("voicePauseOkHint")}
+              </span>
+            ) : (
+              <span className="text-[11px] text-slate-500 max-w-sm">{t("voiceAppendHint")}</span>
+            )}
+          </div>
         </div>
 
         {/* Editable transcript confirmation step */}
@@ -277,7 +287,9 @@ export default function VoiceAssistantPage() {
               <Volume2 className="w-4 h-4 text-teal-700" />
               {t("reviewTranscriptLabel")}
             </span>
-            <span className="text-[10px] font-mono text-slate-400">{t("audioPreview")}</span>
+            <span className="text-[10px] font-mono text-slate-400">
+              {isRecording ? "Live Transcript" : t("audioPreview")}
+            </span>
           </div>
           <textarea
             value={transcript}
@@ -337,7 +349,11 @@ export default function VoiceAssistantPage() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="button"
-              onClick={resetSummaryState}
+              onClick={() => {
+                resetSummaryState();
+                setTranscript("");
+                setHasUserEdited(true);
+              }}
               className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm inline-flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
@@ -428,7 +444,9 @@ export default function VoiceAssistantPage() {
               </div>
             </div>
 
-            <div className="text-xs font-extrabold text-emerald-950 text-sm leading-snug">{summary.summary}</div>
+            <div className="text-xs font-extrabold text-emerald-950 text-sm leading-snug">
+              {summary.summary}
+            </div>
 
             {summary.reportedSymptoms.length > 0 && (
               <div className="text-xs text-emerald-900">
@@ -468,7 +486,13 @@ export default function VoiceAssistantPage() {
 
         <div className="pt-4 border-t border-slate-100 flex justify-end">
           <Link
-            href={`/patient/symptoms?transcript=${encodeURIComponent(transcript)}&headache=${transcript.toLowerCase().includes("headache") ? "yes" : "no"}&duration=${encodeURIComponent(summary?.duration || "")}`}
+            href={`/patient/symptoms?transcript=${encodeURIComponent(
+              transcript
+            )}&headache=${
+              /headache|सिरदर्द|डोकेदुखी/i.test(transcript) ? "yes" : "no"
+            }&duration=${encodeURIComponent(
+              resolveDuration(summary?.duration, transcript)
+            )}`}
             className="w-full sm:w-auto px-6 py-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-sm transition-colors inline-flex items-center justify-center gap-2 shadow-sm cursor-pointer"
           >
             <span>{t("proceedToSymptomChecklist")}</span>

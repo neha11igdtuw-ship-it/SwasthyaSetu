@@ -7,10 +7,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { useAppState } from "@/lib/store/AppStateProvider";
-import { derivePatientGaps } from "@/lib/careGaps";
 import { patientsApi, ApiError } from "@/lib/api/client";
-import type { PatientOut } from "@/lib/api/types";
+import { patientOutToHealthWorkerPatient } from "@/lib/api/adapters";
+import { derivePatientGaps } from "@/lib/careGaps";
+import type { HealthWorkerPatient } from "@/lib/mockData";
+import { Loader2 } from "lucide-react";
 import {
   User,
   PhoneCall,
@@ -30,31 +31,28 @@ export default function HWPatientDetailPage() {
   const { t } = useLanguage();
   const params = useParams();
   const router = useRouter();
-  const { patients, referrals, hwFollowUps, patientMedicines } = useAppState();
 
-  const patientId = (params?.id as string) || "P-7821";
+  const patientId = params?.id as string;
 
-  // Find matching patient from local mock context, or fall back to the first entry.
-  const localPatient = patients.find((p) => p.id === patientId) || patients[0];
-
-  const [remotePatient, setRemotePatient] = useState<PatientOut | null>(null);
+  const [patient, setPatient] = useState<HealthWorkerPatient | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!patientId) return;
       try {
         const data = await patientsApi.get(patientId);
-        if (!cancelled) setRemotePatient(data);
+        if (!cancelled) setPatient(patientOutToHealthWorkerPatient(data));
       } catch (err) {
         if (!cancelled) {
-          setRemotePatient(null);
           setLoadError(
-            err instanceof ApiError
-              ? `Server record unavailable (${err.message}); showing locally cached details.`
-              : null
+            err instanceof ApiError ? err.message : "Could not load this patient from the server."
           );
         }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -62,22 +60,25 @@ export default function HWPatientDetailPage() {
     };
   }, [patientId]);
 
-  // Overlay real backend fields (name/phone/village) onto the richer mock shape
-  // used by the rest of this page (vitals, care pathway, etc. are not yet in the API).
-  const patient = remotePatient
-    ? {
-        ...localPatient,
-        id: remotePatient.id,
-        name: remotePatient.full_name,
-        phone: remotePatient.phone || localPatient.phone,
-        village: remotePatient.village || localPatient.village,
-      }
-    : localPatient;
-
   const [contacted, setContacted] = useState(false);
 
-  // Derived gaps
-  const derivedGaps = derivePatientGaps(patient, referrals, hwFollowUps, patientMedicines);
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-slate-500 p-8">
+        <Loader2 className="w-4 h-4 animate-spin" /> Loading patient…
+      </div>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold">
+        {loadError || "Patient not found."}
+      </div>
+    );
+  }
+
+  const derivedGaps = derivePatientGaps(patient, [], [], []);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">

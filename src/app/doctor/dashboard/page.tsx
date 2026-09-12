@@ -14,6 +14,7 @@ import {
   ApiError,
 } from "@/lib/api/client";
 import type { ReferralOut, PatientOut, DoctorAvailabilityOut } from "@/lib/api/types";
+import { LabReportForm } from "@/components/care/LabReportForm";
 import {
   Stethoscope,
   AlertTriangle,
@@ -21,6 +22,7 @@ import {
   Calendar,
   ShieldCheck,
   Loader2,
+  Plus,
 } from "lucide-react";
 
 export default function DoctorDashboardPage() {
@@ -32,6 +34,8 @@ export default function DoctorDashboardPage() {
   const [referrals, setReferrals] = useState<ReferralOut[]>([]);
   const [patientsById, setPatientsById] = useState<Record<string, PatientOut>>({});
   const [slots, setSlots] = useState<DoctorAvailabilityOut[]>([]);
+  const [showLabForm, setShowLabForm] = useState(false);
+  const [labSuccess, setLabSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,6 +89,11 @@ export default function DoctorDashboardPage() {
         roleBadge={<RoleBadge role="Doctor" />}
       />
 
+      {labSuccess && (
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
+          {labSuccess}
+        </div>
+      )}
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
           {error}
@@ -181,7 +190,31 @@ export default function DoctorDashboardPage() {
               )}
             </div>
           </div>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">Lab tests & reports</h2>
+                <p className="text-xs text-slate-500">Upload a report so the patient sees it on Lab Tests.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLabForm(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold cursor-pointer"
+              >
+                <Plus className="w-4 h-4" /> Add Lab Test / Upload Report
+              </button>
+            </div>
+          </div>
         </>
+      )}
+      {showLabForm && (
+        <LabReportForm
+          onClose={() => setShowLabForm(false)}
+          onSaved={() => {
+            setShowLabForm(false);
+            setLabSuccess("Report uploaded. The patient will see it after refresh.");
+          }}
+        />
       )}
     </div>
   );

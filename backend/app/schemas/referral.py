@@ -6,6 +6,14 @@ from app.models.enums import ReferralStatus
 from app.schemas.common import ORMBase
 
 
+class CareRequestCreate(BaseModel):
+    main_concern: str
+    symptoms: str | None = None
+    preferred_language: str | None = None
+    urgency: str = "MEDIUM"
+    notes: str | None = None
+
+
 class ReferralCreate(BaseModel):
     patient_id: uuid.UUID
     from_facility_id: uuid.UUID | None = None

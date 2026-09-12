@@ -63,13 +63,16 @@ async def test_diagnostic_order_and_report(client, auth_headers):
     report = resp.json()
     assert report["diagnostic_order_id"] == order["id"]
 
-    resp = await client.patch(
-        f"/api/v1/diagnostics/orders/{order['id']}",
-        json={"base_version": order["version"], "status": "COMPLETED"},
+    listed = await client.get(
+        "/api/v1/diagnostics/orders",
+        params={"patient_id": patient_id},
         headers=auth_headers,
     )
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "COMPLETED"
+    assert listed.status_code == 200
+    updated = next(o for o in listed.json() if o["id"] == order["id"])
+    assert updated["status"] == "COMPLETED"
+    assert updated["report_id"] == report["id"]
+    assert updated["result_summary"] == "Protein 2+"
 
 
 async def test_prescription_decrements_inventory(client, auth_headers, facility):

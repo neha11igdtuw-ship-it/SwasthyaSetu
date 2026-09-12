@@ -5,7 +5,6 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { useAppState } from "@/lib/store/AppStateProvider";
 import { patientsApi, ApiError } from "@/lib/api/client";
 import { CheckCircle2, UserPlus, ArrowLeft, Loader2 } from "lucide-react";
 
@@ -13,7 +12,6 @@ type CarePathwayOption = "Maternal Care" | "Hypertension" | "Diabetes" | "Genera
 
 export default function HWRegisterPatientPage() {
   const { t } = useLanguage();
-  const { addPatient } = useAppState();
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,36 +35,21 @@ export default function HWRegisterPatientPage() {
     setSubmitting(true);
 
     try {
-      const created = await patientsApi.create({
+      await patientsApi.create({
         full_name: formData.fullName,
+        age: parseInt(formData.age, 10) || undefined,
+        gender: formData.carePathway === "Maternal Care" ? "F" : undefined,
         phone: formData.phone,
         village: formData.village,
+        care_pathway: formData.carePathway,
+        pregnancy_week:
+          formData.carePathway === "Maternal Care" ? parseInt(formData.pregnancyWeek, 10) || undefined : undefined,
+        preferred_language: formData.preferredLanguage,
+        expected_delivery_date: formData.carePathway === "Maternal Care" ? formData.edd : undefined,
+        systolic_bp: parseInt(formData.systolicBp, 10) || undefined,
+        diastolic_bp: parseInt(formData.diastolicBp, 10) || undefined,
+        pulse: parseInt(formData.pulse, 10) || undefined,
       });
-
-      addPatient({
-        id: created.id,
-        name: formData.fullName,
-        age: parseInt(formData.age) || 24,
-        village: formData.village,
-        phone: formData.phone,
-        carePathway: formData.carePathway,
-        pregnancyWeek: formData.carePathway === "Maternal Care" ? parseInt(formData.pregnancyWeek) || 24 : undefined,
-        edd: formData.carePathway === "Maternal Care" ? formData.edd : undefined,
-        riskLevel: "Low Risk",
-        lastVisit: "Today",
-        nextFollowUp: "Next Week",
-        referralStatus: "None",
-        careGaps: [],
-        requiredAction: "Routine checkup and vitals log",
-        preferredLanguage: formData.preferredLanguage,
-        vitals: {
-          bp: `${formData.systolicBp}/${formData.diastolicBp}`,
-          hemoglobin: "11.5",
-        },
-        latestSymptoms: ["Routine Checkup"],
-        uploadedDocuments: [],
-      });
-
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to register patient with server.");

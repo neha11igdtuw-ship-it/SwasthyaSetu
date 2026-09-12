@@ -6,7 +6,7 @@ pytestmark = pytest.mark.asyncio
 async def test_create_and_get_patient(client, auth_headers):
     resp = await client.post(
         "/api/v1/patients",
-        json={"full_name": "Ram Kumar", "gender": "M", "village": "Rampur"},
+        json={"full_name": "Anita Devi", "gender": "F", "village": "Rampur", "age": 24},
         headers=auth_headers,
     )
     assert resp.status_code == 201, resp.text
@@ -15,7 +15,8 @@ async def test_create_and_get_patient(client, auth_headers):
 
     resp = await client.get(f"/api/v1/patients/{patient['id']}", headers=auth_headers)
     assert resp.status_code == 200
-    assert resp.json()["full_name"] == "Ram Kumar"
+    assert resp.json()["full_name"] == "Anita Devi"
+    assert resp.json()["date_of_birth"] is not None
 
 
 async def test_update_patient_optimistic_concurrency(client, auth_headers):
@@ -64,3 +65,28 @@ async def test_delete_patient_requires_base_version(client, auth_headers):
 
     resp = await client.get(f"/api/v1/patients/{patient['id']}", headers=auth_headers)
     assert resp.status_code == 404
+
+
+async def test_create_patient_persists_maternal_fields(client, auth_headers):
+    resp = await client.post(
+        "/api/v1/patients",
+        json={
+            "full_name": "Meena Kumari",
+            "gender": "F",
+            "village": "Rampur Village",
+            "age": 25,
+            "care_pathway": "Maternal Care",
+            "pregnancy_week": 24,
+            "preferred_language": "Hindi",
+            "systolic_bp": 118,
+            "diastolic_bp": 76,
+            "pulse": 80,
+        },
+        headers=auth_headers,
+    )
+    assert resp.status_code == 201, resp.text
+    body = resp.json()
+    assert body["care_pathway"] == "Maternal Care"
+    assert body["pregnancy_week"] == 24
+    assert body["preferred_language"] == "Hindi"
+    assert body["date_of_birth"] is not None

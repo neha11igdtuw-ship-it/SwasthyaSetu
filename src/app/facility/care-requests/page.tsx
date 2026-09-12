@@ -55,7 +55,11 @@ export default function FacilityCareRequestsPage() {
     loadData();
   }, []);
 
-  const handleTransition = async (id: string, version: number, status: "ACCEPTED" | "REJECTED") => {
+  const handleTransition = async (
+    id: string,
+    version: number,
+    status: "ACCEPTED" | "REJECTED" | "IN_TRANSIT" | "COMPLETED"
+  ) => {
     setActingId(id);
     setError(null);
     try {
@@ -141,6 +145,30 @@ export default function FacilityCareRequestsPage() {
                   >
                     {actingId === raw.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                     Accept
+                  </button>
+                </div>
+              )}
+              {raw.status === "ACCEPTED" && (
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                  <button
+                    type="button"
+                    disabled={actingId === raw.id}
+                    onClick={() => handleTransition(raw.id, raw.version, "IN_TRANSIT")}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold disabled:opacity-60 cursor-pointer"
+                  >
+                    Mark patient visit
+                  </button>
+                </div>
+              )}
+              {raw.status === "IN_TRANSIT" && (
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                  <button
+                    type="button"
+                    disabled={actingId === raw.id}
+                    onClick={() => handleTransition(raw.id, raw.version, "COMPLETED")}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold disabled:opacity-60 cursor-pointer"
+                  >
+                    Close care request
                   </button>
                 </div>
               )}

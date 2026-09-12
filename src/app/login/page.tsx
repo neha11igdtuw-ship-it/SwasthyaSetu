@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { authApi, ApiError } from "@/lib/api/client";
@@ -37,9 +37,10 @@ const DEMO_CREDENTIALS: Record<RoleType, { email: string; password: string }> = 
   patient: { email: "patient@swasthyasetu.dev", password: "Patient@123" },
 };
 
-export default function LoginPage() {
+function LoginForm() {
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedRole, setSelectedRole] = useState<RoleType>("hw");
   const [identifier, setIdentifier] = useState(DEMO_CREDENTIALS.hw.email);
   const [accessCode, setAccessCode] = useState(DEMO_CREDENTIALS.hw.password);
@@ -95,8 +96,15 @@ export default function LoginPage() {
     try {
       await authApi.login({ email: identifier, password: accessCode });
       const me = await authApi.me();
-      const route = ROLE_TO_ROUTE[me.role] || "/patient/dashboard";
-      router.push(route);
+      const fallback = ROLE_TO_ROUTE[me.role] || "/patient/dashboard";
+      const next = searchParams.get("next");
+      const roleHome = fallback;
+      const nextAllowed =
+        next &&
+        next.startsWith("/") &&
+        !next.startsWith("//") &&
+        (next.startsWith(roleHome.replace("/dashboard", "")) || next === roleHome);
+      router.push(nextAllowed ? next : fallback);
     } catch (err) {
       const message =
         err instanceof ApiError ? err.message : "Unable to reach the server. Please try again.";
@@ -246,5 +254,19 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-sm text-slate-500">
+          Loading…
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

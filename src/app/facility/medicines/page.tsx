@@ -13,24 +13,28 @@ export default function FacilityMedicinesPage() {
   const [inventory, setInventory] = useState<InventoryItemOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actingId, setActingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    const me = await authApi.me();
+    let inv: InventoryItemOut[] = [];
+    if (me.facility_id) {
+      inv = await inventoryApi.list(me.facility_id);
+    } else {
+      const facilities: FacilityOut[] = await facilitiesApi.list();
+      const lists = await Promise.all(facilities.map((f) => inventoryApi.list(f.id)));
+      inv = lists.flat();
+    }
+    setInventory(inv);
+  };
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const me = await authApi.me();
-        let inv: InventoryItemOut[] = [];
-        if (me.facility_id) {
-          inv = await inventoryApi.list(me.facility_id);
-        } else {
-          // ADMIN has no single facility — aggregate inventory across all facilities.
-          const facilities: FacilityOut[] = await facilitiesApi.list();
-          const lists = await Promise.all(facilities.map((f) => inventoryApi.list(f.id)));
-          inv = lists.flat();
-        }
-        if (!cancelled) setInventory(inv);
+        await load();
       } catch (err) {
         if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load inventory from server.");
       } finally {
@@ -41,6 +45,20 @@ export default function FacilityMedicinesPage() {
       cancelled = true;
     };
   }, []);
+
+  const adjust = async (itemId: string, delta: number) => {
+    setActingId(itemId);
+    setError(null);
+    try {
+      await inventoryApi.adjust(itemId, { delta, reason: delta > 0 ? "Stock received" : "Stock issued" });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to update stock.");
+    } finally {
+      setActingId(null);
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -89,15 +107,35 @@ export default function FacilityMedicinesPage() {
                       SKU: {item.sku ?? "—"} • Unit: {item.unit ?? "—"}
                     </span>
                   </div>
-                  <span
-                    className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded ${
-                      item.quantity <= item.reorder_level
-                        ? "bg-rose-100 text-rose-900 border border-rose-200"
-                        : "bg-emerald-100 text-emerald-900 border border-emerald-200"
-                    }`}
-                  >
-                    {item.quantity} in stock (reorder at {item.reorder_level})
-                  </span>
+                  <div className="flex items-center gap-2">
+                      <span
+                        className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded ${
+                          item.quantity <= item.reorder_level
+                            ? "bg-rose-100 text-rose-900 border border-rose-200"
+                            : "bg-emerald-100 text-emerald-900 border border-emerald-200"
+                        }`}
+                      >
+                        {item.quantity} in stock (reorder at {item.reorder_level})
+                      </span>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          disabled={actingId === item.id}
+                          onClick={() => adjust(item.id, -1)}
+                          className="px-2 py-1 rounded-lg bg-white border text-[11px] font-bold cursor-pointer"
+                        >
+                          −
+                        </button>
+                        <button
+                          type="button"
+                          disabled={actingId === item.id}
+                          onClick={() => adjust(item.id, 1)}
+                          className="px-2 py-1 rounded-lg bg-white border text-[11px] font-bold cursor-pointer"
+                        >
+                          +
+                        </button>
+                      </div>
+                  </div>
                 </div>
               ))}
             </div>

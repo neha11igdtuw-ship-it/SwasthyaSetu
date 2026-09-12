@@ -1,5 +1,11 @@
 # SwasthyaSetu Database Design
 
+> **Legacy / reference only.** This document describes an earlier design sketch.
+> The live database schema is defined by SQLAlchemy models in `backend/app/models/`
+> and Alembic migrations in `backend/alembic/versions/`. Do not apply
+> `database/schema.sql` or `database/seed.sql` against the running Postgres
+> instance. Use `alembic upgrade head` and `python -m seed.seed_data` from `backend/`.
+
 ## Database
 PostgreSQL 18
 

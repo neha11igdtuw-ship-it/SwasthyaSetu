@@ -11,7 +11,6 @@ import {
   Calendar,
   AlertCircle,
   ArrowRight,
-  ShieldAlert,
   ChevronRight,
   Mic,
   Stethoscope,
@@ -25,7 +24,6 @@ import {
   Hospital,
   CalendarCheck,
   Sprout,
-  MessageSquare,
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 

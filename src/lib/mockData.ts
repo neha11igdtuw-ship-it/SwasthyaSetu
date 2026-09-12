@@ -35,6 +35,7 @@ export interface NextActionInfo {
 
 export type ReferralStep =
   | "Created"
+  | "Sent"
   | "Accepted"
   | "Patient Visit"
   | "Test Completed"
@@ -104,6 +105,8 @@ export interface NearbyFacility {
   name: string;
   type: "Sub-Centre" | "Primary Health Centre" | "Community Health Centre" | "District Hospital";
   distance: string;
+  latitude?: number;
+  longitude?: number;
   availableServices: string[];
   doctorAvailability: string;
   status: "Available" | "Unavailable";
@@ -170,7 +173,7 @@ export const priyaPatientMock = {
     age: 24,
     location: "Rampur Village, Sub-Centre Rampur",
     pregnancyWeek: 28,
-    assignedASHA: "Meena Devi",
+    assignedASHA: "ANM Sunita Devi",
     assignedASHAPhone: "+91 98765 43210",
     selectedLanguage: "Hindi (हिंदी)",
     vitals: {
@@ -199,14 +202,14 @@ export const priyaPatientMock = {
     facilityType: "District Hospital",
     distance: "8.5 km",
     availableServices: ["Obstetrician Duty", "Blood Bank", "High-Risk Pregnancy Ward", "Ultrasound"],
-    doctorAvailability: "Dr. Ananya Rao (Senior Gynecologist) on duty till 4:00 PM",
+      doctorAvailability: "Dr. Meera Singh (Senior Gynecologist) on duty till 4:00 PM",
     lastUpdated: "Today at 9:30 AM",
     isLive: false,
   } as NextActionInfo,
 
   referral: {
     id: "REF-2026-0891",
-    facilityName: "District Civil Hospital",
+    facilityName: "District Civil Hospital & Maternal Care Centre",
     reason: "Pre-eclampsia screening & Anemia Management",
     priority: "High",
     expectedVisitDate: "Tomorrow, 10:00 AM",
@@ -237,7 +240,7 @@ export const priyaPatientMock = {
       type: "ASHA Visit",
       dueDate: "Sep 8, 2026",
       status: "Due",
-      instructions: "ASHA Meena Devi will visit home for morning BP check.",
+      instructions: "ANM Sunita Devi will visit home for morning BP check.",
     },
     {
       id: "FU-103",
@@ -309,8 +312,8 @@ export const priyaPatientMock = {
   appointments: [
     {
       id: "APT-501",
-      facilityName: "District Civil Hospital",
-      doctorName: "Dr. Ananya Rao",
+      facilityName: "District Civil Hospital & Maternal Care Centre",
+      doctorName: "Dr. Meera Singh",
       specialty: "Gynecology & High-Risk ANC",
       dateTime: "Tomorrow, 10:30 AM",
       status: "Confirmed",
@@ -322,7 +325,7 @@ export const priyaPatientMock = {
       id: "TIM-01",
       date: "Sep 5, 2026",
       type: "ASHA Home Visit",
-      provider: "Meena Devi (ASHA)",
+      provider: "ANM Sunita Devi",
       summary: "High BP recorded (145/92 mmHg). Patient advised rest and referred for hospital checkup.",
       bp: "145/92",
       hb: "9.2",
@@ -353,6 +356,8 @@ export const priyaPatientMock = {
       name: "District Civil Hospital & Maternal Care Centre",
       type: "District Hospital",
       distance: "8.5 km",
+      latitude: 26.8500,
+      longitude: 80.9500,
       availableServices: ["Obstetrician Duty", "Blood Bank", "Ultrasound", "High-Risk ICU"],
       doctorAvailability: "3 Gynecologists Available",
       status: "Available",
@@ -365,6 +370,8 @@ export const priyaPatientMock = {
       name: "Community Health Centre (CHC) Kalyanpur",
       type: "Community Health Centre",
       distance: "4.2 km",
+      latitude: 26.9600,
+      longitude: 81.1800,
       availableServices: ["Medical Officer", "Labor Room", "Basic Diagnostics"],
       doctorAvailability: "Medical Officer on Duty",
       status: "Available",
@@ -377,6 +384,8 @@ export const priyaPatientMock = {
       name: "Sub-Centre Rampur",
       type: "Sub-Centre",
       distance: "0.8 km",
+      latitude: 26.9850,
+      longitude: 81.2020,
       availableServices: ["ANM Checkup", "IFA Meds", "BP Monitoring"],
       doctorAvailability: "ANM Sunita Devi Available",
       status: "Available",
@@ -504,7 +513,7 @@ export const hwReferralsList: HWReferral[] = [
     id: "REF-2026-0891",
     patientId: "P-7821",
     patientName: "Priya Sharma",
-    facilityName: "District Civil Hospital",
+    facilityName: "District Civil Hospital & Maternal Care Centre",
     reason: "Pre-eclampsia screening & Anemia Management",
     priority: "High",
     createdDate: "Sep 5, 2026",
@@ -516,7 +525,7 @@ export const hwReferralsList: HWReferral[] = [
     id: "REF-2026-0895",
     patientId: "P-9012",
     patientName: "Pooja Sharma",
-    facilityName: "District Civil Hospital",
+    facilityName: "District Civil Hospital & Maternal Care Centre",
     reason: "Severe Pre-eclampsia & High BP",
     priority: "High",
     createdDate: "Sep 6, 2026",
@@ -623,7 +632,7 @@ export const mockHealthWorkerData = {
 };
 
 export const mockDoctorData = {
-  doctorName: "Dr. Ananya Rao",
+  doctorName: "Dr. Meera Singh",
   qualification: "MBBS, MD (Obstetrics & Gynecology)",
   facility: "District Civil Hospital & Maternal Care Centre",
   casesAwaitingReview: 8,
@@ -645,7 +654,7 @@ export const mockDoctorData = {
       id: "P-9012",
       patientName: "Pooja Sharma",
       age: 22,
-      referredBy: "ASHA Meena Devi (Sub-Centre Kalyanpur)",
+      referredBy: "ANM Sunita Devi (Sub-Centre Rampur)",
       preliminaryRisk: "High Risk" as const,
       aiSummaryDraft:
         "32-week pregnant female with BP 150/96 mmHg, severe pedal edema, and dizziness. Immediate evaluation required.",

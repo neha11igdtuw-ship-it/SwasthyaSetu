@@ -1,38 +1,41 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
-import { Mic, MicOff, Volume2, ArrowRight, AlertTriangle, Plus, X } from "lucide-react";
+import { useSpeechRecognition } from "@/lib/speech/useSpeechRecognition";
+import { resolveDuration } from "@/lib/symptoms/duration";
+import { assessMaternalRisk, detectSymptomsFromText } from "@/lib/symptoms/assessRisk";
+import { Mic, MicOff, Volume2, ArrowRight, AlertTriangle, Plus, X, Radio } from "lucide-react";
 
 function PatientSymptomsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { updatePatientScreening } = useAppState();
 
   // Read voice assistant URL parameters
   const initialTranscript = searchParams.get("transcript") || "";
-  const initialHeadache = searchParams.get("headache") === "yes";
+  const detected = detectSymptomsFromText(initialTranscript);
+  const initialHeadache = searchParams.get("headache") === "yes" || Boolean(detected.headache);
 
-  // Form state
+  // Form state — start from normal vitals; do not pre-tick danger signs.
   const [pregnancyWeek, setPregnancyWeek] = useState<number>(28);
-  const [systolicBp, setSystolicBp] = useState<string>("145");
-  const [diastolicBp, setDiastolicBp] = useState<string>("92");
+  const [systolicBp, setSystolicBp] = useState<string>("120");
+  const [diastolicBp, setDiastolicBp] = useState<string>("80");
 
-  // Checkbox danger signs
   const [symptoms, setSymptoms] = useState({
-    bleeding: false,
-    abdominalPain: false,
-    headache: initialHeadache || true,
-    blurredVision: true,
-    swelling: true,
-    fever: false,
-    reducedFetalMovement: false,
+    bleeding: Boolean(detected.bleeding),
+    abdominalPain: Boolean(detected.abdominalPain),
+    headache: initialHeadache,
+    blurredVision: searchParams.get("vision") === "yes" || Boolean(detected.blurredVision),
+    swelling: searchParams.get("swelling") === "yes" || Boolean(detected.swelling),
+    fever: Boolean(detected.fever),
+    reducedFetalMovement: Boolean(detected.reducedFetalMovement),
   });
 
   const [customSymptoms, setCustomSymptoms] = useState<string[]>([]);
@@ -50,10 +53,25 @@ function PatientSymptomsContent() {
     setCustomSymptoms((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  const [voiceRecording, setVoiceRecording] = useState(false);
-  const [textSymptomNotes, setTextSymptomNotes] = useState(
-    initialTranscript || "तेज सिरदर्द और धुंधलापन (Severe headache and blurred vision since last night)"
-  );
+  const [textSymptomNotes, setTextSymptomNotes] = useState(initialTranscript);
+  const notesRef = useRef(textSymptomNotes);
+  notesRef.current = textSymptomNotes;
+
+  const { isRecording: voiceRecording, speechError, start: startVoiceRecording, stop: stopVoiceRecording } =
+    useSpeechRecognition({
+      language,
+      getText: () => notesRef.current,
+      isPlaceholder: (text) => !text.trim(),
+      onText: (text) => setTextSymptomNotes(text),
+    });
+
+  const toggleVoiceRecording = () => {
+    if (voiceRecording) {
+      stopVoiceRecording();
+    } else {
+      startVoiceRecording();
+    }
+  };
 
   const handleCheckboxChange = (key: keyof typeof symptoms) => {
     setSymptoms((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -62,18 +80,28 @@ function PatientSymptomsContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    let riskLevel: "High Risk" | "Watch / Moderate" | "Low Risk" = "Low Risk";
-    if (symptoms.headache || symptoms.blurredVision || symptoms.bleeding || parseInt(systolicBp) >= 140) {
-      riskLevel = "High Risk";
-    } else if (symptoms.swelling || symptoms.abdominalPain) {
-      riskLevel = "Watch / Moderate";
-    }
+    const assessment = assessMaternalRisk({
+      systolicBp: parseInt(systolicBp, 10),
+      diastolicBp: parseInt(diastolicBp, 10),
+      headache: symptoms.headache,
+      blurredVision: symptoms.blurredVision,
+      swelling: symptoms.swelling,
+      bleeding: symptoms.bleeding,
+      abdominalPain: symptoms.abdominalPain,
+      fever: symptoms.fever,
+      reducedFetalMovement: symptoms.reducedFetalMovement,
+    });
+    const riskLevel = assessment.riskLevel;
+    const duration = resolveDuration(searchParams.get("duration"), textSymptomNotes);
 
     const activeSymptomsList: string[] = [];
     if (symptoms.headache) activeSymptomsList.push("Continuous Headache");
     if (symptoms.blurredVision) activeSymptomsList.push("Blurred Vision");
     if (symptoms.swelling) activeSymptomsList.push("Swelling");
     if (symptoms.bleeding) activeSymptomsList.push("Vaginal Bleeding");
+    if (symptoms.abdominalPain) activeSymptomsList.push("Abdominal Pain");
+    if (symptoms.fever) activeSymptomsList.push("Fever");
+    if (symptoms.reducedFetalMovement) activeSymptomsList.push("Reduced Fetal Movement");
     activeSymptomsList.push(...customSymptoms);
 
     updatePatientScreening("P-7821", {
@@ -90,6 +118,12 @@ function PatientSymptomsContent() {
       headache: symptoms.headache ? "yes" : "no",
       vision: symptoms.blurredVision ? "yes" : "no",
       swelling: symptoms.swelling ? "yes" : "no",
+      bleeding: symptoms.bleeding ? "yes" : "no",
+      abdominal: symptoms.abdominalPain ? "yes" : "no",
+      fever: symptoms.fever ? "yes" : "no",
+      fetal: symptoms.reducedFetalMovement ? "yes" : "no",
+      duration,
+      notes: textSymptomNotes.slice(0, 400),
     }).toString();
 
     router.push(`/patient/screening?${query}`);
@@ -118,7 +152,7 @@ function PatientSymptomsContent() {
             </span>
             <button
               type="button"
-              onClick={() => setVoiceRecording(!voiceRecording)}
+              onClick={toggleVoiceRecording}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer ${
                 voiceRecording
                   ? "bg-rose-600 text-white animate-pulse"
@@ -129,6 +163,22 @@ function PatientSymptomsContent() {
               <span>{voiceRecording ? t("stopRecording") : t("recordVoiceSymptoms")}</span>
             </button>
           </div>
+
+          {speechError && (
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 p-2 rounded-lg border border-rose-200 dark:border-rose-900">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <span>{speechError}</span>
+            </div>
+          )}
+
+          {voiceRecording ? (
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 p-2 rounded-lg border border-rose-200 dark:border-rose-900">
+              <Radio className="w-3.5 h-3.5 text-rose-600 animate-pulse shrink-0" />
+              <span>{t("voicePauseOkHint")}</span>
+            </div>
+          ) : (
+            <p className="text-[11px] text-teal-800">{t("voiceAppendHint")}</p>
+          )}
 
           <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-teal-100 text-xs text-slate-700 dark:text-slate-300 space-y-1">
             <span className="font-bold text-slate-900 dark:text-white block flex items-center gap-1">

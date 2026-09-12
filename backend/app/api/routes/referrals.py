@@ -3,18 +3,102 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import assert_patient_access, assert_referral_access, get_current_user
+from app.api.deps import assert_patient_access, assert_referral_access, get_current_user, get_own_patient
 from app.core.errors import ForbiddenError
 from app.db.session import get_db
 from app.models.enums import Role
 from app.models.user import User
+from app.repositories.facilities import FacilityRepository
 from app.repositories.patients import PatientRepository
 from app.repositories.referrals import ReferralRepository
-from app.schemas.referral import MatchCandidate, ReferralCreate, ReferralOut, ReferralStatusUpdate
+from app.schemas.referral import (
+    CareRequestCreate,
+    MatchCandidate,
+    ReferralCreate,
+    ReferralOut,
+    ReferralStatusUpdate,
+)
 from app.services.referral_matching import ReferralMatchingService
 from app.services.referrals import ReferralService
 
 router = APIRouter(prefix="/referrals", tags=["referrals"])
+
+_URGENCY_MAP = {
+    "LOW": "ROUTINE",
+    "MEDIUM": "MEDIUM",
+    "HIGH": "URGENT",
+    "ROUTINE": "ROUTINE",
+    "URGENT": "URGENT",
+    "EMERGENCY": "EMERGENCY",
+}
+
+
+async def _pick_destination(db: AsyncSession, from_facility_id: uuid.UUID | None) -> uuid.UUID | None:
+    facilities = await FacilityRepository(db).list_all()
+    if not facilities:
+        return from_facility_id
+    hospitals = [
+        f
+        for f in facilities
+        if f.facility_type.upper() in {"HOSPITAL", "DH", "CHC", "DISTRICT_HOSPITAL"}
+        and f.id != from_facility_id
+    ]
+    if hospitals:
+        return hospitals[0].id
+    other = next((f.id for f in facilities if f.id != from_facility_id), None)
+    return other or from_facility_id
+
+
+@router.get("/me", response_model=list[ReferralOut])
+async def list_my_referrals(
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    patient = await get_own_patient(db, user)
+    return await ReferralRepository(db).list_active(patient_id=patient.id)
+
+
+@router.post("/request-care", response_model=ReferralOut, status_code=201)
+async def request_care(
+    data: CareRequestCreate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    patient = await get_own_patient(db, user)
+    note_parts = []
+    if data.symptoms:
+        note_parts.append(f"Symptoms: {data.symptoms}")
+    if data.preferred_language:
+        note_parts.append(f"Language: {data.preferred_language}")
+    if data.notes:
+        note_parts.append(data.notes)
+    payload = ReferralCreate(
+        patient_id=patient.id,
+        from_facility_id=patient.facility_id,
+        to_facility_id=await _pick_destination(db, patient.facility_id),
+        reason=data.main_concern,
+        specialty_needed=data.main_concern[:64],
+        urgency=_URGENCY_MAP.get(data.urgency.upper(), "MEDIUM"),
+        notes=" | ".join(note_parts) or None,
+    )
+    return await ReferralService(db).create(payload, created_by_id=user.id)
+
+
+@router.get("/match/candidates", response_model=list[MatchCandidate])
+async def match_candidates(
+    from_facility_id: uuid.UUID | None = None,
+    specialty_needed: str | None = None,
+    limit: int = 5,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if user.role == Role.PATIENT:
+        raise ForbiddenError("Patients cannot search referral candidates")
+    if user.role != Role.ADMIN and from_facility_id not in (None, user.facility_id):
+        raise ForbiddenError("You may only search candidates from your own facility")
+    return await ReferralMatchingService(db).find_candidates(
+        from_facility_id, specialty_needed, limit
+    )
 
 
 @router.get("", response_model=list[ReferralOut])
@@ -27,11 +111,10 @@ async def list_referrals(
     if user.role == Role.ADMIN:
         return await repo.list_active(patient_id=patient_id)
     if user.role == Role.PATIENT:
-        patient = await PatientRepository(db).get(patient_id) if patient_id else None
-        if patient_id is None or patient is None or patient.user_id != user.id:
+        own = await get_own_patient(db, user)
+        if patient_id is not None and patient_id != own.id:
             raise ForbiddenError("Patients may only list their own referrals")
-        return await repo.list_active(patient_id=patient_id)
-    # Facility-scoped staff: only referrals touching their own facility.
+        return await repo.list_active(patient_id=own.id)
     all_active = await repo.list_active(patient_id=patient_id)
     return [
         r
@@ -73,12 +156,11 @@ async def get_referral(
     return referral
 
 
-@router.post("/{referral_id}/transition", response_model=ReferralOut)
-async def transition_referral(
+async def _transition_referral(
     referral_id: uuid.UUID,
     data: ReferralStatusUpdate,
-    db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    db: AsyncSession,
+    user: User,
 ):
     repo = ReferralRepository(db)
     referral = await repo.get_or_404(referral_id)
@@ -90,18 +172,21 @@ async def transition_referral(
     )
 
 
-@router.get("/match/candidates", response_model=list[MatchCandidate])
-async def match_candidates(
-    from_facility_id: uuid.UUID | None = None,
-    specialty_needed: str | None = None,
-    limit: int = 5,
+@router.patch("/{referral_id}/status", response_model=ReferralOut)
+async def update_referral_status(
+    referral_id: uuid.UUID,
+    data: ReferralStatusUpdate,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    if user.role == Role.PATIENT:
-        raise ForbiddenError("Patients cannot search referral candidates")
-    if user.role != Role.ADMIN and from_facility_id not in (None, user.facility_id):
-        raise ForbiddenError("You may only search candidates from your own facility")
-    return await ReferralMatchingService(db).find_candidates(
-        from_facility_id, specialty_needed, limit
-    )
+    return await _transition_referral(referral_id, data, db, user)
+
+
+@router.post("/{referral_id}/transition", response_model=ReferralOut)
+async def transition_referral(
+    referral_id: uuid.UUID,
+    data: ReferralStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return await _transition_referral(referral_id, data, db, user)

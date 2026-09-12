@@ -14,6 +14,7 @@ class AppointmentCreate(BaseModel):
     availability_id: uuid.UUID | None = None
     scheduled_at: datetime
     reason: str | None = None
+    notes: str | None = None
 
 
 class AppointmentUpdate(BaseModel):
@@ -21,6 +22,12 @@ class AppointmentUpdate(BaseModel):
     scheduled_at: datetime | None = None
     status: AppointmentStatus | None = None
     reason: str | None = None
+
+
+class AppointmentStatusUpdate(BaseModel):
+    base_version: int
+    status: AppointmentStatus
+    scheduled_at: datetime | None = None
 
 
 class AppointmentOut(ORMBase):
@@ -61,12 +68,15 @@ class DiagnosticOrderOut(ORMBase):
     status: DiagnosticOrderStatus
     version: int
     is_deleted: bool
+    report_id: uuid.UUID | None = None
+    result_summary: str | None = None
 
 
 class DiagnosticReportCreate(BaseModel):
     diagnostic_order_id: uuid.UUID
     result_summary: str | None = None
     result_data: str | None = None
+    result_status: str | None = None
 
 
 class DiagnosticReportOut(ORMBase):
@@ -99,3 +109,7 @@ class PrescriptionOut(ORMBase):
     status: PrescriptionStatus
     version: int
     is_deleted: bool
+    item_name: str | None = None
+    stock_quantity: int | None = None
+    facility_name: str | None = None
+    prescribed_by_name: str | None = None

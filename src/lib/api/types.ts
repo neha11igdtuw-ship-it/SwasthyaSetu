@@ -29,6 +29,17 @@ export interface UserLogin {
   password: string;
 }
 
+export interface UserRegister {
+  email: string;
+  password: string;
+  full_name: string;
+  role: Role;
+  phone?: string | null;
+  facility_id?: string | null;
+  village?: string | null;
+  preferred_language?: string | null;
+}
+
 export interface PatientOut {
   id: string;
   full_name: string;
@@ -36,6 +47,10 @@ export interface PatientOut {
   gender: string | null;
   phone: string | null;
   village: string | null;
+  care_pathway: string | null;
+  pregnancy_week: number | null;
+  preferred_language: string | null;
+  emergency_contact: string | null;
   abha_id: string | null;
   facility_id: string | null;
   version: number;
@@ -45,9 +60,17 @@ export interface PatientOut {
 export interface PatientCreate {
   full_name: string;
   date_of_birth?: string | null;
+  age?: number | null;
   gender?: string | null;
   phone?: string | null;
   village?: string | null;
+  care_pathway?: string | null;
+  pregnancy_week?: number | null;
+  preferred_language?: string | null;
+  expected_delivery_date?: string | null;
+  systolic_bp?: number | null;
+  diastolic_bp?: number | null;
+  pulse?: number | null;
   abha_id?: string | null;
   facility_id?: string | null;
 }
@@ -56,9 +79,14 @@ export interface PatientUpdate {
   base_version: number;
   full_name?: string | null;
   date_of_birth?: string | null;
+  age?: number | null;
   gender?: string | null;
   phone?: string | null;
   village?: string | null;
+  care_pathway?: string | null;
+  pregnancy_week?: number | null;
+  preferred_language?: string | null;
+  emergency_contact?: string | null;
   abha_id?: string | null;
   facility_id?: string | null;
 }
@@ -96,6 +124,14 @@ export interface ReferralCreate {
   notes?: string | null;
 }
 
+export interface CareRequestCreate {
+  main_concern: string;
+  symptoms?: string | null;
+  preferred_language?: string | null;
+  urgency?: "LOW" | "MEDIUM" | "HIGH" | string;
+  notes?: string | null;
+}
+
 export interface ReferralStatusUpdate {
   base_version: number;
   status: ReferralStatus;
@@ -108,6 +144,35 @@ export interface MatchCandidate {
   score: number;
   distance_km: number | null;
   reasons: string[];
+}
+
+export interface AppointmentOut {
+  id: string;
+  patient_id: string;
+  facility_id: string | null;
+  referral_id: string | null;
+  availability_id: string | null;
+  scheduled_at: string;
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+  reason: string | null;
+  version: number;
+  is_deleted: boolean;
+}
+
+export interface AppointmentCreate {
+  patient_id: string;
+  facility_id?: string | null;
+  referral_id?: string | null;
+  availability_id?: string | null;
+  scheduled_at: string;
+  reason?: string | null;
+  notes?: string | null;
+}
+
+export interface AppointmentStatusUpdate {
+  base_version: number;
+  status: AppointmentOut["status"];
+  scheduled_at?: string | null;
 }
 
 export interface FacilityOut {
@@ -167,6 +232,22 @@ export interface SymptomOut {
   is_deleted: boolean;
 }
 
+export interface SelfVitalCreate {
+  systolic_bp?: number | null;
+  diastolic_bp?: number | null;
+  pulse?: number | null;
+  temperature_c?: number | null;
+  weight_kg?: number | null;
+  spo2?: number | null;
+  notes?: string | null;
+}
+
+export interface SelfSymptomCreate {
+  description: string;
+  severity?: string | null;
+  notes?: string | null;
+}
+
 export interface VitalCreate {
   encounter_id: string;
   systolic_bp?: number | null;
@@ -191,7 +272,7 @@ export interface VitalOut {
   is_deleted: boolean;
 }
 
-export type RiskLevel = "LOW" | "MODERATE" | "HIGH" | "CRITICAL";
+export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
 
 export interface ScreeningCreate {
   encounter_id: string;
@@ -232,6 +313,24 @@ export interface DiagnosticOrderOut {
   status: DiagnosticOrderStatus;
   version: number;
   is_deleted: boolean;
+  report_id?: string | null;
+  result_summary?: string | null;
+}
+
+export interface DiagnosticReportCreate {
+  diagnostic_order_id: string;
+  result_summary?: string | null;
+  result_data?: string | null;
+  result_status?: string | null;
+}
+
+export interface DiagnosticOrderCreate {
+  patient_id: string;
+  facility_id?: string | null;
+  encounter_id?: string | null;
+  screening_id?: string | null;
+  referral_id?: string | null;
+  test_type: string;
 }
 
 export interface DiagnosticReportOut {
@@ -259,6 +358,10 @@ export interface PrescriptionOut {
   status: PrescriptionStatus;
   version: number;
   is_deleted: boolean;
+  item_name?: string | null;
+  stock_quantity?: number | null;
+  facility_name?: string | null;
+  prescribed_by_name?: string | null;
 }
 
 // ---- Maternal: pregnancies ----
@@ -288,6 +391,18 @@ export interface InventoryItemOut {
   quantity: number;
   reorder_level: number;
   version: number;
+}
+
+export interface NearbyInventoryOut {
+  item_id: string;
+  name: string;
+  facility_id: string;
+  facility_name: string;
+  quantity: number;
+  reorder_level: number;
+  unit: string;
+  status: "AVAILABLE" | "LOW_STOCK" | "OUT_OF_STOCK" | string;
+  distance_km: number | null;
 }
 
 // ---- Doctor availability ----
