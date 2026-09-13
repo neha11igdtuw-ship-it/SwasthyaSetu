@@ -7,6 +7,7 @@ import { FacilityCard } from "@/components/patient/FacilityCard";
 import { priyaPatientMock, NearbyFacility } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { facilitiesApi, FacilityOut } from "@/lib/api/client";
+import { getNearbyHospitals } from "@/lib/osmFacilities";
 import {
   DEFAULT_VILLAGE_LOCATION,
   calculateHaversineDistance,
@@ -41,6 +42,26 @@ export default function PatientFacilitiesPage() {
     "Detecting your live location..."
   );
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
+
+  // Fetch live nearby facilities from OpenStreetMap Overpass API for the given coords
+  const loadLiveFacilities = useCallback((lat: number, lng: number) => {
+    getNearbyHospitals(lat, lng)
+      .then((liveFacilities) => {
+        if (liveFacilities.length > 0) {
+          setFacilities(liveFacilities);
+          setUsingFallbackData(false);
+        } else {
+          setFacilities(priyaPatientMock.nearbyFacilities);
+          setUsingFallbackData(true);
+        }
+      })
+      .catch((err) => {
+        console.warn("Overpass API request failed, falling back to mock data:", err);
+        setFacilities(priyaPatientMock.nearbyFacilities);
+        setUsingFallbackData(true);
+      });
+  }, []);
 
   // Request browser GPS position
   const detectLiveLocation = useCallback(() => {
@@ -64,6 +85,7 @@ export default function PatientFacilitiesPage() {
           `Live GPS position acquired (${formatCoordinates(latitude, longitude)}).`
         );
         setLastUpdatedTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+        loadLiveFacilities(latitude, longitude);
       },
       (err) => {
         console.warn("Geolocation permission or position error:", err.message);
@@ -83,7 +105,7 @@ export default function PatientFacilitiesPage() {
         maximumAge: 30000,
       }
     );
-  }, []);
+  }, [loadLiveFacilities]);
 
   // Fetch facilities from API and merge with mock coordinates if needed
   useEffect(() => {
@@ -248,6 +270,12 @@ export default function PatientFacilitiesPage() {
             Sorted by nearest proximity
           </span>
         </div>
+
+        {usingFallbackData && (
+          <p className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">
+            Showing sample data — live facility lookup unavailable.
+          </p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {facilitiesWithDistance.map((fac) => (

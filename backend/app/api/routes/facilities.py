@@ -9,6 +9,7 @@ from app.db.session import get_db
 from app.models.enums import Role
 from app.repositories.facilities import FacilityRepository
 from app.schemas.common import IDModel
+from app.services.osm_facilities import search_osm_health_facilities
 
 router = APIRouter(prefix="/facilities", tags=["facilities"])
 
@@ -38,7 +39,10 @@ class FacilityOut(IDModel):
 
 
 @router.get("", response_model=list[FacilityOut])
-async def list_facilities(db: AsyncSession = Depends(get_db), _=Depends(get_current_user)):
+async def list_facilities(
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
     return await FacilityRepository(db).list_all()
 
 
@@ -53,9 +57,33 @@ async def create_facility(
     return facility
 
 
+@router.get("/nearby/osm")
+async def nearby_osm_facilities(
+    lat: float,
+    lng: float,
+    radius_km: int = 10,
+):
+    radius_m = radius_km * 1000
+
+    facilities = await search_osm_health_facilities(
+        lat=lat,
+        lng=lng,
+        radius_m=radius_m,
+    )
+
+    return {
+        "source": "OpenStreetMap",
+        "verification_note": "Public map data. Please call before visiting.",
+        "count": len(facilities),
+        "facilities": facilities,
+    }
+
+
 @router.get("/{facility_id}", response_model=FacilityOut)
 async def get_facility(
-    facility_id: uuid.UUID, db: AsyncSession = Depends(get_db), _=Depends(get_current_user)
+    facility_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
 ):
     from app.core.errors import NotFoundError
 
