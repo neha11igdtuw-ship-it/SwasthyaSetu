@@ -16,9 +16,13 @@ import {
   ShieldCheck,
   CheckCircle2,
   Loader2,
+  KeyRound,
+  Mail,
+  Send,
 } from "lucide-react";
 
 type RoleType = "patient" | "hw" | "doctor" | "facility";
+type LoginMode = "password" | "abha";
 
 const ROLE_TO_ROUTE: Record<Role, string> = {
   PATIENT: "/patient/dashboard",
@@ -46,6 +50,12 @@ function LoginForm() {
   const [accessCode, setAccessCode] = useState(DEMO_CREDENTIALS.hw.password);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [loginMode, setLoginMode] = useState<LoginMode>("password");
+  const [abhaId, setAbhaId] = useState("");
+  const [abhaOtp, setAbhaOtp] = useState("");
+  const [abhaOtpSent, setAbhaOtpSent] = useState(false);
+  const [abhaNote, setAbhaNote] = useState<string | null>(null);
 
   const roles = [
     {
@@ -89,8 +99,38 @@ function LoginForm() {
     setAccessCode(creds.password);
   };
 
+  const isValidAbhaId = (value: string) => {
+    const digitsOnly = value.replace(/-/g, "");
+    return /^\d{14}$/.test(digitsOnly) || /^[\w.]+@abdm$/.test(value.trim());
+  };
+
+  const handleSendAbhaOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAbhaNote(null);
+    if (!isValidAbhaId(abhaId)) {
+      setAbhaNote("Enter a valid 14-digit ABHA number or ABHA address (e.g. name@abdm).");
+      return;
+    }
+    setAbhaOtpSent(true);
+    setAbhaNote("OTP sent to your ABHA-linked mobile number.");
+  };
+
+  const handleVerifyAbhaOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (abhaOtp.trim().length !== 6) {
+      setAbhaNote("Enter the 6-digit OTP sent to your registered mobile number.");
+      return;
+    }
+    setAbhaNote(
+      "ABHA verification requires live NHA/ABDM sandbox credentials, which aren't wired up in this demo yet. Please continue with email & password for now."
+    );
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loginMode === "abha") {
+      return abhaOtpSent ? handleVerifyAbhaOtp(e) : handleSendAbhaOtp(e);
+    }
     setError(null);
     setLoading(true);
     try {
@@ -180,58 +220,155 @@ function LoginForm() {
               </div>
             </div>
 
-            {/* Input fields */}
-            <div className="space-y-4 text-xs">
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. worker@swasthyasetu.dev"
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value)}
-                  placeholder="Password"
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
-                />
-              </div>
+            {/* Login mode switcher */}
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/40">
+              <button
+                type="button"
+                onClick={() => setLoginMode("password")}
+                className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                  loginMode === "password"
+                    ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-300 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                Email &amp; Password
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMode("abha")}
+                className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
+                  loginMode === "abha"
+                    ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-300 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                Login with ABHA ID
+              </button>
             </div>
 
-            {error && (
-              <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
-                {error}
+            {loginMode === "password" ? (
+              <>
+                {/* Input fields */}
+                <div className="space-y-4 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="e.g. worker@swasthyasetu.dev"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      required
+                      value={accessCode}
+                      onChange={(e) => setAccessCode(e.target.value)}
+                      placeholder="Password"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
+                    {error}
+                  </div>
+                )}
+
+                {/* Primary Action Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white font-extrabold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                >
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <span>{t("continueBtn")}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </>
+            ) : (
+              <div className="space-y-4 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    ABHA Number / ABHA Address
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={abhaId}
+                    onChange={(e) => {
+                      setAbhaId(e.target.value);
+                      setAbhaOtpSent(false);
+                      setAbhaNote(null);
+                    }}
+                    placeholder="14-2345-6789-0123 or name@abdm"
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                {abhaOtpSent && (
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      OTP
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={abhaOtp}
+                      onChange={(e) => setAbhaOtp(e.target.value.replace(/\D/g, ""))}
+                      placeholder="6-digit OTP"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white tracking-widest"
+                    />
+                  </div>
+                )}
+
+                {abhaNote && (
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 text-amber-900 dark:text-amber-200 text-xs font-semibold">
+                    {abhaNote}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={abhaOtpSent ? handleVerifyAbhaOtp : handleSendAbhaOtp}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                >
+                  {abhaOtpSent ? (
+                    <>
+                      <span>Verify &amp; Continue</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Send OTP</span>
+                    </>
+                  )}
+                </button>
+
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
+                  ABHA (Ayushman Bharat Health Account) lets you sign in using your national health ID.
+                </p>
               </div>
             )}
-
-            {/* Primary Action Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-6 rounded-2xl bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white font-extrabold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm cursor-pointer"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <span>{t("continueBtn")}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
           </form>
 
           {/* Additional Links & Demo Note */}
