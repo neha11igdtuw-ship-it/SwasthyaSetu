@@ -1,13 +1,16 @@
 import React from "react";
 import { AlertOctagon, PhoneCall, ShieldAlert, MapPin } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { isMaternalPathway } from "@/lib/carePathways";
 
 interface EmergencyHelpCardProps {
   ashaPhone: string;
+  carePathway?: string | null;
 }
 
-export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
+export function EmergencyHelpCard({ ashaPhone, carePathway }: EmergencyHelpCardProps) {
   const { t } = useLanguage();
+  const isMaternal = isMaternalPathway(carePathway);
 
   return (
     <div className="bg-rose-950 text-white rounded-2xl p-6 shadow-md space-y-4 border border-rose-800">
@@ -20,7 +23,7 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
             {t("emergencyProtocolTitle")}
           </span>
           <h3 className="font-extrabold text-lg text-white">
-            {t("maternalDangerSignsTitle")}
+            {isMaternal ? t("maternalDangerSignsTitle") : t("emergencyHelp")}
           </h3>
         </div>
       </div>

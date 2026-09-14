@@ -1,0 +1,140 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { PageHeader } from "@/components/PageHeader";
+import { RoleBadge } from "@/components/RoleBadge";
+import { StatusBadge } from "@/components/StatusBadge";
+import { useLanguage } from "@/lib/i18n/languageContext";
+import { authApi, patientsApi, referralsApi, ApiError } from "@/lib/api/client";
+import type { ReferralOut, PatientOut } from "@/lib/api/types";
+import { Share2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+
+export default function DoctorCareRequestsPage() {
+  const { t } = useLanguage();
+  const [referrals, setReferrals] = useState<ReferralOut[]>([]);
+  const [patientsById, setPatientsById] = useState<Record<string, PatientOut>>({});
+  const [facilityId, setFacilityId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actingId, setActingId] = useState<string | null>(null);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const me = await authApi.me();
+      setFacilityId(me.facility_id);
+      const [refs, patients] = await Promise.all([
+        referralsApi.list(),
+        me.facility_id ? patientsApi.list(me.facility_id) : Promise.resolve([]),
+      ]);
+      const incoming = refs.filter((r) => r.to_facility_id === me.facility_id);
+      setReferrals(incoming);
+      setPatientsById(Object.fromEntries(patients.map((p) => [p.id, p])));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to load care requests from server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const handleTransition = async (r: ReferralOut, status: "ACCEPTED" | "REJECTED") => {
+    setActingId(r.id);
+    setError(null);
+    try {
+      await referralsApi.transition(r.id, { base_version: r.version, status });
+      await loadData();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to update the care request.");
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <PageHeader
+        title={t("careRequestsTitle")}
+        subtitle="Referrals sent to your facility for review"
+        roleBadge={<RoleBadge role="Doctor" />}
+      />
+
+      {error && (
+        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
+          {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          <span>Loading care requests…</span>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {!loading && referrals.map((r) => {
+          const patient = patientsById[r.patient_id];
+          const canAct = r.status === "PENDING" || r.status === "CREATED";
+          return (
+            <div key={r.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Share2 className="w-4 h-4 text-teal-700" />
+                  <span className="font-extrabold text-slate-900 dark:text-white text-base">
+                    {patient?.full_name || "Unknown patient"}
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">({r.id.slice(0, 8)})</span>
+                  <StatusBadge status={r.status} />
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  Specialty needed: <span className="font-bold text-slate-800 dark:text-slate-100">{r.specialty_needed || "—"}</span>
+                </div>
+              </div>
+
+              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">{r.reason}</p>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
+                <span className="text-xs text-slate-600 dark:text-slate-300">
+                  Urgency: <strong className="text-slate-900 dark:text-white">{r.urgency}</strong>
+                </span>
+
+                {canAct && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={actingId === r.id}
+                      onClick={() => handleTransition(r, "REJECTED")}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 text-rose-800 border border-rose-200 text-xs font-bold transition-colors disabled:opacity-60 cursor-pointer"
+                    >
+                      <XCircle className="w-3.5 h-3.5" /> Reject
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actingId === r.id}
+                      onClick={() => handleTransition(r, "ACCEPTED")}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors disabled:opacity-60 cursor-pointer"
+                    >
+                      {actingId === r.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                      Accept
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {!loading && referrals.length === 0 && (
+          <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+            No care requests for your facility{facilityId ? "" : " (no facility assigned)"}.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

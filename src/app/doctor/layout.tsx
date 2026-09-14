@@ -2,6 +2,7 @@
 
 import React from "react";
 import { AppShell } from "@/components/AppShell";
+import { RequireAuth } from "@/components/RequireAuth";
 import { NavItem } from "@/components/Sidebar";
 import {
   LayoutDashboard,
@@ -14,9 +15,9 @@ import {
 const doctorNavItems: NavItem[] = [
   { labelKey: "overview", defaultLabel: "Overview", href: "/doctor/dashboard", icon: LayoutDashboard },
   { labelKey: "patientsToReview", defaultLabel: "Patients to Review", href: "/doctor/dashboard", icon: Stethoscope },
-  { labelKey: "records", defaultLabel: "People Records", href: "/hw/patients", icon: Users },
-  { labelKey: "referrals", defaultLabel: "Care Requests", href: "/hw/referrals", icon: Share2 },
-  { labelKey: "todaysSchedule", defaultLabel: "Today's Schedule", href: "/hw/follow-ups", icon: Clock },
+  { labelKey: "records", defaultLabel: "People Records", href: "/doctor/patients", icon: Users },
+  { labelKey: "referrals", defaultLabel: "Care Requests", href: "/doctor/care-requests", icon: Share2 },
+  { labelKey: "todaysSchedule", defaultLabel: "Today's Schedule", href: "/doctor/schedule", icon: Clock },
 ];
 
 export default function DoctorLayout({
@@ -25,13 +26,15 @@ export default function DoctorLayout({
   children: React.ReactNode;
 }) {
   return (
+    <RequireAuth>
     <AppShell
       role="Doctor"
-      userName="Dr. Ananya Rao"
-      facilityOrLocation="District Civil Hospital"
+      userName="Dr. Meera Singh"
+      facilityOrLocation="District Civil Hospital & Maternal Care Centre"
       navItems={doctorNavItems}
     >
       {children}
     </AppShell>
+    </RequireAuth>
   );
 }

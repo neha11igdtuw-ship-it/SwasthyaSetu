@@ -19,8 +19,24 @@ node_modules/
 *.pem
 .vscode/
 .idea/
+.claude/
 
 # Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# TypeScript
+tsconfig.tsbuildinfo
+
+# Backend (Python)
+backend/.env
+backend/.env.bak
+backend/.env.backup
+backend/*.db
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.venv/
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/*.egg-info/
