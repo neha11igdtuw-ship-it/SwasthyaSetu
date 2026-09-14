@@ -19,6 +19,7 @@ import {
   HeartPulse,
   Activity,
   ChevronRight,
+  MessageSquareHeart,
 } from "lucide-react";
 import { RoleType, RoleBadge } from "./RoleBadge";
 import { patientsApi, encountersApi, clearTokens } from "@/lib/api/client";
@@ -317,6 +318,22 @@ export function UserProfileAvatarMenu({
               <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
+
+          {role === "Patient" && (
+            <div className="p-2 text-xs font-bold text-slate-700 dark:text-slate-200">
+              <Link
+                href="/patient/feedback"
+                onClick={() => setIsDropdownOpen(false)}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer group"
+              >
+                <span className="flex items-center gap-2.5">
+                  <MessageSquareHeart className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <span>Feedback</span>
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
+          )}
 
           {/* Footer Logout Option */}
           <div className="p-2">

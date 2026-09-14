@@ -301,32 +301,17 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="hidden lg:block relative pt-2 pb-4">
+          <div className="hidden lg:block relative pt-6 pb-4">
             <svg
-              className="absolute left-[6%] right-[6%] top-[46%] h-20 w-[88%] pointer-events-none"
-              viewBox="0 0 1000 80"
+              className="absolute left-[9%] right-[9%] top-1/2 h-1 w-[82%] pointer-events-none -translate-y-1/2"
+              viewBox="0 0 1000 4"
               fill="none"
               aria-hidden="true"
               preserveAspectRatio="none"
             >
-              <path
-                d="M40 48 C 140 48, 170 18, 280 18"
-                stroke="#f59e0b"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M280 18 C 430 18, 470 10, 620 10"
-                stroke="#1e3a8a"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M620 10 C 760 10, 820 42, 960 42"
-                stroke="#4d7c0f"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
+              <line x1="0" y1="2" x2="333" y2="2" stroke="#f59e0b" strokeWidth="4" />
+              <line x1="333" y1="2" x2="666" y2="2" stroke="#1e3a8a" strokeWidth="4" />
+              <line x1="666" y1="2" x2="1000" y2="2" stroke="#4d7c0f" strokeWidth="4" />
             </svg>
 
             <div className="grid grid-cols-4 relative">
@@ -676,58 +661,47 @@ function RoadmapColumn({
 }) {
   const styles = accentStyles[step.accent];
   const Icon = step.icon;
+
   const card = (
-    <div className={`text-left max-w-[210px] ${step.place === "top" ? "mb-1" : "mt-1"}`}>
-      <div className="flex items-start gap-2">
-        <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${styles.icon}`} />
-        <div>
-          <div
-            className={`inline-flex items-center px-2.5 py-1 rounded-md text-white font-extrabold ${styles.circle} ${
-              step.featured ? "text-sm px-3 py-1.5 shadow-md shadow-violet-700/20" : "text-xs"
-            }`}
-          >
-            {title}
-          </div>
-          <p className="mt-2 text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-            {desc}
-          </p>
-        </div>
+    <div className="text-left max-w-[200px] mx-auto space-y-2">
+      <div className={`px-4 py-2 rounded-lg text-white font-extrabold text-sm shadow-sm ${styles.circle}`}>
+        {title}
+      </div>
+      <div className="flex items-start gap-1.5 pl-1">
+        <span className={`mt-1 w-1.5 h-1.5 rounded-full shrink-0 ${styles.circle}`} aria-hidden="true" />
+        <p className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">{desc}</p>
       </div>
     </div>
   );
 
-  const shift =
-    step.n === 1 ? "translate-y-8" : step.n === 2 ? "translate-y-2" : step.n === 4 ? "translate-y-6" : "";
-
   return (
-    <div className={`flex flex-col items-center ${shift}`}>
-      <div className="min-h-[148px] flex flex-col items-center justify-end pb-1">
+    <div className="flex flex-col items-center">
+      <div className="min-h-[132px] flex flex-col items-center justify-end pb-2">
         {step.place === "top" ? (
           <>
             {card}
-            <div className={`w-[2px] h-8 ${styles.stem}`} />
+            <div className={`w-[2px] h-6 mt-2 ${styles.stem}`} />
           </>
         ) : (
-          <div className="h-24" />
+          <Icon className={`w-6 h-6 ${styles.icon}`} aria-hidden="true" />
         )}
       </div>
       <div
-        className={`relative z-10 rounded-full text-white flex items-center justify-center font-black ${styles.circle} ${
-          step.featured
-            ? "w-[4.25rem] h-[4.25rem] text-2xl ring-[6px] ring-[#f6fafa] dark:ring-[#0b1a1f] shadow-lg shadow-violet-800/30"
-            : "w-14 h-14 text-xl ring-4 ring-[#f6fafa] dark:ring-[#0b1a1f]"
+        className={`relative z-10 rounded-full bg-white dark:bg-slate-900 border-4 flex items-center justify-center font-black ${styles.icon} ${
+          step.featured ? "w-16 h-16 text-2xl shadow-lg shadow-violet-800/20" : "w-14 h-14 text-xl shadow-md"
         }`}
+        style={{ borderColor: "currentColor" }}
       >
         {step.n}
       </div>
-      <div className="min-h-[148px] flex flex-col items-center justify-start pt-1">
+      <div className="min-h-[132px] flex flex-col items-center justify-start pt-2">
         {step.place === "bottom" ? (
           <>
-            <div className={`w-[2px] h-8 ${styles.stem}`} />
+            <div className={`w-[2px] h-6 mb-2 ${styles.stem}`} />
             {card}
           </>
         ) : (
-          <div className="h-24" />
+          <Icon className={`w-6 h-6 ${styles.icon}`} aria-hidden="true" />
         )}
       </div>
     </div>
