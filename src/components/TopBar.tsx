@@ -175,7 +175,7 @@ export function TopBar({
             <Search className="w-4 h-4" aria-hidden="true" />
           </button>
 
-          {localizedUserName && (
+          {localizedUserName && role !== "Patient" && (
             <div className="hidden xl:flex flex-col items-end">
               <span className="text-xs font-bold text-slate-900 dark:text-white">{localizedUserName}</span>
               {localizedLocation && (
