@@ -43,6 +43,16 @@ import type {
   DiagnosticReportCreate,
   SelfVitalCreate,
   SelfSymptomCreate,
+  QueueDeskOut,
+  QueueDeskCreate,
+  QueueDeskUpdate,
+  QueueDeskQrOut,
+  QueueEntryDetailOut,
+  QueueJoinRequest,
+  QueueJoinByQrRequest,
+  DoctorQueueOut,
+  FacilityQueueOverviewOut,
+  FacilityDoctorOut,
 } from "./types";
 
 const API_ROOT =
@@ -280,6 +290,8 @@ export const careGapsApi = {
 export const facilitiesApi = {
   list: () => request<FacilityOut[]>("/facilities"),
   get: (id: string) => request<FacilityOut>(`/facilities/${id}`),
+  doctors: (facilityId: string) =>
+    request<FacilityDoctorOut[]>(`/facilities/${facilityId}/doctors`),
 };
 
 // ---- Encounters / symptoms / vitals / screenings ----
@@ -362,6 +374,51 @@ export const appointmentsApi = {
 export const doctorAvailabilityApi = {
   list: (facilityId: string) =>
     request<DoctorAvailabilityOut[]>(`/doctor-availability?facility_id=${facilityId}`),
+};
+
+// ---- Queue management ----
+
+export const queueDesksApi = {
+  list: (facilityId?: string) =>
+    request<QueueDeskOut[]>(`/queue-desks${facilityId ? `?facility_id=${facilityId}` : ""}`),
+  get: (id: string) => request<QueueDeskOut>(`/queue-desks/${id}`),
+  create: (data: QueueDeskCreate) =>
+    request<QueueDeskOut>("/queue-desks", { method: "POST", body: data }),
+  update: (id: string, data: QueueDeskUpdate) =>
+    request<QueueDeskOut>(`/queue-desks/${id}`, { method: "PATCH", body: data }),
+  qr: (id: string) => request<QueueDeskQrOut>(`/queue-desks/${id}/qr`),
+  pause: (id: string, reason: string) =>
+    request<QueueDeskOut>(`/queue-desks/${id}/pause`, { method: "POST", body: { reason } }),
+  resume: (id: string) => request<QueueDeskOut>(`/queue-desks/${id}/resume`, { method: "POST" }),
+};
+
+export const queueApi = {
+  me: () => request<QueueEntryDetailOut[]>("/queues/me"),
+  get: (id: string) => request<QueueEntryDetailOut>(`/queues/${id}`),
+  join: (data: QueueJoinRequest) =>
+    request<QueueEntryDetailOut>("/queues/join", { method: "POST", body: data }),
+  joinByQr: (data: QueueJoinByQrRequest) =>
+    request<QueueEntryDetailOut>("/queues/join-by-qr", { method: "POST", body: data }),
+  cancel: (id: string) => request<QueueEntryDetailOut>(`/queues/${id}/cancel`, { method: "POST" }),
+  rejoin: (id: string) => request<QueueEntryDetailOut>(`/queues/${id}/rejoin`, { method: "POST" }),
+  startConsultation: (id: string) =>
+    request<QueueEntryDetailOut>(`/queues/${id}/start-consultation`, { method: "POST" }),
+  complete: (id: string) => request<QueueEntryDetailOut>(`/queues/${id}/complete`, { method: "POST" }),
+  skip: (id: string, reason?: string) =>
+    request<QueueEntryDetailOut>(`/queues/${id}/skip`, { method: "POST", body: { reason } }),
+};
+
+export const doctorQueueApi = {
+  current: () => request<DoctorQueueOut>("/doctor/queue/current"),
+  callNext: (queueDeskId: string) =>
+    request<QueueEntryDetailOut>(`/doctor/queue/call-next?queue_desk_id=${queueDeskId}`, {
+      method: "POST",
+    }),
+};
+
+export const facilityQueueApi = {
+  overview: (facilityId: string) =>
+    request<FacilityQueueOverviewOut>(`/facility/queues/overview?facility_id=${facilityId}`),
 };
 
 // ---- Symptom summary (Gemini-backed AI pipeline) ----

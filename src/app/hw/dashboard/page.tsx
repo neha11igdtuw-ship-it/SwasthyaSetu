@@ -13,6 +13,7 @@ import { patientsApi, referralsApi, careGapsApi, facilitiesApi } from "@/lib/api
 import { patientOutToHealthWorkerPatient, referralOutToHWReferral } from "@/lib/api/adapters";
 import type { HealthWorkerPatient, HWReferral } from "@/lib/mockData";
 import { OfflinePill } from "@/components/shared/OfflinePill";
+import { HealthWorkerQueueSection } from "@/components/care/HealthWorkerQueueSection";
 import {
   Users,
   AlertTriangle,
@@ -190,6 +191,10 @@ export default function HealthWorkerDashboardPage() {
           icon={RefreshCw}
         />
       </div>
+
+      <HealthWorkerQueueSection
+        patients={patients.map((p) => ({ id: p.id, full_name: p.name, riskLevel: p.riskLevel }))}
+      />
 
       {/* Priority Action List: Patients Needing Urgent Attention Today */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">

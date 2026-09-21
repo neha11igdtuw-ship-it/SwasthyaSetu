@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import Date, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -35,6 +35,7 @@ class Patient(SyncableMixin, Base):
         doc="Linked login account for this patient (role=PATIENT), if any.",
     )
     emergency_contact: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    sms_consent: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     referrals = relationship("Referral", back_populates="patient")
     care_gaps = relationship("CareGap", back_populates="patient")
