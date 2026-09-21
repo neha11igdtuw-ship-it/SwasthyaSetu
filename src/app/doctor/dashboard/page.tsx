@@ -15,6 +15,7 @@ import {
 } from "@/lib/api/client";
 import type { ReferralOut, PatientOut, DoctorAvailabilityOut } from "@/lib/api/types";
 import { LabReportForm } from "@/components/care/LabReportForm";
+import { DoctorQueuePanel } from "@/components/care/DoctorQueuePanel";
 import {
   Stethoscope,
   AlertTriangle,
@@ -136,6 +137,8 @@ export default function DoctorDashboardPage() {
               icon={Calendar}
             />
           </div>
+
+          <DoctorQueuePanel />
 
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700 pb-4">

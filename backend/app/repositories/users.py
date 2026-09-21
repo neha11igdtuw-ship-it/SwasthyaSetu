@@ -17,6 +17,14 @@ class UserRepository:
         result = await self.db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
+    async def list_by_facility_and_role(self, facility_id: uuid.UUID, role) -> list[User]:
+        result = await self.db.execute(
+            select(User).where(
+                User.facility_id == facility_id, User.role == role, User.is_active.is_(True)
+            )
+        )
+        return list(result.scalars().all())
+
     async def create(self, **kwargs) -> User:
         user = User(**kwargs)
         self.db.add(user)

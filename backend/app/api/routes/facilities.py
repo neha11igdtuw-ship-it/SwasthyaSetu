@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user, require_roles
+from app.api.deps import assert_facility_access, get_current_user, require_roles
 from app.db.session import get_db
 from app.models.enums import Role
 from app.repositories.facilities import FacilityRepository
+from app.repositories.users import UserRepository
 from app.schemas.common import IDModel
 from app.services.osm_facilities import search_osm_health_facilities
 
@@ -77,6 +78,25 @@ async def nearby_osm_facilities(
         "count": len(facilities),
         "facilities": facilities,
     }
+
+
+class FacilityDoctorOut(BaseModel):
+    id: uuid.UUID
+    full_name: str
+    email: str
+
+
+@router.get("/{facility_id}/doctors", response_model=list[FacilityDoctorOut])
+async def list_facility_doctors(
+    facility_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Doctors registered at this facility — used to populate the doctor
+    picker when a facility admin creates an OPD queue desk."""
+    assert_facility_access(user, facility_id)
+    doctors = await UserRepository(db).list_by_facility_and_role(facility_id, Role.DOCTOR)
+    return doctors
 
 
 @router.get("/{facility_id}", response_model=FacilityOut)

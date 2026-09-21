@@ -104,3 +104,34 @@ class HealthWorkerCadre(str, enum.Enum):
     ASHA = "ASHA"
     ANM = "ANM"
     OTHER = "OTHER"
+
+
+class QueueEntryStatus(str, enum.Enum):
+    WAITING = "WAITING"
+    CALLED = "CALLED"
+    IN_CONSULTATION = "IN_CONSULTATION"
+    COMPLETED = "COMPLETED"
+    SKIPPED = "SKIPPED"
+    CANCELLED = "CANCELLED"
+    REJOINED = "REJOINED"
+
+
+# Statuses that count as "active"/occupying a live slot in the queue for
+# ordering, position-counting and wait-time calculations.
+ACTIVE_QUEUE_STATUSES: set[QueueEntryStatus] = {
+    QueueEntryStatus.WAITING,
+    QueueEntryStatus.CALLED,
+    QueueEntryStatus.IN_CONSULTATION,
+}
+
+
+class NotificationChannel(str, enum.Enum):
+    IN_APP = "IN_APP"
+    SMS = "SMS"
+
+
+class NotificationStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    SENT = "SENT"
+    FAILED = "FAILED"
+    READ = "READ"
