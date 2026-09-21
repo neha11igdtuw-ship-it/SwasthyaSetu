@@ -14,6 +14,7 @@ import {
   ApiError,
 } from "@/lib/api/client";
 import type { InventoryItemOut, FacilityOut } from "@/lib/api/types";
+import { FacilityQueueSection } from "@/components/care/FacilityQueueSection";
 import {
   Inbox,
   CheckCircle2,
@@ -220,6 +221,7 @@ export default function FacilityDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [facilityName, setFacilityName] = useState<string>("All Facilities");
+  const [facilityId, setFacilityId] = useState<string | null>(null);
   const [patientCount, setPatientCount] = useState(0);
   const [pendingReferrals, setPendingReferrals] = useState(0);
   const [acceptedReferrals, setAcceptedReferrals] = useState(0);
@@ -250,7 +252,10 @@ export default function FacilityDashboardPage() {
 
         if (me.facility_id) {
           const facility = await facilitiesApi.get(me.facility_id);
-          if (!cancelled) setFacilityName(facility.name);
+          if (!cancelled) {
+            setFacilityName(facility.name);
+            setFacilityId(me.facility_id);
+          }
         }
 
         if (!cancelled) {
@@ -324,6 +329,8 @@ export default function FacilityDashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6">
+            {facilityId && <FacilityQueueSection facilityId={facilityId} />}
+
             <FacilityResourcesSection />
 
             {/* Real inventory */}

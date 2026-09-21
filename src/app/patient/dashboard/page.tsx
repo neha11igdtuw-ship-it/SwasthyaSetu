@@ -17,6 +17,7 @@ import { NextActionCard } from "@/components/care/NextActionCard";
 import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
 import { QuickActionCard } from "@/components/patient/QuickActionCard";
 import { EmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
+import { QueueCard } from "@/components/patient/QueueCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
 import { Loader2 } from "lucide-react";
@@ -81,13 +82,13 @@ export default function PatientDashboardPage() {
 
   const activeReferral = referrals[0];
   const stepStatus = activeReferral ? currentStepLabel(activeReferral.status) : "Created";
-  const carePathSteps = [
-    { label: "1. Symptoms", status: "completed" as const },
-    { label: "2. Health Check", status: "completed" as const },
-    { label: "3. Facility Match", status: "completed" as const },
-    { label: "4. Referral", status: activeReferral ? ("completed" as const) : ("pending" as const) },
-    { label: "5. Medicines", status: "pending" as const },
-    { label: "6. Follow-up", status: "pending" as const },
+  const carePathSteps: { label: string; status: "completed" | "current" | "pending" }[] = [
+    { label: "1. Symptoms", status: "completed" },
+    { label: "2. Health Check", status: "completed" },
+    { label: "3. Facility Match", status: "completed" },
+    { label: "4. Referral", status: activeReferral ? "completed" : "pending" },
+    { label: "5. Medicines", status: "pending" },
+    { label: "6. Follow-up", status: "pending" },
   ];
 
   if (loading) {
@@ -174,6 +175,8 @@ export default function PatientDashboardPage() {
           />
         </div>
       </div>
+
+      <QueueCard />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CareStatusCard

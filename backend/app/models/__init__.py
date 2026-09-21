@@ -9,6 +9,13 @@ from app.models.facility import Facility  # noqa: F401
 from app.models.inventory import InventoryItem, InventoryTransaction  # noqa: F401
 from app.models.maternal import Encounter, Pregnancy, Screening, Symptom, Vital  # noqa: F401
 from app.models.patient import Patient  # noqa: F401
+from app.models.queue import (  # noqa: F401
+    Notification,
+    QueueDesk,
+    QueueDeskCounter,
+    QueueEntry,
+    QueueEvent,
+)
 from app.models.referral import Referral  # noqa: F401
 from app.models.staff import DoctorAvailability, HealthWorkerProfile  # noqa: F401
 from app.models.sync import SyncedChange  # noqa: F401

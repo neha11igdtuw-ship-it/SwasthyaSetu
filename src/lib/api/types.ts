@@ -495,3 +495,157 @@ export interface ApiErrorBody {
   };
   detail?: unknown;
 }
+
+// ---- Queue management (backend/app/schemas/queue.py) ----
+
+export type QueueEntryStatus =
+  | "WAITING"
+  | "CALLED"
+  | "IN_CONSULTATION"
+  | "COMPLETED"
+  | "SKIPPED"
+  | "CANCELLED"
+  | "REJOINED";
+
+export interface QueueDeskOut {
+  id: string;
+  facility_id: string;
+  department: string;
+  room_number: string | null;
+  doctor_id: string;
+  display_name: string;
+  opd_start_time: string | null;
+  opd_end_time: string | null;
+  average_consultation_minutes: number;
+  is_active: boolean;
+  is_paused: boolean;
+  pause_reason: string | null;
+  qr_code_key: string;
+  version: number;
+}
+
+export interface QueueDeskCreate {
+  facility_id: string;
+  department: string;
+  room_number?: string | null;
+  doctor_id: string;
+  display_name: string;
+  opd_start_time?: string | null;
+  opd_end_time?: string | null;
+  average_consultation_minutes?: number;
+}
+
+export interface QueueDeskUpdate {
+  base_version: number;
+  department?: string;
+  room_number?: string | null;
+  display_name?: string;
+  opd_start_time?: string | null;
+  opd_end_time?: string | null;
+  average_consultation_minutes?: number;
+  is_active?: boolean;
+}
+
+export interface QueueDeskQrOut {
+  queue_desk_id: string;
+  qr_payload: string;
+  qr_image_base64: string | null;
+}
+
+export interface QueueEntryDetailOut {
+  id: string;
+  queue_desk_id: string;
+  patient_id: string;
+  referral_id: string | null;
+  appointment_id: string | null;
+  queue_date: string;
+  token_number: number;
+  active_order: number;
+  status: QueueEntryStatus;
+  joined_at: string;
+  called_at: string | null;
+  consultation_started_at: string | null;
+  completed_at: string | null;
+  skipped_at: string | null;
+  cancelled_at: string | null;
+  rejoined_at: string | null;
+  skip_reason: string | null;
+  original_entry_id: string | null;
+  estimated_wait_minutes: number;
+  version: number;
+  patients_ahead: number;
+  current_token_number: number | null;
+  desk_display_name: string;
+  desk_is_paused: boolean;
+  desk_pause_reason: string | null;
+}
+
+export interface QueueJoinRequest {
+  queue_desk_id: string;
+  patient_id?: string | null;
+  referral_id?: string | null;
+  appointment_id?: string | null;
+  priority?: number;
+}
+
+export interface QueueJoinByQrRequest {
+  qr_payload: string;
+  patient_id?: string | null;
+  referral_id?: string | null;
+  appointment_id?: string | null;
+  priority?: number;
+}
+
+export interface DoctorQueueSummary {
+  queue_desk_id: string;
+  waiting_count: number;
+  current_token_number: number | null;
+  completed_today: number;
+  skipped_today: number;
+  average_consultation_minutes: number;
+  is_paused: boolean;
+  pause_reason: string | null;
+}
+
+export interface DoctorQueueEntryOut {
+  id: string;
+  token_number: number;
+  active_order: number;
+  status: QueueEntryStatus;
+  patient_id: string;
+  patient_name: string;
+  risk_flag: string | null;
+  referral_reason: string | null;
+  joined_at: string;
+  wait_minutes: number;
+  estimated_wait_minutes: number;
+}
+
+export interface DoctorQueueOut {
+  summary: DoctorQueueSummary;
+  entries: DoctorQueueEntryOut[];
+}
+
+export interface FacilityQueueDeskSummary {
+  queue_desk_id: string;
+  department: string;
+  room_number: string | null;
+  doctor_id: string;
+  display_name: string;
+  current_token_number: number | null;
+  waiting_count: number;
+  is_paused: boolean;
+  pause_reason: string | null;
+  average_wait_minutes: number;
+}
+
+export interface FacilityQueueOverviewOut {
+  desks: FacilityQueueDeskSummary[];
+}
+
+// backend/app/api/routes/facilities.py:FacilityDoctorOut
+export interface FacilityDoctorOut {
+  id: string;
+  full_name: string;
+  email: string;
+}
