@@ -301,7 +301,7 @@ export function UserProfileAvatarMenu({
             >
               <span className="flex items-center gap-2.5">
                 <FileText className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <span>My Health Records</span>
+                <span>Patient Record</span>
               </span>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
             </Link>
