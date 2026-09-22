@@ -86,7 +86,7 @@ export default function DoctorCareRequestsPage() {
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <Share2 className="w-4 h-4 text-teal-700" />
                   <span className="font-extrabold text-slate-900 dark:text-white text-base">
-                    {patient?.full_name || "Unknown patient"}
+                    {r.patient_name || patient?.full_name || "Unknown patient"}
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">({r.id.slice(0, 8)})</span>
                   <StatusBadge status={r.status} />
