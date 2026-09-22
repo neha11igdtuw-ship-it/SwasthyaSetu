@@ -176,11 +176,14 @@ export interface AppointmentStatusUpdate {
   scheduled_at?: string | null;
 }
 
+ 
 export interface FacilityOut {
   id: string;
   name: string;
   facility_type?: string | null;
   village?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   [key: string]: unknown;
 }
 
@@ -406,7 +409,15 @@ export interface NearbyInventoryOut {
   distance_km: number | null;
 }
 
+
 // ---- Doctor availability ----
+
+export interface DoctorAvailabilityCreate {
+  doctor_id: string;
+  facility_id: string;
+  start_time: string;
+  end_time: string;
+}
 
 export interface DoctorAvailabilityOut {
   id: string;
