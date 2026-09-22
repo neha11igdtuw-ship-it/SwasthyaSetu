@@ -6,7 +6,8 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { FacilityCard } from "@/components/patient/FacilityCard";
 import { priyaPatientMock, NearbyFacility } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { facilitiesApi, FacilityOut } from "@/lib/api/client";
+import { facilitiesApi } from "@/lib/api/client";
+import type { FacilityOut } from "@/lib/api/types";
 import { getNearbyHospitals } from "@/lib/osmFacilities";
 import {
   DEFAULT_VILLAGE_LOCATION,

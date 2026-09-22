@@ -5,6 +5,7 @@ import type {
   CareGapOut,
   DiagnosticOrderOut,
   DiagnosticReportOut,
+  DoctorAvailabilityCreate,
   DoctorAvailabilityOut,
   EncounterCreate,
   EncounterOut,
@@ -371,9 +372,16 @@ export const appointmentsApi = {
     request<AppointmentOut>(`/appointments/${id}/status`, { method: "PATCH", body: data }),
 };
 
+
 export const doctorAvailabilityApi = {
   list: (facilityId: string) =>
     request<DoctorAvailabilityOut[]>(`/doctor-availability?facility_id=${facilityId}`),
+
+  create: (data: DoctorAvailabilityCreate) =>
+    request<DoctorAvailabilityOut>("/doctor-availability", {
+      method: "POST",
+      body: data,
+    }),
 };
 
 // ---- Queue management ----
