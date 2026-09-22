@@ -115,12 +115,37 @@ async def list_referrals(
         if patient_id is not None and patient_id != own.id:
             raise ForbiddenError("Patients may only list their own referrals")
         return await repo.list_active(patient_id=own.id)
+  
     all_active = await repo.list_active(patient_id=patient_id)
-    return [
+
+    visible = [
         r
         for r in all_active
         if r.from_facility_id == user.facility_id or r.to_facility_id == user.facility_id
     ]
+
+    result = []
+    patient_repo = PatientRepository(db)
+
+    for referral in visible:
+        patient = await patient_repo.get(referral.patient_id)
+
+        result.append({
+            "id": referral.id,
+            "patient_id": referral.patient_id,
+            "patient_name": patient.full_name if patient else None,
+            "from_facility_id": referral.from_facility_id,
+            "to_facility_id": referral.to_facility_id,
+            "reason": referral.reason,
+            "specialty_needed": referral.specialty_needed,
+            "urgency": referral.urgency,
+            "status": referral.status,
+            "notes": referral.notes,
+            "version": referral.version,
+            "is_deleted": referral.is_deleted,
+        })
+
+    return result
 
 
 @router.post("", response_model=ReferralOut, status_code=201)
