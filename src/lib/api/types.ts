@@ -103,6 +103,7 @@ export type ReferralStatus =
 export interface ReferralOut {
   id: string;
   patient_id: string;
+  patient_name?: string | null;
   from_facility_id: string | null;
   to_facility_id: string | null;
   reason: string;

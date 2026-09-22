@@ -33,6 +33,7 @@ class ReferralStatusUpdate(BaseModel):
 class ReferralOut(ORMBase):
     id: uuid.UUID
     patient_id: uuid.UUID
+    patient_name: str | None = None
     from_facility_id: uuid.UUID | None
     to_facility_id: uuid.UUID | None
     reason: str
