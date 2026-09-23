@@ -12,6 +12,7 @@ class DoctorAvailabilityCreate(BaseModel):
     facility_id: uuid.UUID
     start_time: datetime
     end_time: datetime
+    note: str | None = None
 
 
 class DoctorAvailabilityUpdate(BaseModel):
@@ -25,6 +26,7 @@ class DoctorAvailabilityOut(ORMBase):
     facility_id: uuid.UUID
     start_time: datetime
     end_time: datetime
+    note: str | None
     is_booked: bool
     version: int
     is_deleted: bool

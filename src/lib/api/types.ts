@@ -426,6 +426,7 @@ export interface DoctorAvailabilityCreate {
   facility_id: string;
   start_time: string;
   end_time: string;
+  note?: string | null;
 }
 
 export interface DoctorAvailabilityOut {
@@ -434,6 +435,7 @@ export interface DoctorAvailabilityOut {
   facility_id: string;
   start_time: string;
   end_time: string;
+  note: string | null;
   is_booked: boolean;
   version: number;
   is_deleted: boolean;
