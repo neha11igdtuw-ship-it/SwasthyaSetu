@@ -16,6 +16,7 @@ import type {
   PatientOut,
   PatientUpdate,
   PregnancyOut,
+  PrescriptionCreate,
   PrescriptionOut,
   ReferralCreate,
   CareRequestCreate,
@@ -336,6 +337,7 @@ export const diagnosticsApi = {
 export const prescriptionsApi = {
   list: (patientId: string) => request<PrescriptionOut[]>(`/prescriptions?patient_id=${patientId}`),
   me: () => request<PrescriptionOut[]>("/prescriptions/me"),
+  create: (data: PrescriptionCreate) => request<PrescriptionOut>("/prescriptions", { method: "POST", body: data }),
   get: (id: string) => request<PrescriptionOut>(`/prescriptions/${id}`),
 };
 
