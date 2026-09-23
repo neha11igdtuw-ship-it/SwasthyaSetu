@@ -351,6 +351,15 @@ export interface DiagnosticReportOut {
 
 export type PrescriptionStatus = "ACTIVE" | "DISPENSED" | "CANCELLED";
 
+export interface PrescriptionCreate {
+  patient_id: string;
+  facility_id?: string | null;
+  encounter_id?: string | null;
+  inventory_item_id: string;
+  quantity?: number;
+  dosage_instructions?: string | null;
+}
+
 export interface PrescriptionOut {
   id: string;
   patient_id: string;
