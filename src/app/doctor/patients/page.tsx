@@ -283,7 +283,7 @@ export default function DoctorPatientsPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={t("searchPatientsPlaceholder")}
+            placeholder="Search patients by name, ID, phone or village"
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 bg-slate-50 dark:bg-slate-800 font-medium"
           />
         </div>
@@ -317,7 +317,7 @@ export default function DoctorPatientsPage() {
 
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-          <span>{t("registeredPatientsCount")} ({filtered.length})</span>
+          <span>Registered Patients ({filtered.length})</span>
         </div>
 
         {loading && (
