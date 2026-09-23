@@ -98,28 +98,34 @@ export default function FacilityCareRequestsPage() {
           const raw = rawReferrals[idx];
           const canAct = raw.status === "PENDING" || raw.status === "CREATED";
           return (
-            <div key={ref.id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700 pb-3">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <Share2 className="w-4 h-4 text-teal-700" />
-                  <span className="font-extrabold text-slate-900 dark:text-white text-base">{ref.patientName}</span>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">({ref.patientId.slice(0, 8)})</span>
-                  <StatusBadge status={ref.status} />
+            <div key={ref.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-700 shadow-[0_2px_10px_rgba(15,23,42,0.05)] space-y-3 flex flex-col">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-900/30 text-teal-700 flex items-center justify-center shrink-0">
+                    <Share2 className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-slate-900 dark:text-white text-base leading-tight">{ref.patientName}</span>
+                      <StatusBadge status={ref.status} />
+                    </div>
+                    <span className="mt-1 block text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">Patient ID: {ref.patientId}</span>
+                  </div>
                 </div>
-                <span className="text-xs font-bold text-rose-800 bg-rose-50 dark:bg-rose-900/30 px-2.5 py-0.5 rounded border border-rose-200">
+                <span className="self-start shrink-0 text-[11px] font-bold text-rose-800 bg-rose-50 dark:bg-rose-900/30 px-2.5 py-1 rounded-md border border-rose-200">
                   {ref.priority} Priority
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 dark:text-slate-300">
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] items-start gap-3 text-xs text-slate-600 dark:text-slate-300">
                 <div>
-                  <span className="text-slate-400 dark:text-slate-500 block">{t("reasonForTransfer")}</span>
-                  <strong className="text-slate-900 dark:text-white font-bold">{ref.reason}</strong>
+                  <span className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500 block mb-1">{t("reasonForTransfer")}</span>
+                  <strong className="text-slate-900 dark:text-white font-bold leading-relaxed">{ref.reason}</strong>
                 </div>
-                <div>
+                <div className="sm:self-center sm:justify-self-end">
                   <Link
                     href={`/hw/patients/${ref.patientId}`}
-                    className="text-teal-700 font-bold hover:underline inline-flex items-center gap-1"
+                    className="text-teal-700 font-bold hover:text-teal-800 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
                   >
                     <span>{t("viewPatientDetails")}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -128,7 +134,7 @@ export default function FacilityCareRequestsPage() {
               </div>
 
               {canAct && (
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2">
+                <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-2">
                   <button
                     type="button"
                     disabled={actingId === raw.id}
@@ -149,7 +155,7 @@ export default function FacilityCareRequestsPage() {
                 </div>
               )}
               {raw.status === "ACCEPTED" && (
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                   <button
                     type="button"
                     disabled={actingId === raw.id}
@@ -161,7 +167,7 @@ export default function FacilityCareRequestsPage() {
                 </div>
               )}
               {raw.status === "IN_TRANSIT" && (
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                <div className="mt-1 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                   <button
                     type="button"
                     disabled={actingId === raw.id}
