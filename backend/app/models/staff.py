@@ -19,6 +19,7 @@ class DoctorAvailability(SyncableMixin, Base):
     )
     start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    note: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_booked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     doctor = relationship("User")

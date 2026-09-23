@@ -25,6 +25,7 @@ export default function DoctorSchedulePage() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [scheduleNote, setScheduleNote] = useState("");
   const [saving, setSaving] = useState(false);
 
   const handleAddSchedule = async () => {
@@ -56,11 +57,13 @@ export default function DoctorSchedulePage() {
         facility_id: me.facility_id,
         start_time: startDateTime,
         end_time: endDateTime,
+        note: scheduleNote.trim() || null,
       });
 
       setScheduleDate("");
       setStartTime("");
       setEndTime("");
+      setScheduleNote("");
       setShowAddForm(false);
 
       const all = await doctorAvailabilityApi.list(me.facility_id);
@@ -162,13 +165,24 @@ export default function DoctorSchedulePage() {
 
 {showAddForm && (
   <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
         Date
         <input
           type="date"
           value={scheduleDate}
           onChange={(e) => setScheduleDate(e.target.value)}
+          className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+        />
+      </label>
+
+      <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+        Note / Description
+        <input
+          type="text"
+          value={scheduleNote}
+          onChange={(e) => setScheduleNote(e.target.value)}
+          placeholder="Optional schedule note"
           className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
         />
       </label>
@@ -210,10 +224,13 @@ export default function DoctorSchedulePage() {
           <div className="divide-y divide-slate-100 dark:divide-slate-700">
             {slots.map((s) => (
               <div key={s.id} className="p-4 flex items-center justify-between text-xs">
-                <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
-                  <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                  {new Date(s.start_time).toLocaleString()} — {new Date(s.end_time).toLocaleTimeString()}
-                </span>
+                <div className="space-y-1">
+                  <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                    {new Date(s.start_time).toLocaleString()} — {new Date(s.end_time).toLocaleTimeString()}
+                  </span>
+                  {s.note && <p className="pl-5 text-slate-500 dark:text-slate-400">{s.note}</p>}
+                </div>
                 <span
                   className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded ${
                     s.is_booked
