@@ -12,6 +12,7 @@ export interface NavItem {
   defaultLabel: string;
   href: string;
   icon: React.ElementType;
+  label?: string;
 }
 
 export interface SidebarProps {
@@ -63,7 +64,7 @@ export function Sidebar({
         {items.map((item, idx) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
-          const label = t(item.labelKey) || item.defaultLabel;
+          const label = item.label ?? (t(item.labelKey) || item.defaultLabel);
 
           return (
             <Link

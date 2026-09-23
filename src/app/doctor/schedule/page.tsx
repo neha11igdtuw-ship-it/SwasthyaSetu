@@ -8,6 +8,14 @@ import { authApi, doctorAvailabilityApi, ApiError } from "@/lib/api/client";
 import type { DoctorAvailabilityOut } from "@/lib/api/types";
 import { Calendar, Clock, Loader2, Plus, X } from "lucide-react";
 
+function isTodayLocal(value: string) {
+  const date = new Date(value);
+  const today = new Date();
+  return date.getFullYear() === today.getFullYear()
+    && date.getMonth() === today.getMonth()
+    && date.getDate() === today.getDate();
+}
+
 export default function DoctorSchedulePage() {
   const { t } = useLanguage();
   const [slots, setSlots] = useState<DoctorAvailabilityOut[]>([]);
@@ -57,7 +65,7 @@ export default function DoctorSchedulePage() {
 
       const all = await doctorAvailabilityApi.list(me.facility_id);
       const mine = all
-        .filter((s) => s.doctor_id === me.id)
+        .filter((s) => s.doctor_id === me.id && isTodayLocal(s.start_time))
         .sort(
           (a, b) =>
             new Date(a.start_time).getTime() -
@@ -90,7 +98,7 @@ export default function DoctorSchedulePage() {
         }
         const all = await doctorAvailabilityApi.list(me.facility_id);
         const mine = all
-          .filter((s) => s.doctor_id === me.id)
+          .filter((s) => s.doctor_id === me.id && isTodayLocal(s.start_time))
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
         if (!cancelled) setSlots(mine);
       } catch (err) {
