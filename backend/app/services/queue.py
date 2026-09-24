@@ -27,14 +27,18 @@ from datetime import date, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import assert_patient_access
 from app.core.errors import ForbiddenError, NotFoundError, ValidationAppError
-from app.models.enums import QueueEntryStatus, Role
+from app.models.enums import OPEN_REFERRAL_STATUSES, QueueEntryStatus, Role
 from app.models.maternal import Pregnancy
 from app.models.patient import Patient
 from app.models.queue import QueueDesk, QueueEntry
+from app.models.referral import Referral
 from app.models.user import User
 from app.repositories.patients import PatientRepository
 from app.repositories.queue import QueueDeskRepository, QueueEntryRepository, QueueEventRepository
+from app.repositories.referrals import ReferralRepository
+from app.repositories.users import UserRepository
 from app.schemas.queue import (
     QueueDeskCreate,
     QueueDeskUpdate,
@@ -55,6 +59,8 @@ class QueueService:
         self.entries = QueueEntryRepository(db)
         self.events = QueueEventRepository(db)
         self.patients = PatientRepository(db)
+        self.referrals = ReferralRepository(db)
+        self.users = UserRepository(db)
         self.notifications = NotificationService(db)
 
     # -- queue desks ---------------------------------------------------
@@ -77,6 +83,11 @@ class QueueService:
             raise ForbiddenError("Only facility admins can create queue desks")
         if user.role == Role.FACILITY_ADMIN and user.facility_id != data.facility_id:
             raise ForbiddenError("You may only create desks for your own facility")
+        doctor = await self.users.get(data.doctor_id)
+        if doctor is None or doctor.role != Role.DOCTOR:
+            raise ValidationAppError("doctor_id must belong to a doctor account")
+        if doctor.facility_id != data.facility_id:
+            raise ValidationAppError("This doctor is not assigned to the selected facility")
         desk = await self.desks.create(
             **data.model_dump(),
             qr_code_key=secrets.token_urlsafe(16),
@@ -165,6 +176,8 @@ class QueueService:
         entry = await self.entries.create(
             queue_desk_id=desk.id,
             patient_id=patient.id,
+            facility_id=desk.facility_id,
+            doctor_id=desk.doctor_id,
             referral_id=referral_id,
             appointment_id=appointment_id,
             queue_date=today,
@@ -186,18 +199,60 @@ class QueueService:
     async def join(self, data: QueueJoinRequest, user: User) -> QueueEntry:
         desk = await self.desks.get_or_404(data.queue_desk_id)
         patient = await self._resolve_join_patient(user, data.patient_id)
-        return await self._join(desk, patient, data.referral_id, data.appointment_id, data.priority)
+        referral_id = await self._resolve_join_referral(user, patient, desk, data.referral_id)
+        return await self._join(desk, patient, referral_id, data.appointment_id, data.priority)
 
     async def join_by_qr(self, data: QueueJoinByQrRequest, user: User) -> QueueEntry:
         desk = await self.desks.get_by_qr_key(data.qr_payload)
         if desk is None:
             raise NotFoundError("No queue desk matches this QR code")
         patient = await self._resolve_join_patient(user, data.patient_id)
-        return await self._join(desk, patient, data.referral_id, data.appointment_id, data.priority)
+        referral_id = await self._resolve_join_referral(user, patient, desk, data.referral_id)
+        return await self._join(desk, patient, referral_id, data.appointment_id, data.priority)
+
+    async def _open_referrals_for_patient(self, patient_id: uuid.UUID) -> list[Referral]:
+        return await self.referrals.list_open_for_patient(patient_id)
+
+    async def _matching_open_referral(
+        self, patient_id: uuid.UUID, facility_id: uuid.UUID
+    ) -> Referral | None:
+        for referral in await self._open_referrals_for_patient(patient_id):
+            if referral.to_facility_id == facility_id:
+                return referral
+        return None
+
+    async def _resolve_join_referral(
+        self,
+        user: User,
+        patient: Patient,
+        desk: QueueDesk,
+        requested_referral_id: uuid.UUID | None,
+    ) -> uuid.UUID | None:
+        matching = await self._matching_open_referral(patient.id, desk.facility_id)
+        if requested_referral_id is not None:
+            referral = await self.referrals.get_or_404(requested_referral_id)
+            if referral.patient_id != patient.id:
+                raise ForbiddenError("Referral does not belong to this patient")
+            if referral.status not in OPEN_REFERRAL_STATUSES:
+                raise ValidationAppError("This referral is no longer active")
+            if referral.to_facility_id != desk.facility_id:
+                raise ValidationAppError("This referral is not for the selected queue desk's facility")
+            return referral.id
+        if desk.facility_id == patient.facility_id:
+            return matching.id if matching else None
+        if matching is not None:
+            return matching.id
+        if user.role == Role.HEALTH_WORKER:
+            raise ForbiddenError(
+                "This patient has no active referral to the selected queue desk's facility"
+            )
+        return None
 
     # -- lifecycle ---------------------------------------------------------
 
-    def _assert_own_entry_or_linked(self, user: User, entry: QueueEntry, patient: Patient) -> None:
+    async def _assert_own_entry_or_linked(
+        self, user: User, entry: QueueEntry, patient: Patient
+    ) -> None:
         if user.role == Role.ADMIN:
             return
         if user.role == Role.PATIENT:
@@ -205,15 +260,18 @@ class QueueService:
                 raise ForbiddenError("You may only manage your own queue entry")
             return
         if _is_facility_scoped(user):
-            if patient.facility_id != user.facility_id:
-                raise ForbiddenError("You may only access patients linked to your own facility")
-            return
+            if patient.facility_id == user.facility_id:
+                return
+            desk = await self.desks.get(entry.queue_desk_id)
+            if desk is not None and desk.facility_id == user.facility_id:
+                return
+            raise ForbiddenError("You may only access patients linked to your own facility")
         raise ForbiddenError("Not authorized for this queue entry")
 
     async def cancel(self, entry_id: uuid.UUID, user: User) -> QueueEntry:
         entry = await self.entries.get_or_404(entry_id)
         patient = await self.patients.get_or_404(entry.patient_id)
-        self._assert_own_entry_or_linked(user, entry, patient)
+        await self._assert_own_entry_or_linked(user, entry, patient)
         if entry.status != QueueEntryStatus.WAITING:
             raise ValidationAppError("Only a waiting queue entry can be cancelled")
         previous = entry.status
@@ -228,7 +286,7 @@ class QueueService:
     async def rejoin(self, entry_id: uuid.UUID, user: User) -> QueueEntry:
         entry = await self.entries.get_or_404(entry_id)
         patient = await self.patients.get_or_404(entry.patient_id)
-        self._assert_own_entry_or_linked(user, entry, patient)
+        await self._assert_own_entry_or_linked(user, entry, patient)
         if entry.status != QueueEntryStatus.SKIPPED:
             raise ValidationAppError("Only a skipped entry can be rejoined")
         max_order = await self.entries.max_active_order(entry.queue_desk_id, entry.queue_date)
@@ -358,7 +416,7 @@ class QueueService:
     async def get_detail(self, entry_id: uuid.UUID, user: User) -> tuple[QueueEntry, dict]:
         entry = await self.entries.get_or_404(entry_id)
         patient = await self.patients.get_or_404(entry.patient_id)
-        self._assert_own_entry_or_linked(user, entry, patient)
+        await self._assert_own_entry_or_linked(user, entry, patient)
         return entry, await self._entry_detail(entry)
 
     async def list_mine(self, user: User) -> list[tuple[QueueEntry, dict]]:
@@ -377,12 +435,25 @@ class QueueService:
     async def doctor_current(self, user: User) -> dict:
         if user.role not in (Role.DOCTOR, Role.ADMIN):
             raise ForbiddenError("Only doctors can view their own queue")
-        stmt = select(QueueDesk).where(QueueDesk.doctor_id == user.id, QueueDesk.is_deleted.is_(False))
+        stmt = (
+            select(QueueDesk)
+            .where(QueueDesk.doctor_id == user.id, QueueDesk.is_deleted.is_(False))
+            .order_by(QueueDesk.is_active.desc(), QueueDesk.display_name.asc())
+        )
         result = await self.db.execute(stmt)
-        desk = result.scalars().first()
-        if desk is None:
+        desks = list(result.scalars().all())
+        if not desks:
             raise NotFoundError("No queue desk assigned to this doctor")
         today = date.today()
+        desk = desks[0]
+        best_waiting = -1
+        for candidate in desks:
+            if not candidate.is_active and any(d.is_active for d in desks):
+                continue
+            waiting_rows = await self.entries.waiting_entries_for_desk(candidate.id, today)
+            if len(waiting_rows) > best_waiting:
+                best_waiting = len(waiting_rows)
+                desk = candidate
         active = await self.entries.active_entries_for_desk(desk.id, today)
         current = await self.entries.current_serving(desk.id, today)
         completed = await self.entries.count_for_desk_status(desk.id, today, QueueEntryStatus.COMPLETED)
@@ -403,6 +474,11 @@ class QueueService:
                 pregnancy = presult.scalars().first()
                 if pregnancy is not None:
                     risk_flag = pregnancy.risk_level.value
+            referral_reason = None
+            if e.referral_id is not None:
+                referral = await self.referrals.get(e.referral_id)
+                if referral is not None:
+                    referral_reason = referral.reason
             wait_minutes = int((datetime.utcnow() - e.joined_at).total_seconds() // 60)
             entries_out.append(
                 {
@@ -413,7 +489,7 @@ class QueueService:
                     "patient_id": e.patient_id,
                     "patient_name": patient.full_name if patient else "Unknown",
                     "risk_flag": risk_flag,
-                    "referral_reason": None,
+                    "referral_reason": referral_reason,
                     "joined_at": e.joined_at,
                     "wait_minutes": wait_minutes,
                     "estimated_wait_minutes": e.estimated_wait_minutes,
@@ -465,14 +541,51 @@ class QueueService:
             )
         return {"desks": out}
 
-    async def list_desks(self, facility_id: uuid.UUID | None, user: User) -> list[QueueDesk]:
+    async def list_desks(
+        self,
+        facility_id: uuid.UUID | None,
+        user: User,
+        patient_id: uuid.UUID | None = None,
+    ) -> list[QueueDesk]:
+        if patient_id is not None:
+            return await self._list_desks_for_patient(patient_id, user, facility_id)
+        if user.role == Role.ADMIN:
+            if facility_id is not None:
+                return await self.desks.list_open_at_facilities([facility_id])
+            return [d for d in await self.desks.list_active() if d.is_active]
+        if user.role == Role.PATIENT:
+            if facility_id is None:
+                if user.facility_id is None:
+                    return []
+                return await self.desks.list_open_at_facilities([user.facility_id])
+            return await self.desks.list_open_at_facilities([facility_id])
+        if user.facility_id is None:
+            raise ForbiddenError("Your account is not linked to a facility")
+        if facility_id is not None and facility_id != user.facility_id:
+            raise ForbiddenError("You may only list queue desks for your own facility")
+        return await self.desks.list_open_at_facilities([user.facility_id])
+
+    async def _list_desks_for_patient(
+        self,
+        patient_id: uuid.UUID,
+        user: User,
+        facility_id: uuid.UUID | None,
+    ) -> list[QueueDesk]:
+        patient = await self.patients.get_or_404(patient_id)
+        assert_patient_access(user, patient)
+        allowed: list[uuid.UUID] = []
+        if patient.facility_id is not None:
+            allowed.append(patient.facility_id)
+        for referral in await self._open_referrals_for_patient(patient.id):
+            if referral.to_facility_id is not None and referral.to_facility_id not in allowed:
+                allowed.append(referral.to_facility_id)
         if facility_id is not None:
-            return await self.desks.list_active(facility_id=facility_id)
-        if user.role in (Role.ADMIN,):
-            return await self.desks.list_active()
-        if user.facility_id is not None:
-            return await self.desks.list_active(facility_id=user.facility_id)
-        return await self.desks.list_active()
+            if facility_id not in allowed:
+                raise ForbiddenError(
+                    "This patient has no active referral (or home facility match) for that facility"
+                )
+            allowed = [facility_id]
+        return await self.desks.list_open_at_facilities(allowed)
 
     # -- wait-time recomputation ---------------------------------------
 

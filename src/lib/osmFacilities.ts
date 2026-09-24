@@ -108,6 +108,7 @@ function elementToFacility(el: OverpassElement): NearbyFacility | null {
     lastUpdated: "",
     contactPhone: tags.phone || "",
     address: tags["addr:full"] || tags["addr:street"] || "",
+    website: tags.website || tags["contact:website"] || undefined,
   };
 }
 
