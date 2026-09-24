@@ -1,6 +1,6 @@
 import React from "react";
 import { NearbyFacility } from "@/lib/mockData";
-import { Building2, MapPin, CheckCircle, Clock, Phone } from "lucide-react";
+import { Building2, MapPin, CheckCircle, Clock, Phone, Navigation, Globe } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface FacilityCardProps {
@@ -27,6 +27,17 @@ export function FacilityCard({ facility, distanceOverride, locationSource }: Fac
     : facility.doctorAvailability.includes("Sunita Devi")
     ? `${t("sunitaDeviWorker")} — Available Daily`
     : t(facility.doctorAvailability);
+
+  const directionsUrl =
+    facility.latitude != null && facility.longitude != null
+      ? `https://www.google.com/maps/dir/?api=1&destination=${facility.latitude},${facility.longitude}`
+      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+          facility.address || displayName
+        )}`;
+
+  const websiteUrl =
+    facility.website ||
+    `https://www.google.com/search?q=${encodeURIComponent(`${displayName} ${facility.address}`.trim())}`;
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-xs hover:border-teal-500/50 transition-all space-y-3">
@@ -110,6 +121,27 @@ export function FacilityCard({ facility, distanceOverride, locationSource }: Fac
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" /> {t("updated")}: {t("todayAt")} 8:00 AM
         </span>
+      </div>
+
+      <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2">
+        <a
+          href={directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800"
+        >
+          <Navigation className="w-3.5 h-3.5" />
+          {t("getDirections")}
+        </a>
+        <a
+          href={websiteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          {t("hospitalWebsite")}
+        </a>
       </div>
     </div>
   );

@@ -67,7 +67,14 @@ export default function PatientAppointmentsPage() {
     setAppointments(list);
     setFacilities(facs);
     setFacilityNames(names);
-    setFacilityId((current) => current || own.facility_id || facs[0]?.id || "");
+    const patientVillage = own.village?.trim().toLowerCase();
+    const nearestByAddress = patientVillage
+      ? facs.find((f) => {
+          const facVillage = f.village?.trim().toLowerCase();
+          return facVillage && (patientVillage.includes(facVillage) || facVillage.includes(patientVillage));
+        })
+      : undefined;
+    setFacilityId((current) => current || own.facility_id || nearestByAddress?.id || facs[0]?.id || "");
   }, []);
 
   useEffect(() => {

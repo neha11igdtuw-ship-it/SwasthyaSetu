@@ -113,6 +113,7 @@ export interface NearbyFacility {
   lastUpdated: string;
   contactPhone: string;
   address: string;
+  website?: string;
 }
 
 export interface HealthWorkerPatient {
