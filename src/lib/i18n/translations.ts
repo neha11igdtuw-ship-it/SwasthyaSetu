@@ -399,6 +399,8 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     distanceAway: "away",
     doctorAvailability: "Doctor Availability:",
     servicesAvailable: "Services Available:",
+    getDirections: "Get Directions",
+    hospitalWebsite: "Hospital Website",
     savedInformation: "Saved information",
 
     // Referral Progress & Stepper
@@ -988,6 +990,8 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     distanceAway: "दूरी पर",
     doctorAvailability: "डॉक्टर की उपलब्धता:",
     servicesAvailable: "उपलब्ध सेवाएं:",
+    getDirections: "दिशा-निर्देश प्राप्त करें",
+    hospitalWebsite: "अस्पताल की वेबसाइट",
     savedInformation: "सुरक्षित जानकारी",
 
     // Referral Progress & Stepper
@@ -1576,6 +1580,8 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     distanceAway: "अंतरावर",
     doctorAvailability: "डॉक्टरांची उपलब्धता:",
     servicesAvailable: "उपलब्ध सेवा:",
+    getDirections: "दिशा मिळवा",
+    hospitalWebsite: "रुग्णालयाची वेबसाइट",
     savedInformation: "जतन केलेली माहिती",
 
     // Referral Progress & Stepper
@@ -2032,6 +2038,8 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     distanceAway: "distance",
     doctorAvailability: "Doctor Duty:",
     servicesAvailable: "Available Services:",
+    getDirections: "Get Directions",
+    hospitalWebsite: "Hospital Website",
     savedInformation: "Saved data",
 
     // Referral Progress & Stepper
