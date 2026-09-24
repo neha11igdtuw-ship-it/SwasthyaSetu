@@ -90,6 +90,8 @@ class QueueEntryOut(ORMBase):
     id: uuid.UUID
     queue_desk_id: uuid.UUID
     patient_id: uuid.UUID
+    facility_id: uuid.UUID
+    doctor_id: uuid.UUID
     referral_id: uuid.UUID | None
     appointment_id: uuid.UUID | None
     queue_date: date

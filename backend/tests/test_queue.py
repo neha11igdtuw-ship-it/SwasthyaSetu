@@ -215,3 +215,100 @@ async def test_facility_overview_groups_by_desk(client, db_session, facility):
     desks = resp.json()["desks"]
     assert len(desks) == 1
     assert desks[0]["waiting_count"] == 1
+
+
+async def test_health_worker_joins_referred_hospital_opd(client, db_session, facility, auth_headers):
+    """Health worker at a PHC joins OPD New at the referred hospital; the
+    destination doctor then calls, starts, and completes the consult."""
+    from app.models.facility import Facility
+
+    hospital = Facility(name="District Hospital", facility_type="HOSPITAL")
+    db_session.add(hospital)
+    await db_session.commit()
+    await db_session.refresh(hospital)
+
+    doctor = await _register(client, db_session, Role.DOCTOR, hospital, "hospital.doctor@example.com")
+    doctor_id = await _get_user_id(client, doctor)
+    hospital_admin = await _register(
+        client, db_session, Role.FACILITY_ADMIN, hospital, "hospital.admin@example.com"
+    )
+
+    desk_resp = await client.post(
+        "/api/v1/queue-desks",
+        json={
+            "facility_id": str(hospital.id),
+            "department": "Obstetrics",
+            "room_number": "OPD-1",
+            "doctor_id": doctor_id,
+            "display_name": "OPD New",
+            "average_consultation_minutes": 10,
+        },
+        headers=hospital_admin,
+    )
+    assert desk_resp.status_code == 201, desk_resp.text
+    desk = desk_resp.json()
+
+    patient_resp = await client.post(
+        "/api/v1/patients", json={"full_name": "Priya Sharma"}, headers=auth_headers
+    )
+    assert patient_resp.status_code == 201, patient_resp.text
+    patient_id = patient_resp.json()["id"]
+
+    referral_resp = await client.post(
+        "/api/v1/referrals",
+        json={
+            "patient_id": patient_id,
+            "from_facility_id": str(facility.id),
+            "to_facility_id": str(hospital.id),
+            "reason": "Suspected pre-eclampsia",
+            "specialty_needed": "obstetrics",
+            "urgency": "URGENT",
+        },
+        headers=auth_headers,
+    )
+    assert referral_resp.status_code == 201, referral_resp.text
+
+    desks_resp = await client.get(
+        "/api/v1/queue-desks",
+        params={"patient_id": patient_id},
+        headers=auth_headers,
+    )
+    assert desks_resp.status_code == 200, desks_resp.text
+    desks = desks_resp.json()
+    assert any(d["id"] == desk["id"] and d["display_name"] == "OPD New" for d in desks)
+
+    join_resp = await client.post(
+        "/api/v1/queues/join",
+        json={"queue_desk_id": desk["id"], "patient_id": patient_id},
+        headers=auth_headers,
+    )
+    assert join_resp.status_code == 201, join_resp.text
+    entry = join_resp.json()
+    assert entry["status"] == "WAITING"
+    assert entry["facility_id"] == str(hospital.id)
+    assert entry["doctor_id"] == doctor_id
+    assert entry["referral_id"] == referral_resp.json()["id"]
+
+    current_resp = await client.get("/api/v1/doctor/queue/current", headers=doctor)
+    assert current_resp.status_code == 200, current_resp.text
+    current = current_resp.json()
+    assert current["summary"]["waiting_count"] == 1
+    assert current["entries"][0]["patient_name"] == "Priya Sharma"
+
+    call_resp = await client.post(
+        "/api/v1/doctor/queue/call-next",
+        params={"queue_desk_id": desk["id"]},
+        headers=doctor,
+    )
+    assert call_resp.status_code == 200, call_resp.text
+    assert call_resp.json()["status"] == "CALLED"
+
+    start_resp = await client.post(
+        f"/api/v1/queues/{entry['id']}/start-consultation", headers=doctor
+    )
+    assert start_resp.status_code == 200
+    assert start_resp.json()["status"] == "IN_CONSULTATION"
+
+    complete_resp = await client.post(f"/api/v1/queues/{entry['id']}/complete", headers=doctor)
+    assert complete_resp.status_code == 200
+    assert complete_resp.json()["status"] == "COMPLETED"

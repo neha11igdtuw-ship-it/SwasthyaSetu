@@ -1,64 +1,98 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { authApi, facilityQueueApi, queueDesksApi, queueApi, ApiError } from "@/lib/api/client";
-import type { FacilityQueueOverviewOut, QueueDeskOut } from "@/lib/api/types";
+import { authApi, facilitiesApi, queueDesksApi, queueApi, ApiError } from "@/lib/api/client";
+import type { QueueDeskOut } from "@/lib/api/types";
 import { AlertTriangle, PauseCircle, Ticket, Loader2 } from "lucide-react";
 
 const POLL_INTERVAL_MS = 25000;
 
-/** Health-worker view: which of their facility's queue desks are paused, plus
- * a quick "join queue on behalf of a linked patient" action. Per-patient live
- * position is visible to the health worker once the patient (or the worker,
- * on their behalf) has joined — see the QueueCard on the patient's own
- * dashboard for that live token/position view. */
+function describeApiError(e: unknown, fallback: string): string {
+  if (!(e instanceof ApiError)) return fallback;
+  if (Array.isArray(e.details)) {
+    const messages = (e.details as { loc?: unknown[]; msg?: string }[])
+      .map((d) => {
+        const field = Array.isArray(d.loc) ? d.loc[d.loc.length - 1] : undefined;
+        return field ? `${field}: ${d.msg}` : d.msg;
+      })
+      .filter(Boolean);
+    if (messages.length) return messages.join("; ");
+  }
+  return e.message || fallback;
+}
+
+/** Health-worker view: join a home-facility or referred-to-facility OPD desk
+ * on behalf of a linked patient. Destination desks come from the patient's
+ * active referral (`to_facility_id`), not the worker's own sub-centre. */
 export function HealthWorkerQueueSection({
   patients,
 }: {
   patients: { id: string; full_name: string; riskLevel?: string }[];
 }) {
-  const [facilityId, setFacilityId] = useState<string | null>(null);
-  const [overview, setOverview] = useState<FacilityQueueOverviewOut | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const [desks, setDesks] = useState<QueueDeskOut[]>([]);
+  const [facilityNames, setFacilityNames] = useState<Map<string, string>>(new Map());
+  const [error, setError] = useState<string | null>(null);
+  const [desksLoading, setDesksLoading] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [selectedDeskId, setSelectedDeskId] = useState("");
   const [joining, setJoining] = useState(false);
   const [joinMessage, setJoinMessage] = useState<string | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
-  const load = useCallback(async (fid: string) => {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        await authApi.me();
+        const facilities = await facilitiesApi.list().catch(() => []);
+        if (cancelled) return;
+        setFacilityNames(new Map(facilities.map((f) => [f.id, f.name])));
+        setError(null);
+      } catch (e) {
+        if (!cancelled) setError(describeApiError(e, "Could not load health worker profile."));
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loadDesks = useCallback(async (patientId: string) => {
+    if (!patientId) {
+      setDesks([]);
+      setDesksLoading(false);
+      return;
+    }
+    setDesksLoading(true);
     try {
-      const [ov, dk] = await Promise.all([
-        facilityQueueApi.overview(fid),
-        queueDesksApi.list(fid),
-      ]);
-      setOverview(ov);
+      const dk = await queueDesksApi.list(undefined, patientId);
       setDesks(dk.filter((d) => d.is_active));
       setError(null);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not load queue status.");
+      setDesks([]);
+      setError(describeApiError(e, "Could not load queue desks for this patient."));
+    } finally {
+      setDesksLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    authApi.me().then((me) => {
-      if (cancelled || !me.facility_id) return;
-      setFacilityId(me.facility_id);
-      load(me.facility_id);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [load]);
+    setSelectedDeskId("");
+    setJoinMessage(null);
+    setJoinError(null);
+    loadDesks(selectedPatientId);
+  }, [selectedPatientId, loadDesks]);
 
   useEffect(() => {
-    if (!facilityId) return;
-    const timer = setInterval(() => load(facilityId), POLL_INTERVAL_MS);
+    if (!selectedPatientId) return;
+    const timer = setInterval(() => loadDesks(selectedPatientId), POLL_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [facilityId, load]);
+  }, [selectedPatientId, loadDesks]);
 
-  const pausedDesks = overview?.desks.filter((d) => d.is_paused) ?? [];
+  const pausedDesks = desks.filter((d) => d.is_paused);
   const highRiskNames = new Set(
     patients.filter((p) => p.riskLevel === "High Risk").map((p) => p.full_name)
   );
@@ -67,17 +101,24 @@ export function HealthWorkerQueueSection({
     if (!selectedPatientId || !selectedDeskId) return;
     setJoining(true);
     setJoinMessage(null);
+    setJoinError(null);
     try {
-      const entry = await queueApi.join({ queue_desk_id: selectedDeskId, patient_id: selectedPatientId });
+      const entry = await queueApi.join({
+        queue_desk_id: selectedDeskId,
+        patient_id: selectedPatientId,
+      });
       setJoinMessage(`Joined — token #${entry.token_number} at ${entry.desk_display_name}.`);
+      await loadDesks(selectedPatientId);
     } catch (e) {
-      setJoinMessage(e instanceof ApiError ? e.message : "Could not join the queue for this patient.");
+      setJoinError(describeApiError(e, "Could not join the queue for this patient."));
     } finally {
       setJoining(false);
     }
   }
 
-  if (!facilityId) return null;
+  const deskEmptyMessage = !selectedPatientId
+    ? "Select a patient with an active referral (or a home-facility desk) to see available OPD desks."
+    : "No open OPD desk is available for this patient’s referral facility.";
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
@@ -86,9 +127,15 @@ export function HealthWorkerQueueSection({
           <Ticket className="w-5 h-5 text-teal-700" /> OPD Queue Status
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Paused doctors and a quick way to join a queue for a patient you&apos;re assisting
+          Join an open OPD desk for a patient you&apos;re assisting — including referred hospital desks
         </p>
       </div>
+
+      {!ready && (
+        <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading queue desk…
+        </div>
+      )}
 
       {error && (
         <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
@@ -100,7 +147,7 @@ export function HealthWorkerQueueSection({
         <div className="space-y-2">
           {pausedDesks.map((d) => (
             <div
-              key={d.queue_desk_id}
+              key={d.id}
               className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-2"
             >
               <PauseCircle className="w-4 h-4 shrink-0" />
@@ -110,7 +157,7 @@ export function HealthWorkerQueueSection({
         </div>
       )}
 
-      {highRiskNames.size > 0 && overview && overview.desks.some((d) => d.waiting_count > 0) && (
+      {highRiskNames.size > 0 && desks.some((d) => d.is_paused) && (
         <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           You have high-risk linked patients — check their queue position from their dashboard so
@@ -120,7 +167,7 @@ export function HealthWorkerQueueSection({
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end pt-1">
         <div className="sm:col-span-1">
-          <label className="text-[11px] font-bold text-slate-600 block mb-1">Patient</label>
+          <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block mb-1">Patient</label>
           <select
             value={selectedPatientId}
             onChange={(e) => setSelectedPatientId(e.target.value)}
@@ -135,19 +182,35 @@ export function HealthWorkerQueueSection({
           </select>
         </div>
         <div className="sm:col-span-1">
-          <label className="text-[11px] font-bold text-slate-600 block mb-1">Queue desk</label>
-          <select
-            value={selectedDeskId}
-            onChange={(e) => setSelectedDeskId(e.target.value)}
-            className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs"
-          >
-            <option value="">Select desk…</option>
-            {desks.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.display_name}
-              </option>
-            ))}
-          </select>
+          <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 block mb-1">Queue desk</label>
+          {desksLoading ? (
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 p-2.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading desks…
+            </div>
+          ) : (
+            <select
+              value={selectedDeskId}
+              onChange={(e) => setSelectedDeskId(e.target.value)}
+              disabled={!selectedPatientId || desks.length === 0}
+              className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs disabled:opacity-60"
+            >
+              <option value="">Select desk…</option>
+              {desks.map((d) => {
+                const facilityName = facilityNames.get(d.facility_id);
+                const hours =
+                  d.opd_start_time && d.opd_end_time
+                    ? ` · ${String(d.opd_start_time).slice(0, 5)}–${String(d.opd_end_time).slice(0, 5)}`
+                    : "";
+                return (
+                  <option key={d.id} value={d.id}>
+                    {d.display_name}
+                    {facilityName ? ` · ${facilityName}` : ""}
+                    {hours}
+                  </option>
+                );
+              })}
+            </select>
+          )}
         </div>
         <button
           type="button"
@@ -159,7 +222,25 @@ export function HealthWorkerQueueSection({
         </button>
       </div>
 
-      {joinMessage && <p className="text-xs font-semibold text-slate-600">{joinMessage}</p>}
+      {selectedPatientId && !desksLoading && desks.length === 0 && !error && (
+        <p className="text-xs font-semibold text-amber-800 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 rounded-lg p-2.5">
+          {deskEmptyMessage}
+        </p>
+      )}
+      {!selectedPatientId && ready && (
+        <p className="text-xs text-slate-500">{deskEmptyMessage}</p>
+      )}
+
+      {joinMessage && (
+        <p className="text-xs font-extrabold text-emerald-800 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 rounded-lg p-2.5">
+          {joinMessage}
+        </p>
+      )}
+      {joinError && (
+        <p className="text-xs font-semibold text-rose-800 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 rounded-lg p-2.5">
+          {joinError}
+        </p>
+      )}
     </div>
   );
 }

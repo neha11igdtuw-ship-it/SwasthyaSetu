@@ -5,7 +5,8 @@ Idempotent: re-running updates demo identities and skips rows that already exist
 """
 
 import asyncio
-from datetime import datetime, timedelta
+import secrets
+from datetime import datetime, time, timedelta
 
 from sqlalchemy import select
 
@@ -27,6 +28,7 @@ from app.models.facility import Facility
 from app.models.inventory import InventoryItem
 from app.models.maternal import Encounter, Pregnancy, Screening, Symptom, Vital
 from app.models.patient import Patient
+from app.models.queue import QueueDesk
 from app.models.referral import Referral
 from app.models.staff import DoctorAvailability, HealthWorkerProfile
 from app.models.user import User
@@ -271,7 +273,7 @@ async def seed() -> None:
         result = await db.execute(
             select(DoctorAvailability).where(DoctorAvailability.doctor_id == doctor.id)
         )
-        availability = result.scalar_one_or_none()
+        availability = result.scalars().first()
         if availability is None:
             start = datetime.utcnow().replace(
                 hour=10, minute=0, second=0, microsecond=0
@@ -415,33 +417,93 @@ async def seed() -> None:
                 pregnancy.notes = "High-risk pregnancy week 28; needs specialist follow-up."
 
         # Keep one demo care request for Priya (pre-eclampsia → district hospital).
-        result = await db.execute(
-            select(Referral).where(Referral.patient_id == patient.id, Referral.is_deleted.is_(False))
-        )
+        # Force an open, queue-eligible status so the health worker can join
+        # Dr. Meera's hospital OPD. Production still hides desks when a
+        # referral is COMPLETED/CANCELLED/REJECTED.
+        result = await db.execute(select(Referral).where(Referral.patient_id == patient.id))
         existing_refs = list(result.scalars().all())
         preferred = next(
             (r for r in existing_refs if "pre-eclampsia" in (r.reason or "").lower()),
             existing_refs[0] if existing_refs else None,
         )
-        if preferred is not None:
-            preferred.reason = "Suspected pre-eclampsia in high-risk pregnancy, week 28"
-            preferred.specialty_needed = "obstetrics"
-            preferred.urgency = "URGENT"
-            preferred.to_facility_id = hospital.id
-            preferred.from_facility_id = phc.id
-            if preferred.status in (
-                ReferralStatus.CREATED,
-                ReferralStatus.PENDING,
-                ReferralStatus.REJECTED,
-            ):
-                preferred.status = ReferralStatus.PENDING
-            for extra in existing_refs:
-                if extra.id != preferred.id:
-                    extra.is_deleted = True
-                    extra.status = ReferralStatus.CANCELLED
+        if preferred is None:
+            preferred = Referral(
+                patient_id=patient.id,
+                from_facility_id=phc.id,
+                to_facility_id=hospital.id,
+                reason="Suspected pre-eclampsia in high-risk pregnancy, week 28",
+                specialty_needed="obstetrics",
+                urgency="URGENT",
+                status=ReferralStatus.PENDING,
+                created_by_id=worker.id,
+            )
+            db.add(preferred)
+            await db.flush()
+            existing_refs = [preferred]
+        preferred.reason = "Suspected pre-eclampsia in high-risk pregnancy, week 28"
+        preferred.specialty_needed = "obstetrics"
+        preferred.urgency = "URGENT"
+        preferred.to_facility_id = hospital.id
+        preferred.from_facility_id = phc.id
+        preferred.is_deleted = False
+        preferred.status = ReferralStatus.PENDING
+        for extra in existing_refs:
+            if extra.id != preferred.id:
+                extra.is_deleted = True
+                extra.status = ReferralStatus.CANCELLED
+
+        # District-hospital OPD desk for Dr. Meera Singh. Health workers join
+        # this desk on Priya's behalf via her open obstetrics referral.
+        result = await db.execute(
+            select(QueueDesk).where(
+                QueueDesk.facility_id == hospital.id,
+                QueueDesk.doctor_id == doctor.id,
+                QueueDesk.display_name == "OPD New",
+                QueueDesk.is_deleted.is_(False),
+            )
+        )
+        opd_new = result.scalars().first()
+        if opd_new is None:
+            db.add(
+                QueueDesk(
+                    facility_id=hospital.id,
+                    department="Obstetrics",
+                    room_number="OPD-1",
+                    doctor_id=doctor.id,
+                    display_name="OPD New",
+                    opd_start_time=time(9, 0),
+                    opd_end_time=time(14, 0),
+                    average_consultation_minutes=10,
+                    is_active=True,
+                    is_paused=False,
+                    qr_code_key=secrets.token_urlsafe(16),
+                )
+            )
+        else:
+            opd_new.department = "Obstetrics"
+            opd_new.room_number = "OPD-1"
+            opd_new.opd_start_time = time(9, 0)
+            opd_new.opd_end_time = time(14, 0)
+            opd_new.average_consultation_minutes = 10
+            opd_new.is_active = True
+            opd_new.is_paused = False
+            opd_new.pause_reason = None
+
+        # Demo-only: keep OPD New as Dr. Meera's single live hospital desk so
+        # leftover ad-hoc desks do not steal the doctor dashboard view.
+        result = await db.execute(
+            select(QueueDesk).where(
+                QueueDesk.doctor_id == doctor.id,
+                QueueDesk.facility_id == hospital.id,
+                QueueDesk.is_deleted.is_(False),
+            )
+        )
+        for desk in result.scalars().all():
+            if desk.display_name != "OPD New":
+                desk.is_active = False
 
         await db.commit()
-        print("Seed complete. Demo users: Priya Sharma, ANM Sunita Devi, Dr. Meera Singh.")
+        print("Seed complete. Demo users: Priya Sharma, ANM Sunita Devi, Dr. Meera Singh. Desk: OPD New.")
 
 
 if __name__ == "__main__":
