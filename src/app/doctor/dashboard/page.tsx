@@ -24,6 +24,14 @@ import {
   Plus,
 } from "lucide-react";
 
+function isTodayLocal(value: string) {
+  const calendarDate = value.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(calendarDate)) return false;
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  return calendarDate === todayKey;
+}
+
 export default function DoctorDashboardPage() {
   const { t } = useLanguage();
 
@@ -54,7 +62,7 @@ export default function DoctorDashboardPage() {
         let avail: DoctorAvailabilityOut[] = [];
         if (me.facility_id) {
           const all = await doctorAvailabilityApi.list(me.facility_id);
-          avail = all.filter((s) => s.doctor_id === me.id && !s.is_booked);
+          avail = all.filter((s) => s.doctor_id === me.id && !s.is_booked && isTodayLocal(s.start_time));
         }
 
         if (!cancelled) {
@@ -145,7 +153,7 @@ export default function DoctorDashboardPage() {
                 </p>
               </div>
               <Link
-                href="/doctor/care-requests"
+                href="/doctor/patients-to-review"
                 className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold transition-colors"
               >
                 View All Patients to Review

@@ -22,16 +22,12 @@ export default function DoctorPatientsToReviewPage() {
 
     Promise.all([authApi.me(), doctorQueueApi.current()])
       .then(async ([me, data]) => {
-        const access = await Promise.all(
-          data.entries.map(async (entry) => {
-            try {
-              const patient = await patientsApi.get(entry.patient_id);
-              return [entry.patient_id, patient.facility_id === me.facility_id] as const;
-            } catch {
-              return [entry.patient_id, false] as const;
-            }
-          }),
-        );
+        const patients = me.facility_id ? await patientsApi.list(me.facility_id) : [];
+        const authorizedPatientIds = new Set(patients.map((patient) => patient.id));
+        const access = data.entries.map((entry) => [
+          entry.patient_id,
+          authorizedPatientIds.has(entry.patient_id),
+        ] as const);
 
         if (!cancelled) {
           setQueue(data);
@@ -85,7 +81,7 @@ export default function DoctorPatientsToReviewPage() {
         </section>
       )}
 
-      {queueState === "ready" && <DoctorQueuePanel />}
+      {queueState === "ready" && <DoctorQueuePanel initialData={queue} />}
 
       {queueState === "ready" && <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
         <div>
