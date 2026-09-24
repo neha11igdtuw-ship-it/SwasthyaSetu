@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { patientsApi, ApiError } from "@/lib/api/client";
-import { CheckCircle2, UserPlus, ArrowLeft, Loader2 } from "lucide-react";
+import { CheckCircle2, UserPlus, ArrowLeft, Loader2, LocateFixed } from "lucide-react";
 
 type CarePathwayOption = "Maternal Care" | "Hypertension" | "Diabetes" | "General Primary Care";
 
@@ -15,6 +15,9 @@ export default function HWRegisterPatientPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "Anita Devi",
     age: "24",
@@ -29,6 +32,27 @@ export default function HWRegisterPatientPage() {
     pulse: "78",
   });
 
+  const captureLocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      setLocationStatus("Location not shared; nearby results may be less accurate.");
+      return;
+    }
+    setLocating(true);
+    setLocationStatus(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        setLocationStatus("Location saved for finding nearby facilities.");
+        setLocating(false);
+      },
+      () => {
+        setLocationStatus("Location not shared; nearby results may be less accurate.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -41,6 +65,8 @@ export default function HWRegisterPatientPage() {
         gender: formData.carePathway === "Maternal Care" ? "F" : undefined,
         phone: formData.phone,
         village: formData.village,
+        latitude: coords?.latitude,
+        longitude: coords?.longitude,
         care_pathway: formData.carePathway,
         pregnancy_week:
           formData.carePathway === "Maternal Care" ? parseInt(formData.pregnancyWeek, 10) || undefined : undefined,
@@ -154,6 +180,26 @@ export default function HWRegisterPatientPage() {
                   onChange={(e) => setFormData({ ...formData, village: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
                 />
+                <div className="flex items-center gap-2 mt-1.5">
+                  <button
+                    type="button"
+                    onClick={captureLocation}
+                    disabled={locating}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 border border-teal-200 dark:border-teal-800 text-[11px] font-bold cursor-pointer disabled:opacity-60"
+                  >
+                    {locating ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <LocateFixed className="w-3.5 h-3.5" />
+                    )}
+                    {coords ? "Update location" : "Use current location"}
+                  </button>
+                  {locationStatus && (
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      {locationStatus}
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div>

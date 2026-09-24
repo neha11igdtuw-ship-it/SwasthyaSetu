@@ -47,6 +47,8 @@ export interface PatientOut {
   gender: string | null;
   phone: string | null;
   village: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   care_pathway: string | null;
   pregnancy_week: number | null;
   preferred_language: string | null;
@@ -64,6 +66,8 @@ export interface PatientCreate {
   gender?: string | null;
   phone?: string | null;
   village?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   care_pathway?: string | null;
   pregnancy_week?: number | null;
   preferred_language?: string | null;
@@ -83,6 +87,8 @@ export interface PatientUpdate {
   gender?: string | null;
   phone?: string | null;
   village?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   care_pathway?: string | null;
   pregnancy_week?: number | null;
   preferred_language?: string | null;
@@ -427,6 +433,12 @@ export interface DoctorAvailabilityCreate {
   start_time: string;
   end_time: string;
   note?: string | null;
+}
+
+export interface AvailableSlotOut {
+  id: string;
+  start_time: string;
+  end_time: string;
 }
 
 export interface DoctorAvailabilityOut {

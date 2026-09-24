@@ -4,12 +4,13 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import assert_patient_access, get_current_user, get_own_patient
-from app.core.errors import ForbiddenError
+from app.core.errors import ForbiddenError, ValidationAppError
 from app.db.session import get_db
 from app.models.enums import AppointmentStatus, Role
 from app.models.user import User
 from app.repositories.care import AppointmentRepository
 from app.repositories.patients import PatientRepository
+from app.repositories.staff import DoctorAvailabilityRepository
 from app.schemas.care import AppointmentCreate, AppointmentOut, AppointmentStatusUpdate, AppointmentUpdate
 
 router = APIRouter(prefix="/appointments", tags=["appointments"])
@@ -55,6 +56,16 @@ async def create_appointment(
             payload["reason"] = f"{payload['reason']} — {extra}" if payload.get("reason") else extra
     if user.role in (Role.HEALTH_WORKER, Role.DOCTOR, Role.FACILITY_STAFF, Role.FACILITY_ADMIN):
         payload["facility_id"] = payload.get("facility_id") or user.facility_id
+
+    if data.availability_id is not None:
+        slot_repo = DoctorAvailabilityRepository(db)
+        slot = await slot_repo.get_or_404(data.availability_id)
+        if payload.get("facility_id") and slot.facility_id != payload["facility_id"]:
+            raise ValidationAppError("Selected time slot does not belong to the chosen facility")
+        payload["facility_id"] = slot.facility_id
+        payload["scheduled_at"] = slot.start_time
+        await slot_repo.mark_booked(slot.id)
+
     repo = AppointmentRepository(db)
     appointment = await repo.create(**payload)
     await db.commit()

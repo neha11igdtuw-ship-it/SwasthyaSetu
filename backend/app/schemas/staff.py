@@ -32,6 +32,14 @@ class DoctorAvailabilityOut(ORMBase):
     is_deleted: bool
 
 
+class AvailableSlotOut(BaseModel):
+    """Minimal, patient-safe view of a bookable slot — no doctor identity exposed."""
+
+    id: uuid.UUID
+    start_time: datetime
+    end_time: datetime
+
+
 class HealthWorkerProfileCreate(BaseModel):
     user_id: uuid.UUID
     facility_id: uuid.UUID

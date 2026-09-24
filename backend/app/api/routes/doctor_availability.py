@@ -1,4 +1,5 @@
 import uuid
+from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,12 +11,26 @@ from app.models.enums import Role
 from app.models.user import User
 from app.repositories.staff import DoctorAvailabilityRepository
 from app.schemas.staff import (
+    AvailableSlotOut,
     DoctorAvailabilityCreate,
     DoctorAvailabilityOut,
     DoctorAvailabilityUpdate,
 )
 
 router = APIRouter(prefix="/doctor-availability", tags=["doctor-availability"])
+
+
+@router.get("/available", response_model=list[AvailableSlotOut])
+async def list_available_slots(
+    facility_id: uuid.UUID,
+    day: date,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Patient-safe: open, unbooked slots at a facility for one calendar day. No doctor identity exposed."""
+    day_start = datetime.combine(day, datetime.min.time())
+    day_end = day_start + timedelta(days=1)
+    return await DoctorAvailabilityRepository(db).list_available(facility_id, day_start, day_end)
 
 
 @router.get("", response_model=list[DoctorAvailabilityOut])
