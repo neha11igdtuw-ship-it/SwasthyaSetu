@@ -17,6 +17,21 @@ class QueueDeskRepository(SyncableRepository[QueueDesk]):
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
+    async def list_open_at_facilities(self, facility_ids: list[uuid.UUID]) -> list[QueueDesk]:
+        if not facility_ids:
+            return []
+        stmt = (
+            select(QueueDesk)
+            .where(
+                QueueDesk.is_deleted.is_(False),
+                QueueDesk.is_active.is_(True),
+                QueueDesk.facility_id.in_(facility_ids),
+            )
+            .order_by(QueueDesk.display_name.asc())
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
 
 class QueueEntryRepository(SyncableRepository[QueueEntry]):
     model = QueueEntry

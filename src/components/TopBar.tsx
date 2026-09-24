@@ -114,7 +114,7 @@ export function TopBar({
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-700 px-3 sm:px-6 py-2.5">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3 lg:gap-5">
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {onToggleSidebar && (
             <button
@@ -175,11 +175,15 @@ export function TopBar({
             <Search className="w-4 h-4" aria-hidden="true" />
           </button>
 
-          {localizedUserName && role !== "Patient" && (
-            <div className="hidden xl:flex flex-col items-end">
-              <span className="text-xs font-bold text-slate-900 dark:text-white">{localizedUserName}</span>
+          {localizedUserName && role && role !== "Patient" && role !== "Health Worker" && (
+            <div className="hidden xl:flex flex-col items-end min-w-0">
+              <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[12rem]">
+                {localizedUserName}
+              </span>
               {localizedLocation && (
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">{localizedLocation}</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[12rem]">
+                  {localizedLocation}
+                </span>
               )}
             </div>
           )}

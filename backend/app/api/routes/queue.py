@@ -47,10 +47,11 @@ async def create_queue_desk(
 @router.get("/queue-desks", response_model=list[QueueDeskOut])
 async def list_queue_desks(
     facility_id: uuid.UUID | None = None,
+    patient_id: uuid.UUID | None = None,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    return await QueueService(db).list_desks(facility_id, user)
+    return await QueueService(db).list_desks(facility_id, user, patient_id=patient_id)
 
 
 @router.get("/queue-desks/{desk_id}", response_model=QueueDeskOut)

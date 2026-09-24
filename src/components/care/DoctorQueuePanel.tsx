@@ -30,8 +30,15 @@ export function DoctorQueuePanel() {
   useEffect(() => {
     load();
     timerRef.current = setInterval(load, POLL_INTERVAL_MS);
+    const onFocus = () => {
+      load();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
     };
   }, [load]);
 
@@ -73,8 +80,8 @@ export function DoctorQueuePanel() {
         <div>
           <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">OPD Queue</h2>
           <p className="text-xs text-slate-500">
-            {summary.waiting_count} waiting · {summary.completed_today} completed today ·{" "}
-            {summary.skipped_today} skipped today
+            {summary.waiting_count} waiting · now serving {summary.current_token_number ?? "—"} ·{" "}
+            {summary.completed_today} completed today · {summary.skipped_today} skipped today
           </p>
         </div>
         {summary.is_paused ? (

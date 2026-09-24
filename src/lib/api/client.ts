@@ -389,8 +389,13 @@ export const doctorAvailabilityApi = {
 // ---- Queue management ----
 
 export const queueDesksApi = {
-  list: (facilityId?: string) =>
-    request<QueueDeskOut[]>(`/queue-desks${facilityId ? `?facility_id=${facilityId}` : ""}`),
+  list: (facilityId?: string, patientId?: string) => {
+    const params = new URLSearchParams();
+    if (facilityId) params.set("facility_id", facilityId);
+    if (patientId) params.set("patient_id", patientId);
+    const query = params.toString();
+    return request<QueueDeskOut[]>(`/queue-desks${query ? `?${query}` : ""}`);
+  },
   get: (id: string) => request<QueueDeskOut>(`/queue-desks/${id}`),
   create: (data: QueueDeskCreate) =>
     request<QueueDeskOut>("/queue-desks", { method: "POST", body: data }),
