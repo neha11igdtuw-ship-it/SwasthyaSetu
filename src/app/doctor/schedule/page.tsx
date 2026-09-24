@@ -17,6 +17,9 @@ function localDateKey(date: Date) {
 }
 
 function scheduleDateKey(value: string) {
+  const hasTimezone = value.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(value);
+  if (hasTimezone) return localDateKey(new Date(value));
+
   const calendarDate = value.slice(0, 10);
   return /^\d{4}-\d{2}-\d{2}$/.test(calendarDate)
     ? calendarDate
@@ -63,13 +66,18 @@ export default function DoctorSchedulePage() {
       const startDateTime = `${scheduleDate}T${startTime}:00`;
       const endDateTime = `${scheduleDate}T${endTime}:00`;
 
-      await doctorAvailabilityApi.create({
+      const created = await doctorAvailabilityApi.create({
         doctor_id: me.id,
         facility_id: me.facility_id,
         start_time: startDateTime,
         end_time: endDateTime,
         note: scheduleNote.trim() || null,
       });
+
+      if (created.doctor_id === me.id && isTodayLocal(created.start_time)) {
+        setSlots((current) => [created, ...current.filter((slot) => slot.id !== created.id)]
+          .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()));
+      }
 
       setScheduleDate("");
       setStartTime("");
@@ -147,7 +155,7 @@ export default function DoctorSchedulePage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
-          <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+          <div className="relative z-40 p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
   <span className="flex items-center gap-2">
     <Calendar className="w-4 h-4 text-teal-700" /> {slots.length} slots
   </span>
@@ -175,7 +183,13 @@ export default function DoctorSchedulePage() {
 </div>
 
 {showAddForm && (
-  <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+  <form
+    onSubmit={(event) => {
+      event.preventDefault();
+      void handleAddSchedule();
+    }}
+    className="relative z-40 p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+  >
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
         Date
@@ -221,8 +235,7 @@ export default function DoctorSchedulePage() {
 
     <div className="mt-4 flex justify-end">
       <button
-        type="button"
-        onClick={handleAddSchedule}
+        type="submit"
         disabled={saving}
         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-60 transition-colors"
       >
@@ -230,7 +243,7 @@ export default function DoctorSchedulePage() {
         {saving ? "Saving..." : "Save Schedule"}
       </button>
     </div>
-  </div>
+  </form>
 )}
           <div className="divide-y divide-slate-100 dark:divide-slate-700">
             {slots.map((s) => (
