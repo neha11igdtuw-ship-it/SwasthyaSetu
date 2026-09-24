@@ -8,12 +8,23 @@ import { authApi, doctorAvailabilityApi, ApiError } from "@/lib/api/client";
 import type { DoctorAvailabilityOut } from "@/lib/api/types";
 import { Calendar, Clock, Loader2, Plus, X } from "lucide-react";
 
+function localDateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function scheduleDateKey(value: string) {
+  const calendarDate = value.slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(calendarDate)
+    ? calendarDate
+    : localDateKey(new Date(value));
+}
+
 function isTodayLocal(value: string) {
-  const date = new Date(value);
-  const today = new Date();
-  return date.getFullYear() === today.getFullYear()
-    && date.getMonth() === today.getMonth()
-    && date.getDate() === today.getDate();
+  return scheduleDateKey(value) === localDateKey(new Date());
 }
 
 export default function DoctorSchedulePage() {
