@@ -9,7 +9,7 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 import { encountersApi, patientsApi, ApiError } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import type { EncounterOut, PatientOut, VitalOut } from "@/lib/api/types";
-import { Clock, Loader2, Pencil, Plus, X } from "lucide-react";
+import { Clock, Loader2, LocateFixed, Pencil, Plus, X } from "lucide-react";
 
 function ageFromDob(dob: string | null): number | null {
   if (!dob) return null;
@@ -42,6 +42,9 @@ export default function PatientRecordsPage() {
   const [gender, setGender] = useState("");
   const [pregnancyWeek, setPregnancyWeek] = useState("");
   const [emergencyContact, setEmergencyContact] = useState("");
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const [sys, setSys] = useState("");
   const [dia, setDia] = useState("");
@@ -58,6 +61,31 @@ export default function PatientRecordsPage() {
     setGender(p.gender || "");
     setPregnancyWeek(p.pregnancy_week?.toString() || "");
     setEmergencyContact(p.emergency_contact || "");
+    setCoords(
+      p.latitude != null && p.longitude != null ? { latitude: p.latitude, longitude: p.longitude } : null
+    );
+    setLocationStatus(null);
+  };
+
+  const captureLocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      setLocationStatus("Location not shared; nearby results may be less accurate.");
+      return;
+    }
+    setLocating(true);
+    setLocationStatus(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+        setLocationStatus("Location saved for finding nearby facilities.");
+        setLocating(false);
+      },
+      () => {
+        setLocationStatus("Location not shared; nearby results may be less accurate.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
   };
 
   const load = useCallback(async () => {
@@ -111,6 +139,8 @@ export default function PatientRecordsPage() {
         full_name: fullName.trim(),
         phone: phone.trim() || null,
         village: village.trim() || null,
+        latitude: coords?.latitude ?? null,
+        longitude: coords?.longitude ?? null,
         preferred_language: language || null,
         age: age ? Number(age) : null,
         gender: gender || null,
@@ -370,6 +400,26 @@ export default function PatientRecordsPage() {
                 <div>
                   <label className="font-bold block mb-1">Village / address</label>
                   <input value={village} onChange={(e) => setVillage(e.target.value)} className={inputClass} />
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <button
+                      type="button"
+                      onClick={captureLocation}
+                      disabled={locating}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200 border border-teal-200 dark:border-teal-800 text-[11px] font-bold cursor-pointer disabled:opacity-60"
+                    >
+                      {locating ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <LocateFixed className="w-3.5 h-3.5" />
+                      )}
+                      {coords ? "Update my location" : "Use my current location"}
+                    </button>
+                    {locationStatus && (
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                        {locationStatus}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

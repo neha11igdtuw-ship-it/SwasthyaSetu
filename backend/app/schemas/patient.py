@@ -13,6 +13,8 @@ class PatientCreate(BaseModel):
     gender: str | None = None
     phone: str | None = None
     village: str | None = None
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
     care_pathway: str | None = None
     pregnancy_week: int | None = Field(default=None, ge=1, le=45)
     preferred_language: str | None = None
@@ -42,6 +44,8 @@ class PatientUpdate(BaseModel):
     gender: str | None = None
     phone: str | None = None
     village: str | None = None
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
     care_pathway: str | None = None
     pregnancy_week: int | None = None
     preferred_language: str | None = None
@@ -67,6 +71,8 @@ class PatientOut(ORMBase):
     gender: str | None
     phone: str | None
     village: str | None
+    latitude: float | None = None
+    longitude: float | None = None
     care_pathway: str | None = None
     pregnancy_week: int | None = None
     preferred_language: str | None = None
