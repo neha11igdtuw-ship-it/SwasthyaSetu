@@ -32,6 +32,16 @@ class ReferralStatus(str, enum.Enum):
 
 
 # Allowed transitions for the referral state machine.
+# Referrals that still authorize a health worker to join a destination
+# facility's OPD queue on the patient's behalf.
+OPEN_REFERRAL_STATUSES: set[ReferralStatus] = {
+    ReferralStatus.CREATED,
+    ReferralStatus.PENDING,
+    ReferralStatus.ACCEPTED,
+    ReferralStatus.IN_TRANSIT,
+}
+
+
 REFERRAL_TRANSITIONS: dict[ReferralStatus, set[ReferralStatus]] = {
     ReferralStatus.CREATED: {
         ReferralStatus.PENDING,

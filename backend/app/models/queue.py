@@ -62,6 +62,12 @@ class QueueEntry(SyncableMixin, Base):
     patient_id: Mapped[uuid.UUID] = mapped_column(
         GUID(), ForeignKey("patients.id"), nullable=False, index=True
     )
+    facility_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("facilities.id"), nullable=False, index=True
+    )
+    doctor_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("users.id"), nullable=False, index=True
+    )
     referral_id: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("referrals.id"), nullable=True)
     appointment_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("appointments.id"), nullable=True

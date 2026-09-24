@@ -579,6 +579,8 @@ export interface QueueEntryDetailOut {
   id: string;
   queue_desk_id: string;
   patient_id: string;
+  facility_id: string;
+  doctor_id: string;
   referral_id: string | null;
   appointment_id: string | null;
   queue_date: string;
