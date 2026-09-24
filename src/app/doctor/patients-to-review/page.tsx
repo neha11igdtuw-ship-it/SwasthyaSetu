@@ -5,30 +5,51 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { DoctorQueuePanel } from "@/components/care/DoctorQueuePanel";
-import { ApiError, doctorQueueApi } from "@/lib/api/client";
+import { ApiError, authApi, doctorQueueApi, patientsApi } from "@/lib/api/client";
 import type { DoctorQueueOut } from "@/lib/api/types";
 import { ExternalLink, Loader2 } from "lucide-react";
 
+type QueueState = "loading" | "ready" | "unassigned" | "error";
+
 export default function DoctorPatientsToReviewPage() {
   const [queue, setQueue] = useState<DoctorQueueOut | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [recordAccess, setRecordAccess] = useState<Record<string, boolean>>({});
+  const [queueState, setQueueState] = useState<QueueState>("loading");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    doctorQueueApi.current()
-      .then((data) => {
-        if (!cancelled) setQueue(data);
+    Promise.all([authApi.me(), doctorQueueApi.current()])
+      .then(async ([me, data]) => {
+        const access = await Promise.all(
+          data.entries.map(async (entry) => {
+            try {
+              const patient = await patientsApi.get(entry.patient_id);
+              return [entry.patient_id, patient.facility_id === me.facility_id] as const;
+            } catch {
+              return [entry.patient_id, false] as const;
+            }
+          }),
+        );
+
+        if (!cancelled) {
+          setQueue(data);
+          setRecordAccess(Object.fromEntries(access));
+          setQueueState("ready");
+        }
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : "Could not load patients to review.");
+          if (err instanceof ApiError && err.status === 404 && err.message.includes("queue desk")) {
+            setQueueState("unassigned");
+            setError(null);
+          } else {
+            setQueueState("error");
+            setError(err instanceof ApiError ? err.message : "Could not load patients to review.");
+          }
         }
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
 
     return () => {
       cancelled = true;
@@ -43,15 +64,30 @@ export default function DoctorPatientsToReviewPage() {
         roleBadge={<RoleBadge role="Doctor" />}
       />
 
-      {error && (
+      {queueState === "error" && error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
           {error}
         </div>
       )}
 
-      <DoctorQueuePanel />
+      {queueState === "loading" && (
+        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 p-6">
+          <Loader2 className="w-4 h-4 animate-spin" /> Loading doctor queue…
+        </div>
+      )}
 
-      <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
+      {queueState === "unassigned" && (
+        <section className="bg-white dark:bg-slate-800 rounded-2xl border border-amber-200 dark:border-amber-800 shadow-sm p-6 space-y-2">
+          <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">No queue desk is assigned</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300">
+            No queue desk is assigned to this doctor. Patients will appear here once a facility administrator assigns a queue desk.
+          </p>
+        </section>
+      )}
+
+      {queueState === "ready" && <DoctorQueuePanel />}
+
+      {queueState === "ready" && <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
         <div>
           <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">Patient records</h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -59,11 +95,7 @@ export default function DoctorPatientsToReviewPage() {
           </p>
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading queue patients…
-          </div>
-        ) : queue?.entries.length ? (
+        {queue?.entries.length ? (
           <div className="divide-y divide-slate-100 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-xl">
             {queue.entries.map((entry) => (
               <div key={entry.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -71,12 +103,18 @@ export default function DoctorPatientsToReviewPage() {
                   <p className="text-sm font-bold text-slate-900 dark:text-white">{entry.patient_name}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Patient ID: {entry.patient_id}</p>
                 </div>
-                <Link
-                  href={`/doctor/patients/${entry.patient_id}`}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
-                >
-                  View Patient Record <ExternalLink className="w-3.5 h-3.5" />
-                </Link>
+                {recordAccess[entry.patient_id] ? (
+                  <Link
+                    href={`/doctor/patients/${entry.patient_id}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                  >
+                    View Patient Record <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                ) : (
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Patient record unavailable for this facility
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -85,7 +123,7 @@ export default function DoctorPatientsToReviewPage() {
             No patients are currently waiting for review.
           </p>
         )}
-      </section>
+      </section>}
     </div>
   );
 }
