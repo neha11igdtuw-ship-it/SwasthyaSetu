@@ -41,6 +41,7 @@ export default function DoctorSchedulePage() {
   const [endTime, setEndTime] = useState("");
   const [scheduleNote, setScheduleNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   const handleAddSchedule = async () => {
     if (!scheduleDate || !startTime || !endTime) {
@@ -56,6 +57,7 @@ export default function DoctorSchedulePage() {
     try {
       setSaving(true);
       setError(null);
+      setSaveSuccess(null);
 
       const me = await authApi.me();
 
@@ -74,10 +76,16 @@ export default function DoctorSchedulePage() {
         note: scheduleNote.trim() || null,
       });
 
-      if (created.doctor_id === me.id && isTodayLocal(created.start_time)) {
+      const createdForToday = created.doctor_id === me.id && isTodayLocal(created.start_time);
+      if (createdForToday) {
         setSlots((current) => [created, ...current.filter((slot) => slot.id !== created.id)]
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()));
       }
+      setSaveSuccess(
+        createdForToday
+          ? "Schedule saved for today."
+          : `Schedule saved for ${new Date(created.start_time).toLocaleDateString()}. Today's Schedule only shows today's slots.`,
+      );
 
       setScheduleDate("");
       setStartTime("");
@@ -103,6 +111,7 @@ export default function DoctorSchedulePage() {
             ? err.message
             : "Failed to add schedule."
       );
+      setSaveSuccess(null);
     } finally {
       setSaving(false);
     }
@@ -147,6 +156,11 @@ export default function DoctorSchedulePage() {
           {error}
         </div>
       )}
+      {saveSuccess && (
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
+          {saveSuccess}
+        </div>
+      )}
 
       {loading ? (
         <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400 flex items-center justify-center gap-2">
@@ -165,6 +179,7 @@ export default function DoctorSchedulePage() {
     onClick={() => {
       setShowAddForm((current) => !current);
       setError(null);
+      setSaveSuccess(null);
     }}
     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 text-white hover:bg-teal-800 transition-colors"
   >

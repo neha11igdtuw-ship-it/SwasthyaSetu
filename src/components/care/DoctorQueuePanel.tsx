@@ -7,11 +7,15 @@ import { Loader2, PhoneCall, Play, CheckCircle2, SkipForward, PauseCircle, PlayC
 
 const POLL_INTERVAL_MS = 20000;
 
+interface DoctorQueuePanelProps {
+  initialData?: DoctorQueueOut | null;
+}
+
 /** Doctor-facing live queue: "Now Serving" + ordered queue + lifecycle actions.
  * Deliberately omits medical detail beyond a coarse risk flag — full clinical
  * context lives on the patient/encounter screens, not the public queue view. */
-export function DoctorQueuePanel() {
-  const [data, setData] = useState<DoctorQueueOut | null>(null);
+export function DoctorQueuePanel({ initialData }: DoctorQueuePanelProps) {
+  const [data, setData] = useState<DoctorQueueOut | null>(initialData ?? null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -28,12 +32,18 @@ export function DoctorQueuePanel() {
   }, []);
 
   useEffect(() => {
+    if (initialData) {
+      setData(initialData);
+      setError(null);
+      return;
+    }
+
     load();
     timerRef.current = setInterval(load, POLL_INTERVAL_MS);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [load]);
+  }, [initialData, load]);
 
   async function withBusy(id: string, fn: () => Promise<unknown>) {
     setBusy(id);

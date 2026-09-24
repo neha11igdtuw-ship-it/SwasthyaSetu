@@ -4,6 +4,7 @@ import React from "react";
 import { AppShell } from "@/components/AppShell";
 import { RequireAuth } from "@/components/RequireAuth";
 import { NavItem } from "@/components/Sidebar";
+import { useCurrentUser } from "@/lib/auth/useCurrentUser";
 import {
   LayoutDashboard,
   Stethoscope,
@@ -25,11 +26,13 @@ export default function DoctorLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const user = useCurrentUser();
+
   return (
     <RequireAuth>
     <AppShell
       role="Doctor"
-      userName="Dr. Meera Singh"
+      userName={user?.full_name || "Doctor"}
       facilityOrLocation="District Civil Hospital & Maternal Care Centre"
       navItems={doctorNavItems}
     >
