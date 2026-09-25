@@ -1,0 +1,31 @@
+source_record_id,doctor_name,email,phone,speciality,qualification,experience_years,languages,status,preferred_speciality_keyword,source_dataset
+MOCK-DOC-001,Dr. Nikhil Verma,mock.doctor001@demo.swasthyasetu.local,9000000001,General Medicine,"MBBS, MD (General Medicine)",9,"Bengali, Marathi",Active,General Medicine,MOCK_DEMO_DOCTORS
+MOCK-DOC-002,Dr. Neha Mehta,mock.doctor002@demo.swasthyasetu.local,9000000002,Cardiology,"MBBS, MD, DM (Cardiology)",19,"Bengali, Tamil",Active,Cardiology,MOCK_DEMO_DOCTORS
+MOCK-DOC-003,Dr. Kavita Joshi,mock.doctor003@demo.swasthyasetu.local,9000000003,Gynecology,"MBBS, MS (Obstetrics & Gynaecology)",8,"Bengali, Hindi, Tamil",Active,Gynecology,MOCK_DEMO_DOCTORS
+MOCK-DOC-004,Dr. Neha Kapoor,mock.doctor004@demo.swasthyasetu.local,9000000004,Pediatrics,"MBBS, MD (Pediatrics)",24,"English, Punjabi",Active,Pediatrics,MOCK_DEMO_DOCTORS
+MOCK-DOC-005,Dr. Nikhil Bose,mock.doctor005@demo.swasthyasetu.local,9000000005,Orthopedics,"MBBS, MS (Orthopedics)",10,"Bhojpuri, English, Punjabi",Active,Orthopedics,MOCK_DEMO_DOCTORS
+MOCK-DOC-006,Dr. Nandini Pillai,mock.doctor006@demo.swasthyasetu.local,9000000006,Dermatology,"MBBS, MD (Dermatology)",24,"English, Tamil",Active,Dermatology,MOCK_DEMO_DOCTORS
+MOCK-DOC-007,Dr. Snehal Nair,mock.doctor007@demo.swasthyasetu.local,9000000007,ENT,"MBBS, MS (ENT)",5,"English, Marathi, Tamil",Inactive,ENT,MOCK_DEMO_DOCTORS
+MOCK-DOC-008,Dr. Kavita Reddy,mock.doctor008@demo.swasthyasetu.local,9000000008,Neurology,"MBBS, MD, DM (Neurology)",21,"Marathi, Tamil",Active,Neurology,MOCK_DEMO_DOCTORS
+MOCK-DOC-009,Dr. Suresh Rao,mock.doctor009@demo.swasthyasetu.local,9000000009,General Surgery,"MBBS, MS (General Surgery)",19,"Bengali, Bhojpuri",Active,General Surgery,MOCK_DEMO_DOCTORS
+MOCK-DOC-010,Dr. Arjun Malhotra,mock.doctor010@demo.swasthyasetu.local,9000000010,General Medicine,"MBBS, MD (General Medicine)",22,"Hindi, Marathi, Punjabi",Active,General Medicine,MOCK_DEMO_DOCTORS
+MOCK-DOC-011,Dr. Shreya Malhotra,mock.doctor011@demo.swasthyasetu.local,9000000011,Cardiology,"MBBS, MD, DM (Cardiology)",3,"English, Hindi, Punjabi",Active,Cardiology,MOCK_DEMO_DOCTORS
+MOCK-DOC-012,Dr. Isha Singh,mock.doctor012@demo.swasthyasetu.local,9000000012,Gynecology,"MBBS, MS (Obstetrics & Gynaecology)",14,"English, Hindi, Tamil",Active,Gynecology,MOCK_DEMO_DOCTORS
+MOCK-DOC-013,Dr. Suresh Gupta,mock.doctor013@demo.swasthyasetu.local,9000000013,Pediatrics,"MBBS, MD (Pediatrics)",8,"Bengali, English, Marathi",Active,Pediatrics,MOCK_DEMO_DOCTORS
+MOCK-DOC-014,Dr. Isha Iyer,mock.doctor014@demo.swasthyasetu.local,9000000014,Orthopedics,"MBBS, MS (Orthopedics)",7,"Bengali, Punjabi",Active,Orthopedics,MOCK_DEMO_DOCTORS
+MOCK-DOC-015,Dr. Anjali Bose,mock.doctor015@demo.swasthyasetu.local,9000000015,Dermatology,"MBBS, MD (Dermatology)",14,"Bhojpuri, English",Active,Dermatology,MOCK_DEMO_DOCTORS
+MOCK-DOC-016,Dr. Suresh Malhotra,mock.doctor016@demo.swasthyasetu.local,9000000016,ENT,"MBBS, MS (ENT)",3,"Bengali, Marathi",Active,ENT,MOCK_DEMO_DOCTORS
+MOCK-DOC-017,Dr. Neha Pillai,mock.doctor017@demo.swasthyasetu.local,9000000017,Neurology,"MBBS, MD, DM (Neurology)",14,"Marathi, Tamil",Active,Neurology,MOCK_DEMO_DOCTORS
+MOCK-DOC-018,Dr. Suresh Verma,mock.doctor018@demo.swasthyasetu.local,9000000018,General Surgery,"MBBS, MS (General Surgery)",12,"Bengali, Punjabi",Active,General Surgery,MOCK_DEMO_DOCTORS
+MOCK-DOC-019,Dr. Vikram Chatterjee,mock.doctor019@demo.swasthyasetu.local,9000000019,General Medicine,"MBBS, MD (General Medicine)",6,"Bengali, Bhojpuri, Tamil",Active,General Medicine,MOCK_DEMO_DOCTORS
+MOCK-DOC-020,Dr. Suresh Mehta,mock.doctor020@demo.swasthyasetu.local,9000000020,Cardiology,"MBBS, MD, DM (Cardiology)",19,"Bengali, Punjabi",Active,Cardiology,MOCK_DEMO_DOCTORS
+MOCK-DOC-021,Dr. Suresh Bose,mock.doctor021@demo.swasthyasetu.local,9000000021,Gynecology,"MBBS, MS (Obstetrics & Gynaecology)",9,"Bhojpuri, Marathi, Punjabi",Inactive,Gynecology,MOCK_DEMO_DOCTORS
+MOCK-DOC-022,Dr. Meera Kapoor,mock.doctor022@demo.swasthyasetu.local,9000000022,Pediatrics,"MBBS, MD (Pediatrics)",6,"Bengali, Hindi, Tamil",Active,Pediatrics,MOCK_DEMO_DOCTORS
+MOCK-DOC-023,Dr. Nikhil Mehta,mock.doctor023@demo.swasthyasetu.local,9000000023,Orthopedics,"MBBS, MS (Orthopedics)",14,"Bhojpuri, Hindi, Punjabi",Active,Orthopedics,MOCK_DEMO_DOCTORS
+MOCK-DOC-024,Dr. Shreya Gupta,mock.doctor024@demo.swasthyasetu.local,9000000024,Dermatology,"MBBS, MD (Dermatology)",23,"Bengali, Hindi, Punjabi",Active,Dermatology,MOCK_DEMO_DOCTORS
+MOCK-DOC-025,Dr. Amitabh Kapoor,mock.doctor025@demo.swasthyasetu.local,9000000025,ENT,"MBBS, MS (ENT)",5,"Bengali, Marathi, Tamil",Active,ENT,MOCK_DEMO_DOCTORS
+MOCK-DOC-026,Dr. Divya Reddy,mock.doctor026@demo.swasthyasetu.local,9000000026,Neurology,"MBBS, MD, DM (Neurology)",25,"Bhojpuri, Hindi",Active,Neurology,MOCK_DEMO_DOCTORS
+MOCK-DOC-027,Dr. Amitabh Bose,mock.doctor027@demo.swasthyasetu.local,9000000027,General Surgery,"MBBS, MS (General Surgery)",5,"English, Punjabi, Tamil",Active,General Surgery,MOCK_DEMO_DOCTORS
+MOCK-DOC-028,Dr. Tanvi Chatterjee,mock.doctor028@demo.swasthyasetu.local,9000000028,General Medicine,"MBBS, MD (General Medicine)",21,"Bengali, Punjabi, Tamil",Active,General Medicine,MOCK_DEMO_DOCTORS
+MOCK-DOC-029,Dr. Vikram Mehta,mock.doctor029@demo.swasthyasetu.local,9000000029,Cardiology,"MBBS, MD, DM (Cardiology)",18,"English, Punjabi, Tamil",Active,Cardiology,MOCK_DEMO_DOCTORS
+MOCK-DOC-030,Dr. Rekha Sharma,mock.doctor030@demo.swasthyasetu.local,9000000030,Gynecology,"MBBS, MS (Obstetrics & Gynaecology)",13,"Bengali, Bhojpuri, Hindi",Active,Gynecology,MOCK_DEMO_DOCTORS
