@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { EmptyState } from "@/components/EmptyState";
@@ -21,6 +22,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Video,
 } from "lucide-react";
 
 const VISIT_REASONS = [
@@ -398,16 +400,27 @@ export default function PatientAppointmentsPage() {
               </div>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">{nextActor(app.status)}</p>
-            {app.status === "SCHEDULED" && (
-              <button
-                type="button"
-                disabled={actingId === app.id}
-                onClick={() => cancelAppt(app)}
-                className="text-xs font-bold text-rose-700 hover:underline cursor-pointer"
-              >
-                {actingId === app.id ? "Cancelling…" : "Cancel appointment"}
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-4">
+              {app.status === "SCHEDULED" && (
+                <Link
+                  href={`/patient/consult/${app.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold cursor-pointer"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  {t("joinVideoConsult")}
+                </Link>
+              )}
+              {app.status === "SCHEDULED" && (
+                <button
+                  type="button"
+                  disabled={actingId === app.id}
+                  onClick={() => cancelAppt(app)}
+                  className="text-xs font-bold text-rose-700 hover:underline cursor-pointer"
+                >
+                  {actingId === app.id ? "Cancelling…" : "Cancel appointment"}
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>

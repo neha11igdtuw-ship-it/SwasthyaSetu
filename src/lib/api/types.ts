@@ -98,6 +98,12 @@ export interface PatientOut {
   is_deleted: boolean;
 }
 
+export interface EmergencyAlertOut {
+  encounter_id: string;
+  notified_health_worker: boolean;
+  created_at: string;
+}
+
 export interface PatientCreate {
   full_name: string;
   date_of_birth?: string | null;
@@ -449,6 +455,32 @@ export interface InventoryItemOut {
   quantity: number;
   reorder_level: number;
   version: number;
+}
+
+// ---- Facility resources (beds/ICU/oxygen/ambulances/blood/vaccines) ----
+
+export interface FacilityResourceOut {
+  id: string;
+  facility_id: string;
+  beds_total: number;
+  beds_available: number;
+  icu_total: number;
+  icu_available: number;
+  oxygen_units: number;
+  ambulances_available: number;
+  blood_units: number;
+  vaccine_doses: number;
+}
+
+export interface FacilityResourceUpdate {
+  beds_total?: number;
+  beds_available?: number;
+  icu_total?: number;
+  icu_available?: number;
+  oxygen_units?: number;
+  ambulances_available?: number;
+  blood_units?: number;
+  vaccine_doses?: number;
 }
 
 export interface NearbyInventoryOut {

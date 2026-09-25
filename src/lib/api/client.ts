@@ -8,9 +8,12 @@ import type {
   AvailableSlotOut,
   DoctorAvailabilityCreate,
   DoctorAvailabilityOut,
+  EmergencyAlertOut,
   EncounterCreate,
   EncounterOut,
   FacilityOut,
+  FacilityResourceOut,
+  FacilityResourceUpdate,
   InventoryItemOut,
   MatchCandidate,
   PatientCreate,
@@ -261,6 +264,8 @@ export const patientsApi = {
     request<PatientOut>(`/patients/${id}`, { method: "PATCH", body: data }),
   remove: (id: string, baseVersion: number) =>
     request<void>(`/patients/${id}?base_version=${baseVersion}`, { method: "DELETE" }),
+  triggerEmergencyAlert: (patientId: string) =>
+    request<EmergencyAlertOut>(`/patients/${patientId}/emergency-alert`, { method: "POST" }),
 };
 
 // ---- Referrals ----
@@ -304,6 +309,18 @@ export const facilitiesApi = {
   get: (id: string) => request<FacilityOut>(`/facilities/${id}`),
   doctors: (facilityId: string) =>
     request<FacilityDoctorOut[]>(`/facilities/${facilityId}/doctors`),
+};
+
+// ---- Facility resources (beds/ICU/oxygen/ambulances/blood/vaccines) ----
+
+export const facilityResourcesApi = {
+  get: (facilityId: string) =>
+    request<FacilityResourceOut>(`/facilities/${facilityId}/resources`),
+  update: (facilityId: string, data: FacilityResourceUpdate) =>
+    request<FacilityResourceOut>(`/facilities/${facilityId}/resources`, {
+      method: "PUT",
+      body: data,
+    }),
 };
 
 // ---- Encounters / symptoms / vitals / screenings ----
@@ -378,6 +395,8 @@ export const inventoryApi = {
 export const appointmentsApi = {
   list: (patientId: string) => request<AppointmentOut[]>(`/appointments?patient_id=${patientId}`),
   me: () => request<AppointmentOut[]>("/appointments/me"),
+  byFacility: (facilityId: string) =>
+    request<AppointmentOut[]>(`/appointments/facility/${facilityId}`),
   create: (data: AppointmentCreate) =>
     request<AppointmentOut>("/appointments", { method: "POST", body: data }),
   updateStatus: (id: string, data: AppointmentStatusUpdate) =>

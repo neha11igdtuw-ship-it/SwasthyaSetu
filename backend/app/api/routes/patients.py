@@ -16,7 +16,8 @@ from app.models.enums import RiskLevel, Role
 from app.models.user import User
 from app.repositories.maternal import EncounterRepository, PregnancyRepository, VitalRepository
 from app.repositories.patients import PatientRepository
-from app.schemas.patient import PatientCreate, PatientOut, PatientUpdate
+from app.schemas.patient import EmergencyAlertOut, PatientCreate, PatientOut, PatientUpdate
+from app.services.notifications import NotificationService
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
@@ -138,6 +139,53 @@ async def get_patient(
     patient = await repo.get_or_404(patient_id)
     assert_patient_access(user, patient)
     return patient
+
+
+@router.post("/{patient_id}/emergency-alert", response_model=EmergencyAlertOut, status_code=201)
+async def trigger_emergency_alert(
+    patient_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Patient-triggered emergency alert. Notifies the health worker who
+    registered the patient (in-app notification) and logs an EMERGENCY_ALERT
+    encounter for the care-team audit trail. This does not itself dial any
+    real emergency number — that is left to the device's `tel:` links in the
+    UI; this only ensures the care team is notified in-app."""
+    repo = PatientRepository(db)
+    patient = await repo.get_or_404(patient_id)
+    assert_patient_access(user, patient)
+
+    notified = False
+    if patient.registered_by_id is not None:
+        notification_service = NotificationService(db)
+        location = patient.village or "location unknown"
+        await notification_service.notify(
+            patient,
+            title="Emergency alert",
+            body=(
+                f"Emergency alert triggered by patient {patient.full_name} "
+                f"({location}). Please reach out immediately."
+            ),
+        )
+        notified = True
+
+    encounter = await EncounterRepository(db).create(
+        patient_id=patient.id,
+        facility_id=patient.facility_id,
+        author_id=user.id if user.role != Role.PATIENT else patient.registered_by_id,
+        encounter_type="EMERGENCY_ALERT",
+        encounter_date=datetime.utcnow(),
+        notes=f"Emergency alert self-triggered by patient at {patient.village or 'unknown location'}",
+    )
+
+    await db.commit()
+    await db.refresh(encounter)
+    return EmergencyAlertOut(
+        encounter_id=encounter.id,
+        notified_health_worker=notified,
+        created_at=encounter.encounter_date,
+    )
 
 
 @router.patch("/{patient_id}", response_model=PatientOut)

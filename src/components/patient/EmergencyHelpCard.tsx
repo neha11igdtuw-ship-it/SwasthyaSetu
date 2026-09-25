@@ -4,9 +4,10 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface EmergencyHelpCardProps {
   ashaPhone: string;
+  onTriggerAlert?: () => void;
 }
 
-export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
+export function EmergencyHelpCard({ ashaPhone, onTriggerAlert }: EmergencyHelpCardProps) {
   const { t } = useLanguage();
 
   return (
@@ -32,6 +33,7 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
         <a
           href={`tel:${ashaPhone}`}
+          onClick={onTriggerAlert}
           className="p-3 rounded-xl bg-rose-800 hover:bg-rose-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 border border-rose-600 transition-colors"
         >
           <PhoneCall className="w-4 h-4" />
@@ -40,6 +42,7 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
 
         <a
           href="tel:108"
+          onClick={onTriggerAlert}
           className="p-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-extrabold flex items-center justify-center gap-2 border border-rose-400 transition-colors"
         >
           <ShieldAlert className="w-4 h-4" />
@@ -56,7 +59,8 @@ export function EmergencyHelpCard({ ashaPhone }: EmergencyHelpCardProps) {
       </div>
 
       <p className="text-[10px] text-rose-300 italic text-center">
-        Prototype emergency interface — simulate calls only; does not dial real emergency response.
+        Tapping a call button logs an in-app emergency alert to your care team. Only the phone
+        dial itself depends on your device&apos;s actual telephony and cannot be simulated here.
       </p>
     </div>
   );

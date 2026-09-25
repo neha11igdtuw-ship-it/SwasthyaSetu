@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -81,3 +81,9 @@ class PatientOut(ORMBase):
     facility_id: uuid.UUID | None
     version: int
     is_deleted: bool
+
+
+class EmergencyAlertOut(BaseModel):
+    encounter_id: uuid.UUID
+    notified_health_worker: bool
+    created_at: datetime

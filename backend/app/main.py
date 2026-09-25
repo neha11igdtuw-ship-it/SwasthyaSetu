@@ -10,6 +10,7 @@ from app.api.routes import (
     doctor_availability,
     encounters,
     facilities,
+    fhir,
     health_worker_profiles,
     inventory,
     patients,
@@ -54,6 +55,7 @@ app.include_router(doctor_availability.router, prefix="/api/v1")
 app.include_router(health_worker_profiles.router, prefix="/api/v1")
 app.include_router(symptoms.router, prefix="/api/v1")
 app.include_router(queue.router, prefix="/api/v1")
+app.include_router(fhir.router, prefix="/api/v1")
 
 
 @app.get("/", include_in_schema=False)

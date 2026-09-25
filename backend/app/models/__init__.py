@@ -7,6 +7,7 @@ from app.models.care import (  # noqa: F401
 from app.models.care_gap import CareGap  # noqa: F401
 from app.models.facility import Facility  # noqa: F401
 from app.models.inventory import InventoryItem, InventoryTransaction  # noqa: F401
+from app.models.facility_resource import FacilityResource  # noqa: F401
 from app.models.maternal import Encounter, Pregnancy, Screening, Symptom, Vital  # noqa: F401
 from app.models.patient import Patient  # noqa: F401
 from app.models.queue import (  # noqa: F401
