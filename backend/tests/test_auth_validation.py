@@ -79,9 +79,7 @@ async def test_valid_gmail_address_accepted_case_insensitive(client, monkeypatch
     monkeypatch.setenv("ALLOWED_EMAIL_DOMAINS_PATIENT", "gmail.com")
     config.get_settings.cache_clear()
     try:
-        resp = await client.post(
-            "/api/v1/auth/register", json=_payload(email="someone@GMAIL.COM")
-        )
+        resp = await client.post("/api/v1/auth/register", json=_payload(email="someone@GMAIL.COM"))
         assert resp.status_code == 201, resp.text
     finally:
         config.get_settings.cache_clear()
@@ -90,9 +88,7 @@ async def test_valid_gmail_address_accepted_case_insensitive(client, monkeypatch
 async def test_duplicate_email_rejected_with_generic_message(client):
     resp1 = await client.post("/api/v1/auth/register", json=_payload())
     assert resp1.status_code == 201, resp1.text
-    resp2 = await client.post(
-        "/api/v1/auth/register", json=_payload(full_name="Someone Else")
-    )
+    resp2 = await client.post("/api/v1/auth/register", json=_payload(full_name="Someone Else"))
     assert resp2.status_code == 422
     message = resp2.json()["error"]["message"]
     assert "already exists" in message.lower()
@@ -110,7 +106,5 @@ async def test_weak_password_rejected(client, password):
 
 
 async def test_strong_password_accepted(client):
-    resp = await client.post(
-        "/api/v1/auth/register", json=_payload(password="Str0ng!Pass")
-    )
+    resp = await client.post("/api/v1/auth/register", json=_payload(password="Str0ng!Pass"))
     assert resp.status_code == 201, resp.text

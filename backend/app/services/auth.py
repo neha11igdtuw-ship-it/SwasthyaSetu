@@ -29,9 +29,7 @@ class AuthService:
         self.db = db
         self.users = UserRepository(db)
 
-    async def _create_user(
-        self, data: UserRegister, *, is_verified: bool
-    ) -> User:
+    async def _create_user(self, data: UserRegister, *, is_verified: bool) -> User:
         existing = await self.users.get_by_email(data.email)
         if existing:
             raise ValidationAppError(
@@ -65,7 +63,9 @@ class AuthService:
         await self.db.commit()
         return user
 
-    async def register(self, data: UserRegister, *, background: BackgroundTasks | None = None) -> User:
+    async def register(
+        self, data: UserRegister, *, background: BackgroundTasks | None = None
+    ) -> User:
         """Public self-registration: account starts unverified and a
         verification email is sent. Role/domain/address rules are enforced
         one layer up by the PublicUserRegister schema."""

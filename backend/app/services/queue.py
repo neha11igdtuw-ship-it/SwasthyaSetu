@@ -139,7 +139,9 @@ class QueueService:
 
     # -- joining ---------------------------------------------------------
 
-    async def _resolve_join_patient(self, user: User, requested_patient_id: uuid.UUID | None) -> Patient:
+    async def _resolve_join_patient(
+        self, user: User, requested_patient_id: uuid.UUID | None
+    ) -> Patient:
         if user.role == Role.PATIENT:
             rows = await self.patients.list_active(user_id=user.id)
             if not rows:
@@ -147,7 +149,9 @@ class QueueService:
             return rows[0]
         if user.role == Role.HEALTH_WORKER:
             if requested_patient_id is None:
-                raise ValidationAppError("patient_id is required for a health worker joining on behalf")
+                raise ValidationAppError(
+                    "patient_id is required for a health worker joining on behalf"
+                )
             patient = await self.patients.get_or_404(requested_patient_id)
             if patient.facility_id != user.facility_id:
                 raise ForbiddenError("You may only assist patients linked to your own facility")
@@ -165,7 +169,9 @@ class QueueService:
         if not desk.is_active:
             raise ValidationAppError("This queue desk is not currently active")
         today = date.today()
-        existing = await self.entries.active_for_patient_doctor_department(patient.id, desk.id, today)
+        existing = await self.entries.active_for_patient_doctor_department(
+            patient.id, desk.id, today
+        )
         if existing is not None:
             raise ValidationAppError(
                 "You already have an active queue entry for this doctor/department today",
@@ -236,7 +242,9 @@ class QueueService:
             if referral.status not in OPEN_REFERRAL_STATUSES:
                 raise ValidationAppError("This referral is no longer active")
             if referral.to_facility_id != desk.facility_id:
-                raise ValidationAppError("This referral is not for the selected queue desk's facility")
+                raise ValidationAppError(
+                    "This referral is not for the selected queue desk's facility"
+                )
             return referral.id
         if desk.facility_id == patient.facility_id:
             return matching.id if matching else None
@@ -299,7 +307,11 @@ class QueueService:
         entry.rejoined_at = datetime.utcnow()
         entry.version += 1
         await self.events.log(
-            entry.id, "REJOIN_CONFIRMED", user.id, QueueEntryStatus.REJOINED.value, QueueEntryStatus.WAITING.value
+            entry.id,
+            "REJOIN_CONFIRMED",
+            user.id,
+            QueueEntryStatus.REJOINED.value,
+            QueueEntryStatus.WAITING.value,
         )
         await self._recompute_wait_times(entry.queue_desk_id, entry.queue_date)
         await self.db.commit()
@@ -348,7 +360,9 @@ class QueueService:
         entry.status = QueueEntryStatus.IN_CONSULTATION
         entry.consultation_started_at = datetime.utcnow()
         entry.version += 1
-        await self.events.log(entry.id, "CONSULTATION_STARTED", user.id, previous.value, entry.status.value)
+        await self.events.log(
+            entry.id, "CONSULTATION_STARTED", user.id, previous.value, entry.status.value
+        )
         await self.db.commit()
         return entry
 
@@ -371,7 +385,11 @@ class QueueService:
         entry = await self.entries.get_or_404(entry_id)
         desk = await self.desks.get_or_404(entry.queue_desk_id)
         self._assert_doctor_owns_desk(user, desk)
-        if entry.status not in (QueueEntryStatus.CALLED, QueueEntryStatus.IN_CONSULTATION, QueueEntryStatus.WAITING):
+        if entry.status not in (
+            QueueEntryStatus.CALLED,
+            QueueEntryStatus.IN_CONSULTATION,
+            QueueEntryStatus.WAITING,
+        ):
             raise ValidationAppError("This entry cannot be skipped from its current status")
         previous = entry.status
         entry.status = QueueEntryStatus.SKIPPED
@@ -456,7 +474,9 @@ class QueueService:
                 desk = candidate
         active = await self.entries.active_entries_for_desk(desk.id, today)
         current = await self.entries.current_serving(desk.id, today)
-        completed = await self.entries.count_for_desk_status(desk.id, today, QueueEntryStatus.COMPLETED)
+        completed = await self.entries.count_for_desk_status(
+            desk.id, today, QueueEntryStatus.COMPLETED
+        )
         skipped = await self.entries.count_for_desk_status(desk.id, today, QueueEntryStatus.SKIPPED)
         waiting = [e for e in active if e.status == QueueEntryStatus.WAITING]
 
@@ -524,7 +544,9 @@ class QueueService:
             active = await self.entries.active_entries_for_desk(desk.id, today)
             current = await self.entries.current_serving(desk.id, today)
             waiting = [e for e in active if e.status == QueueEntryStatus.WAITING]
-            avg_wait = sum(e.estimated_wait_minutes for e in waiting) // len(waiting) if waiting else 0
+            avg_wait = (
+                sum(e.estimated_wait_minutes for e in waiting) // len(waiting) if waiting else 0
+            )
             out.append(
                 {
                     "queue_desk_id": desk.id,

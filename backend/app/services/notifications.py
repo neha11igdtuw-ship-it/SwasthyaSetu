@@ -113,7 +113,9 @@ class NotificationService:
         await self.db.flush()
         return notification
 
-    async def notify_joined(self, patient: Patient, queue_entry_id: uuid.UUID, token_number: int) -> None:
+    async def notify_joined(
+        self, patient: Patient, queue_entry_id: uuid.UUID, token_number: int
+    ) -> None:
         await self.notify(
             patient,
             title="You joined the queue",
@@ -137,7 +139,9 @@ class NotificationService:
             queue_entry_id=queue_entry_id,
         )
 
-    async def notify_delayed(self, patient: Patient, queue_entry_id: uuid.UUID, reason: str) -> None:
+    async def notify_delayed(
+        self, patient: Patient, queue_entry_id: uuid.UUID, reason: str
+    ) -> None:
         await self.notify(
             patient,
             title="Queue delayed",

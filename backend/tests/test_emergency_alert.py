@@ -59,8 +59,9 @@ async def test_emergency_alert_creates_notification_and_encounter(
     assert body["encounter_id"]
 
     # A notification should now exist for this patient.
-    from app.repositories.queue import NotificationRepository
     import uuid as uuid_module
+
+    from app.repositories.queue import NotificationRepository
 
     notifications = await NotificationRepository(db_session).list_for_patient(
         uuid_module.UUID(me["id"])
@@ -79,12 +80,16 @@ async def test_emergency_alert_creates_notification_and_encounter(
     assert str(encounter.patient_id) == me["id"]
 
 
-async def test_emergency_alert_forbidden_for_other_patient(client, db_session, facility, auth_headers):
+async def test_emergency_alert_forbidden_for_other_patient(
+    client, db_session, facility, auth_headers
+):
     await _register_patient(client, db_session, facility, email="one@example.com")
     headers2 = await _register_patient(client, db_session, facility, email="two@example.com")
 
     other = (
-        await client.post("/api/v1/patients", json={"full_name": "Other Person"}, headers=auth_headers)
+        await client.post(
+            "/api/v1/patients", json={"full_name": "Other Person"}, headers=auth_headers
+        )
     ).json()
 
     resp = await client.post(

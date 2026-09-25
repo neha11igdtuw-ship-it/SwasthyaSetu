@@ -11,7 +11,12 @@ from app.models.user import User
 from app.repositories.care import AppointmentRepository
 from app.repositories.patients import PatientRepository
 from app.repositories.staff import DoctorAvailabilityRepository
-from app.schemas.care import AppointmentCreate, AppointmentOut, AppointmentStatusUpdate, AppointmentUpdate
+from app.schemas.care import (
+    AppointmentCreate,
+    AppointmentOut,
+    AppointmentStatusUpdate,
+    AppointmentUpdate,
+)
 
 router = APIRouter(prefix="/appointments", tags=["appointments"])
 

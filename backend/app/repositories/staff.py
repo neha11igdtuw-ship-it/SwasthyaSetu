@@ -30,7 +30,9 @@ class DoctorAvailabilityRepository(SyncableRepository[DoctorAvailability]):
     async def mark_booked(self, slot_id: uuid.UUID) -> DoctorAvailability:
         slot = await self.get_or_404(slot_id)
         if slot.is_booked:
-            raise ConflictError("This time slot was just booked by someone else. Please pick another.")
+            raise ConflictError(
+                "This time slot was just booked by someone else. Please pick another."
+            )
         slot.is_booked = True
         slot.version += 1
         await self.db.flush()

@@ -38,7 +38,9 @@ class VerificationService:
         verify_url = f"{settings.frontend_base_url}/verify-email?token={raw_token}"
 
         def _send() -> None:
-            self.emailer.send_verification_email(to=user.email, full_name=user.full_name, verify_url=verify_url)
+            self.emailer.send_verification_email(
+                to=user.email, full_name=user.full_name, verify_url=verify_url
+            )
 
         if background is not None:
             background.add_task(_send)

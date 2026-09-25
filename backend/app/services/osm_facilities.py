@@ -59,23 +59,29 @@ async def search_osm_health_facilities(
         if not name:
             continue
 
-        facilities.append({
-            "name": name,
-            "facility_type": tags.get("amenity") or tags.get("healthcare") or "healthcare",
-            "latitude": facility_lat,
-            "longitude": facility_lng,
-            "phone": tags.get("phone") or tags.get("contact:phone"),
-            "address": ", ".join(
-                filter(None, [
-                    tags.get("addr:housename"),
-                    tags.get("addr:street"),
-                    tags.get("addr:city"),
-                    tags.get("addr:postcode"),
-                ])
-            ) or None,
-            "capabilities": "Public map listing",
-            "data_source": "OpenStreetMap",
-            "verification_status": "Unverified public listing",
-        })
+        facilities.append(
+            {
+                "name": name,
+                "facility_type": tags.get("amenity") or tags.get("healthcare") or "healthcare",
+                "latitude": facility_lat,
+                "longitude": facility_lng,
+                "phone": tags.get("phone") or tags.get("contact:phone"),
+                "address": ", ".join(
+                    filter(
+                        None,
+                        [
+                            tags.get("addr:housename"),
+                            tags.get("addr:street"),
+                            tags.get("addr:city"),
+                            tags.get("addr:postcode"),
+                        ],
+                    )
+                )
+                or None,
+                "capabilities": "Public map listing",
+                "data_source": "OpenStreetMap",
+                "verification_status": "Unverified public listing",
+            }
+        )
 
     return facilities

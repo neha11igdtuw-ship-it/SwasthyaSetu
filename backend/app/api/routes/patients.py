@@ -74,7 +74,9 @@ async def create_patient(
     repo = PatientRepository(db)
     patient = await repo.create(**payload, registered_by_id=user.id)
 
-    maternal = (data.care_pathway or "").lower().startswith("maternal") or data.pregnancy_week is not None
+    maternal = (data.care_pathway or "").lower().startswith(
+        "maternal"
+    ) or data.pregnancy_week is not None
     if maternal:
         await PregnancyRepository(db).create(
             patient_id=patient.id,

@@ -511,7 +511,9 @@ async def seed() -> None:
                 desk.is_active = False
 
         await db.commit()
-        print("Seed complete. Demo users: Priya Sharma, ANM Sunita Devi, Dr. Meera Singh. Desk: OPD New.")
+        print(
+            "Seed complete. Demo users: Priya Sharma, ANM Sunita Devi, Dr. Meera Singh. Desk: OPD New."
+        )
 
 
 if __name__ == "__main__":

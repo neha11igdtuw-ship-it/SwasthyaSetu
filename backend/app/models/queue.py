@@ -68,7 +68,9 @@ class QueueEntry(SyncableMixin, Base):
     doctor_id: Mapped[uuid.UUID] = mapped_column(
         GUID(), ForeignKey("users.id"), nullable=False, index=True
     )
-    referral_id: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("referrals.id"), nullable=True)
+    referral_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID(), ForeignKey("referrals.id"), nullable=True
+    )
     appointment_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("appointments.id"), nullable=True
     )
@@ -96,7 +98,9 @@ class QueueEntry(SyncableMixin, Base):
     queue_desk = relationship("QueueDesk", back_populates="entries")
     patient = relationship("Patient")
     events = relationship(
-        "QueueEvent", back_populates="queue_entry", cascade="all, delete-orphan",
+        "QueueEvent",
+        back_populates="queue_entry",
+        cascade="all, delete-orphan",
         order_by="QueueEvent.created_at",
     )
 
