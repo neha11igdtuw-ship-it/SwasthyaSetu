@@ -3,7 +3,12 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import assert_patient_access, assert_referral_access, get_current_user, get_own_patient
+from app.api.deps import (
+    assert_patient_access,
+    assert_referral_access,
+    get_current_user,
+    get_own_patient,
+)
 from app.core.errors import ForbiddenError
 from app.db.session import get_db
 from app.models.enums import Role
@@ -33,7 +38,9 @@ _URGENCY_MAP = {
 }
 
 
-async def _pick_destination(db: AsyncSession, from_facility_id: uuid.UUID | None) -> uuid.UUID | None:
+async def _pick_destination(
+    db: AsyncSession, from_facility_id: uuid.UUID | None
+) -> uuid.UUID | None:
     facilities = await FacilityRepository(db).list_all()
     if not facilities:
         return from_facility_id
@@ -115,7 +122,7 @@ async def list_referrals(
         if patient_id is not None and patient_id != own.id:
             raise ForbiddenError("Patients may only list their own referrals")
         return await repo.list_active(patient_id=own.id)
-  
+
     all_active = await repo.list_active(patient_id=patient_id)
 
     visible = [
@@ -130,20 +137,22 @@ async def list_referrals(
     for referral in visible:
         patient = await patient_repo.get(referral.patient_id)
 
-        result.append({
-            "id": referral.id,
-            "patient_id": referral.patient_id,
-            "patient_name": patient.full_name if patient else None,
-            "from_facility_id": referral.from_facility_id,
-            "to_facility_id": referral.to_facility_id,
-            "reason": referral.reason,
-            "specialty_needed": referral.specialty_needed,
-            "urgency": referral.urgency,
-            "status": referral.status,
-            "notes": referral.notes,
-            "version": referral.version,
-            "is_deleted": referral.is_deleted,
-        })
+        result.append(
+            {
+                "id": referral.id,
+                "patient_id": referral.patient_id,
+                "patient_name": patient.full_name if patient else None,
+                "from_facility_id": referral.from_facility_id,
+                "to_facility_id": referral.to_facility_id,
+                "reason": referral.reason,
+                "specialty_needed": referral.specialty_needed,
+                "urgency": referral.urgency,
+                "status": referral.status,
+                "notes": referral.notes,
+                "version": referral.version,
+                "is_deleted": referral.is_deleted,
+            }
+        )
 
     return result
 

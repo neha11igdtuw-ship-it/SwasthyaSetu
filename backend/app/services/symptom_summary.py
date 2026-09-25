@@ -64,7 +64,9 @@ def _build_prompt(data: SymptomSummarizeRequest) -> str:
         data.transcript or "(none provided)",
     ]
     if data.selected_symptoms:
-        parts.append(f"\nHealth worker/patient-selected symptom checklist: {data.selected_symptoms}")
+        parts.append(
+            f"\nHealth worker/patient-selected symptom checklist: {data.selected_symptoms}"
+        )
     if data.manual_symptoms:
         parts.append(f"\nManually added symptoms: {data.manual_symptoms}")
     if data.duration:
@@ -113,17 +115,37 @@ def _build_fallback_summary(data: SymptomSummarizeRequest) -> AISymptomSummary:
 
     # Common warning sign keywords in English, Hindi, Marathi
     warning_keywords = [
-        "chest pain", "bleeding", "severe", "fainting", "high fever", "breathlessness",
-        "तेज सिरदर्द", "धुंधलापन", "रक्तस्राव", "सांस फूलना", "चक्कर", "खूप डोकेदुखी"
+        "chest pain",
+        "bleeding",
+        "severe",
+        "fainting",
+        "high fever",
+        "breathlessness",
+        "तेज सिरदर्द",
+        "धुंधलापन",
+        "रक्तस्राव",
+        "सांस फूलना",
+        "चक्कर",
+        "खूप डोकेदुखी",
     ]
     warning_signs = [kw for kw in warning_keywords if kw.lower() in text.lower()]
 
     # Extract common symptom keywords
     symptom_map = {
-        "headache": "Headache", "सिरदर्द": "Headache", "डोकेदुखी": "Headache",
-        "fever": "Fever", "बुखार": "Fever", "ताप": "Fever", "stress": "Stress",
-        "स्ट्रेस": "Stress", "तणाव": "Stress", "dizzy": "Dizziness", "चक्कर": "Dizziness",
-        "pain": "Pain", "दर्द": "Pain", "दुखणे": "Pain"
+        "headache": "Headache",
+        "सिरदर्द": "Headache",
+        "डोकेदुखी": "Headache",
+        "fever": "Fever",
+        "बुखार": "Fever",
+        "ताप": "Fever",
+        "stress": "Stress",
+        "स्ट्रेस": "Stress",
+        "तणाव": "Stress",
+        "dizzy": "Dizziness",
+        "चक्कर": "Dizziness",
+        "pain": "Pain",
+        "दर्द": "Pain",
+        "दुखणे": "Pain",
     }
     for kw, label in symptom_map.items():
         if kw in text.lower() and label not in reported:
@@ -141,7 +163,9 @@ def _build_fallback_summary(data: SymptomSummarizeRequest) -> AISymptomSummary:
         elif any(w in text.lower() for w in ["moderate", "medium"]):
             severity = "Moderate"
 
-    summary_text = text if text else (", ".join(reported) if reported else "Reported symptoms recorded.")
+    summary_text = (
+        text if text else (", ".join(reported) if reported else "Reported symptoms recorded.")
+    )
 
     return AISymptomSummary(
         reportedSymptoms=reported if reported else ["Reported Symptom"],

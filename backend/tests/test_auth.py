@@ -160,9 +160,7 @@ async def test_register_patient_creates_care_record(client, db_session):
     )
     assert login.status_code == 200, login.text
     token = login.json()["access_token"]
-    patients = await client.get(
-        "/api/v1/patients", headers={"Authorization": f"Bearer {token}"}
-    )
+    patients = await client.get("/api/v1/patients", headers={"Authorization": f"Bearer {token}"})
     assert patients.status_code == 200, patients.text
     body = patients.json()
     assert len(body) == 1

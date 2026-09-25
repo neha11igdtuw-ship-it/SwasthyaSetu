@@ -14,7 +14,9 @@ class VerificationRepository:
     async def create(
         self, *, user_id: uuid.UUID, token_hash: str, expires_at: datetime
     ) -> EmailVerificationToken:
-        token = EmailVerificationToken(user_id=user_id, token_hash=token_hash, expires_at=expires_at)
+        token = EmailVerificationToken(
+            user_id=user_id, token_hash=token_hash, expires_at=expires_at
+        )
         self.db.add(token)
         await self.db.flush()
         return token
@@ -41,6 +43,8 @@ class VerificationRepository:
     async def invalidate_all_for_user(self, user_id: uuid.UUID) -> None:
         await self.db.execute(
             update(EmailVerificationToken)
-            .where(EmailVerificationToken.user_id == user_id, EmailVerificationToken.used_at.is_(None))
+            .where(
+                EmailVerificationToken.user_id == user_id, EmailVerificationToken.used_at.is_(None)
+            )
             .values(used_at=datetime.utcnow())
         )

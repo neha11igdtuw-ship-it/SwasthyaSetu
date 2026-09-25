@@ -6,21 +6,24 @@ Create Date: 2026-09-22 10:00:00.000000
 
 """
 
-from typing import Sequence, Union
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
 
 import app.models.types
+from alembic import op
 
 revision: str = "e1a2b3c4d5f6"
-down_revision: Union[str, None] = "d7b2c3e41f09"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "d7b2c3e41f09"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.add_column("patients", sa.Column("sms_consent", sa.Boolean(), nullable=False, server_default=sa.false()))
+    op.add_column(
+        "patients",
+        sa.Column("sms_consent", sa.Boolean(), nullable=False, server_default=sa.false()),
+    )
 
     op.create_table(
         "queue_desks",
@@ -46,7 +49,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("qr_code_key"),
     )
-    op.create_index(op.f("ix_queue_desks_facility_id"), "queue_desks", ["facility_id"], unique=False)
+    op.create_index(
+        op.f("ix_queue_desks_facility_id"), "queue_desks", ["facility_id"], unique=False
+    )
     op.create_index(op.f("ix_queue_desks_doctor_id"), "queue_desks", ["doctor_id"], unique=False)
     op.create_index(op.f("ix_queue_desks_qr_code_key"), "queue_desks", ["qr_code_key"], unique=True)
 
@@ -61,7 +66,10 @@ def upgrade() -> None:
         sa.UniqueConstraint("queue_desk_id", "queue_date", name="uq_queue_desk_counter_desk_date"),
     )
     op.create_index(
-        op.f("ix_queue_desk_counters_queue_desk_id"), "queue_desk_counters", ["queue_desk_id"], unique=False
+        op.f("ix_queue_desk_counters_queue_desk_id"),
+        "queue_desk_counters",
+        ["queue_desk_id"],
+        unique=False,
     )
 
     op.create_table(
@@ -109,9 +117,15 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["original_entry_id"], ["queue_entries.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_queue_entries_queue_desk_id"), "queue_entries", ["queue_desk_id"], unique=False)
-    op.create_index(op.f("ix_queue_entries_patient_id"), "queue_entries", ["patient_id"], unique=False)
-    op.create_index(op.f("ix_queue_entries_queue_date"), "queue_entries", ["queue_date"], unique=False)
+    op.create_index(
+        op.f("ix_queue_entries_queue_desk_id"), "queue_entries", ["queue_desk_id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_queue_entries_patient_id"), "queue_entries", ["patient_id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_queue_entries_queue_date"), "queue_entries", ["queue_date"], unique=False
+    )
 
     op.create_table(
         "queue_events",
@@ -127,14 +141,18 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["performed_by_user_id"], ["users.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_queue_events_queue_entry_id"), "queue_events", ["queue_entry_id"], unique=False)
+    op.create_index(
+        op.f("ix_queue_events_queue_entry_id"), "queue_events", ["queue_entry_id"], unique=False
+    )
 
     op.create_table(
         "notifications",
         sa.Column("id", app.models.types.GUID(), nullable=False),
         sa.Column("patient_id", app.models.types.GUID(), nullable=False),
         sa.Column("queue_entry_id", app.models.types.GUID(), nullable=True),
-        sa.Column("channel", sa.Enum("IN_APP", "SMS", name="notification_channel_enum"), nullable=False),
+        sa.Column(
+            "channel", sa.Enum("IN_APP", "SMS", name="notification_channel_enum"), nullable=False
+        ),
         sa.Column("title", sa.String(length=255), nullable=False),
         sa.Column("body", sa.Text(), nullable=False),
         sa.Column(
@@ -150,7 +168,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["queue_entry_id"], ["queue_entries.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_notifications_patient_id"), "notifications", ["patient_id"], unique=False)
+    op.create_index(
+        op.f("ix_notifications_patient_id"), "notifications", ["patient_id"], unique=False
+    )
 
 
 def downgrade() -> None:

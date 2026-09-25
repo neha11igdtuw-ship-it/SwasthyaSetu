@@ -33,7 +33,9 @@ async def test_patient_books_and_lists_own_appointments(client, db_session, faci
     headers = await _register_patient(client, db_session, facility)
     me = (await client.get("/api/v1/patients/me", headers=headers)).json()
     other = (
-        await client.post("/api/v1/patients", json={"full_name": "Other Person"}, headers=auth_headers)
+        await client.post(
+            "/api/v1/patients", json={"full_name": "Other Person"}, headers=auth_headers
+        )
     ).json()
 
     resp = await client.post(
@@ -88,8 +90,12 @@ async def test_patient_inventory_nearby_and_search(client, db_session, facility,
     assert len(search.json()) >= 1
 
 
-async def test_patient_request_care_and_staff_transition(client, db_session, facility, auth_headers):
-    headers = await _register_patient(client, db_session, facility, email="care.patient@example.com")
+async def test_patient_request_care_and_staff_transition(
+    client, db_session, facility, auth_headers
+):
+    headers = await _register_patient(
+        client, db_session, facility, email="care.patient@example.com"
+    )
     resp = await client.post(
         "/api/v1/referrals/request-care",
         json={
@@ -123,7 +129,9 @@ async def test_patient_request_care_and_staff_transition(client, db_session, fac
 
 
 async def test_patient_updates_own_profile_and_self_reports(client, db_session, facility):
-    headers = await _register_patient(client, db_session, facility, email="profile.patient@example.com")
+    headers = await _register_patient(
+        client, db_session, facility, email="profile.patient@example.com"
+    )
     me = (await client.get("/api/v1/patients/me", headers=headers)).json()
     patched = await client.patch(
         "/api/v1/patients/me",
@@ -160,7 +168,9 @@ async def test_patient_updates_own_profile_and_self_reports(client, db_session, 
     assert len(timeline.json()) >= 2
 
 
-async def test_patient_requests_lab_and_staff_uploads_report(client, db_session, facility, auth_headers):
+async def test_patient_requests_lab_and_staff_uploads_report(
+    client, db_session, facility, auth_headers
+):
     headers = await _register_patient(client, db_session, facility, email="lab.patient@example.com")
     me = (await client.get("/api/v1/patients/me", headers=headers)).json()
     order = await client.post(

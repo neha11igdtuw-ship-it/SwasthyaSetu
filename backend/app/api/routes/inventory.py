@@ -83,7 +83,9 @@ async def _list_nearby(db: AsyncSession, user: User, query: str | None) -> list[
                 reorder_level=item.reorder_level,
                 unit=item.unit,
                 status=_stock_status(item.quantity, item.reorder_level),
-                distance_km=_distance_km(origin_lat, origin_lon, facility.latitude, facility.longitude),
+                distance_km=_distance_km(
+                    origin_lat, origin_lon, facility.latitude, facility.longitude
+                ),
             )
         )
     rows.sort(key=lambda r: (r.distance_km is None, r.distance_km or 0, r.name.lower()))

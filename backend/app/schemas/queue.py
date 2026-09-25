@@ -58,7 +58,9 @@ class PauseRequest(BaseModel):
 
 class QueueJoinRequest(BaseModel):
     queue_desk_id: uuid.UUID
-    patient_id: uuid.UUID | None = None  # required when a health worker joins on behalf of a patient
+    patient_id: uuid.UUID | None = (
+        None  # required when a health worker joins on behalf of a patient
+    )
     referral_id: uuid.UUID | None = None
     appointment_id: uuid.UUID | None = None
     priority: int = 0  # higher priority is served earlier, ties broken by join time

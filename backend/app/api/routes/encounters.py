@@ -47,7 +47,11 @@ async def _assert_can_write_encounter(user: User, patient, encounter=None) -> No
         return
     if patient.user_id != user.id:
         raise ForbiddenError("Patients can only add to their own record")
-    if encounter is not None and encounter.encounter_type not in {"SELF_REPORT", "HEALTH_VISIT", "SYMPTOM_NOTE"}:
+    if encounter is not None and encounter.encounter_type not in {
+        "SELF_REPORT",
+        "HEALTH_VISIT",
+        "SYMPTOM_NOTE",
+    }:
         raise ForbiddenError("Patients can only add notes to their own self-reported visits")
 
 

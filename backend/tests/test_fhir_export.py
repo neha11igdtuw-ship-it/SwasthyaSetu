@@ -58,9 +58,7 @@ async def test_fhir_patient_encounter_bundle(client, auth_headers):
     assert resp.status_code == 201, resp.text
     patient = resp.json()
 
-    resp = await client.get(
-        f"/api/v1/fhir/Patient/{patient['id']}/Encounter", headers=auth_headers
-    )
+    resp = await client.get(f"/api/v1/fhir/Patient/{patient['id']}/Encounter", headers=auth_headers)
     assert resp.status_code == 200, resp.text
     bundle = resp.json()
 
@@ -77,4 +75,3 @@ async def test_fhir_patient_encounter_bundle(client, auth_headers):
     # Observation-shaped entries.
     assert "contained" in encounter_resource
     assert encounter_resource["contained"][0]["resourceType"] == "Observation"
-

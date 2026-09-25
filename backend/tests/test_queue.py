@@ -191,7 +191,9 @@ async def test_doctor_cannot_manage_another_doctors_queue(client, db_session, fa
     doctor_id = await _get_user_id(client, doctor)
     desk = await _create_desk(client, fadmin, facility, doctor_id)
 
-    other_doctor = await _register(client, db_session, Role.DOCTOR, facility, "other.doctor@example.com")
+    other_doctor = await _register(
+        client, db_session, Role.DOCTOR, facility, "other.doctor@example.com"
+    )
     resp = await client.post(
         "/api/v1/doctor/queue/call-next",
         params={"queue_desk_id": desk["id"]},
@@ -217,7 +219,9 @@ async def test_facility_overview_groups_by_desk(client, db_session, facility):
     assert desks[0]["waiting_count"] == 1
 
 
-async def test_health_worker_joins_referred_hospital_opd(client, db_session, facility, auth_headers):
+async def test_health_worker_joins_referred_hospital_opd(
+    client, db_session, facility, auth_headers
+):
     """Health worker at a PHC joins OPD New at the referred hospital; the
     destination doctor then calls, starts, and completes the consult."""
     from app.models.facility import Facility
@@ -227,7 +231,9 @@ async def test_health_worker_joins_referred_hospital_opd(client, db_session, fac
     await db_session.commit()
     await db_session.refresh(hospital)
 
-    doctor = await _register(client, db_session, Role.DOCTOR, hospital, "hospital.doctor@example.com")
+    doctor = await _register(
+        client, db_session, Role.DOCTOR, hospital, "hospital.doctor@example.com"
+    )
     doctor_id = await _get_user_id(client, doctor)
     hospital_admin = await _register(
         client, db_session, Role.FACILITY_ADMIN, hospital, "hospital.admin@example.com"

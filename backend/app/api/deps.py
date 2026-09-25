@@ -3,7 +3,7 @@ import uuid
 from fastapi import Depends, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import ForbiddenError, NotFoundError, UnauthorizedError
+from app.core.errors import ForbiddenError, UnauthorizedError
 from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.enums import FACILITY_SCOPED_ROLES, Role

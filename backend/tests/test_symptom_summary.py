@@ -25,9 +25,7 @@ async def test_summarize_success(monkeypatch):
         '"possibleWarningSigns": [], "summary": "Patient reports fever and cough for 3 days.", '
         '"language": "en"}'
     )
-    with patch(
-        "app.services.symptom_summary._call_gemini_sync", return_value=fake_json
-    ) as mocked:
+    with patch("app.services.symptom_summary._call_gemini_sync", return_value=fake_json) as mocked:
         result = await SymptomSummaryService().summarize(
             SymptomSummarizeRequest(
                 transcript="I have had fever and cough for 3 days",
@@ -83,7 +81,12 @@ async def test_summarize_endpoint_without_api_key_still_accepts_transcript(
     get_settings.cache_clear()
     resp = await client.post(
         "/api/v1/symptoms/summarize",
-        json={"transcript": "patient has a sore throat", "selected_symptoms": [], "manual_symptoms": [], "language": "en"},
+        json={
+            "transcript": "patient has a sore throat",
+            "selected_symptoms": [],
+            "manual_symptoms": [],
+            "language": "en",
+        },
         headers=auth_headers,
     )
     assert resp.status_code == 200, resp.text

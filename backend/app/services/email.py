@@ -27,7 +27,9 @@ class EmailService:
     def send(self, *, to: str, subject: str, text_body: str, html_body: str | None = None) -> bool:
         if not self.configured:
             if self.settings.environment != "production":
-                logger.info("EMAIL (dev fallback, not sent) to=%s subject=%s\n%s", to, subject, text_body)
+                logger.info(
+                    "EMAIL (dev fallback, not sent) to=%s subject=%s\n%s", to, subject, text_body
+                )
             else:
                 logger.info("Email not sent: SMTP is not configured.")
             return False
@@ -41,7 +43,9 @@ class EmailService:
             msg.add_alternative(html_body, subtype="html")
 
         try:
-            with smtplib.SMTP(self.settings.smtp_host, self.settings.smtp_port, timeout=10) as server:
+            with smtplib.SMTP(
+                self.settings.smtp_host, self.settings.smtp_port, timeout=10
+            ) as server:
                 server.starttls()
                 server.login(self.settings.smtp_username, self.settings.smtp_password)
                 server.send_message(msg)

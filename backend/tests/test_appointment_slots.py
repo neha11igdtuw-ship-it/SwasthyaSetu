@@ -43,11 +43,15 @@ async def _patient_headers(client, db_session, facility):
 
 async def test_patient_cannot_list_raw_availability(client, db_session, facility):
     patient_headers = await _patient_headers(client, db_session, facility)
-    resp = await client.get(f"/api/v1/doctor-availability?facility_id={facility.id}", headers=patient_headers)
+    resp = await client.get(
+        f"/api/v1/doctor-availability?facility_id={facility.id}", headers=patient_headers
+    )
     assert resp.status_code == 403
 
 
-async def test_available_slots_hides_doctor_identity_and_excludes_booked(client, db_session, facility):
+async def test_available_slots_hides_doctor_identity_and_excludes_booked(
+    client, db_session, facility
+):
     doctor_headers = await _doctor_headers(client, db_session, facility)
     doctor_me = await client.get("/api/v1/auth/me", headers=doctor_headers)
     doctor_id = doctor_me.json()["id"]
@@ -95,7 +99,9 @@ async def test_available_slots_hides_doctor_identity_and_excludes_booked(client,
     assert set(body[0].keys()) == {"id", "start_time", "end_time"}
 
 
-async def test_booking_a_slot_marks_it_booked_and_double_booking_conflicts(client, db_session, facility):
+async def test_booking_a_slot_marks_it_booked_and_double_booking_conflicts(
+    client, db_session, facility
+):
     doctor_headers = await _doctor_headers(client, db_session, facility)
     doctor_me = await client.get("/api/v1/auth/me", headers=doctor_headers)
     doctor_id = doctor_me.json()["id"]

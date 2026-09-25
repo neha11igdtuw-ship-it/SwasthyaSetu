@@ -13,7 +13,9 @@ class QueueDeskRepository(SyncableRepository[QueueDesk]):
     model = QueueDesk
 
     async def get_by_qr_key(self, qr_key: str) -> QueueDesk | None:
-        stmt = select(QueueDesk).where(QueueDesk.qr_code_key == qr_key, QueueDesk.is_deleted.is_(False))
+        stmt = select(QueueDesk).where(
+            QueueDesk.qr_code_key == qr_key, QueueDesk.is_deleted.is_(False)
+        )
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
@@ -74,7 +76,9 @@ class QueueEntryRepository(SyncableRepository[QueueEntry]):
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def waiting_entries_for_desk(self, queue_desk_id: uuid.UUID, queue_date: date) -> list[QueueEntry]:
+    async def waiting_entries_for_desk(
+        self, queue_desk_id: uuid.UUID, queue_date: date
+    ) -> list[QueueEntry]:
         stmt = (
             select(QueueEntry)
             .where(
@@ -88,7 +92,9 @@ class QueueEntryRepository(SyncableRepository[QueueEntry]):
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def active_entries_for_desk(self, queue_desk_id: uuid.UUID, queue_date: date) -> list[QueueEntry]:
+    async def active_entries_for_desk(
+        self, queue_desk_id: uuid.UUID, queue_date: date
+    ) -> list[QueueEntry]:
         stmt = (
             select(QueueEntry)
             .where(
@@ -114,7 +120,9 @@ class QueueEntryRepository(SyncableRepository[QueueEntry]):
         result = await self.db.execute(stmt)
         return int(result.scalar_one())
 
-    async def current_serving(self, queue_desk_id: uuid.UUID, queue_date: date) -> QueueEntry | None:
+    async def current_serving(
+        self, queue_desk_id: uuid.UUID, queue_date: date
+    ) -> QueueEntry | None:
         stmt = (
             select(QueueEntry)
             .where(

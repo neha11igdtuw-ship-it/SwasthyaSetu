@@ -155,9 +155,7 @@ def patient_to_fhir(patient: Patient) -> dict[str, Any]:
         resource["extension"] = extensions
 
     if patient.facility_id:
-        resource["managingOrganization"] = {
-            "reference": f"Organization/{patient.facility_id}"
-        }
+        resource["managingOrganization"] = {"reference": f"Organization/{patient.facility_id}"}
 
     return resource
 
@@ -222,9 +220,7 @@ def _vital_to_observations(encounter: Encounter) -> list[dict[str, Any]]:
                 "resourceType": "Observation",
                 "id": str(vital.id),
                 "status": "final",
-                "category": [
-                    {"text": "vital-signs"}
-                ],
+                "category": [{"text": "vital-signs"}],
                 "code": {"text": "Vital signs panel"},
                 "subject": {"reference": f"Patient/{encounter.patient_id}"},
                 "encounter": {"reference": f"Encounter/{encounter.id}"},
