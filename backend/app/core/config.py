@@ -1,6 +1,7 @@
 """Application settings loaded from environment variables / .env file.
 
-Never log the values of secrets held here (JWT_SECRET_KEY, DB password, etc).
+Never log the values of secrets held here (JWT_SECRET_KEY, DB password,
+SMTP_PASSWORD, etc).
 """
 
 from functools import lru_cache
@@ -34,6 +35,33 @@ class Settings(BaseSettings):
     # structured error (not a crash) when it's unset.
     gemini_api_key: str = ""
 
+    # Base URL of the frontend, used to build email verification links.
+    frontend_base_url: str = "http://localhost:3000"
+
+    # SMTP settings for outgoing verification emails. Never log
+    # smtp_password. When smtp_host/username/password are empty, EmailService
+    # falls back to logging a dev-only verification link instead of sending.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "SwasthyaSetu"
+
+    email_verification_ttl_hours: int = 24
+    email_verification_resend_cooldown_seconds: int = 60
+
+    # Comma-separated, case-insensitive allow-lists of email domains per
+    # role. Empty = no restriction (falls back to generic email validation).
+    allowed_email_domains_patient: str = ""
+    allowed_email_domains_health_worker: str = ""
+    allowed_email_domains_doctor: str = ""
+    allowed_email_domains_admin: str = ""
+    allowed_email_domains_facility_admin: str = ""
+    allowed_email_domains_facility_staff: str = ""
+
+    rate_limit_enabled: bool = True
+
     @property
     def sqlalchemy_database_url(self) -> str:
         if self.database_url:
@@ -46,6 +74,26 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def allowed_email_domains(self) -> dict[str, set[str]]:
+        """Role value (string) -> set of allowed lowercase email domains."""
+        raw = {
+            "PATIENT": self.allowed_email_domains_patient,
+            "HEALTH_WORKER": self.allowed_email_domains_health_worker,
+            "DOCTOR": self.allowed_email_domains_doctor,
+            "ADMIN": self.allowed_email_domains_admin,
+            "FACILITY_ADMIN": self.allowed_email_domains_facility_admin,
+            "FACILITY_STAFF": self.allowed_email_domains_facility_staff,
+        }
+        return {
+            role: {d.strip().lower() for d in value.split(",") if d.strip()}
+            for role, value in raw.items()
+        }
+
+    @property
+    def smtp_configured(self) -> bool:
+        return bool(self.smtp_host and self.smtp_username and self.smtp_password and self.smtp_from_email)
 
 
 @lru_cache

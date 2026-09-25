@@ -9,17 +9,17 @@ from app.services.auth import AuthService
 pytestmark = pytest.mark.asyncio
 
 
-async def _login(client, email, password="StrongPass123"):
+async def _login(client, email, password="StrongPass123!"):
     resp = await client.post("/api/v1/auth/login", json={"email": email, "password": password})
     assert resp.status_code == 200, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
 
 async def _register_patient(client, db_session, facility, email="self.patient@example.com"):
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email=email,
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name="Self Patient",
             role=Role.PATIENT,
             facility_id=facility.id,

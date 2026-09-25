@@ -36,6 +36,9 @@ import type {
   UserLogin,
   UserOut,
   UserRegister,
+  VerifyEmailRequest,
+  ResendVerificationRequest,
+  SimpleMessage,
   VitalCreate,
   VitalOut,
   AppointmentCreate,
@@ -233,8 +236,14 @@ export const authApi = {
     setTokens(tokens);
     return tokens;
   },
+  // Registration no longer auto-logs the caller in — the account starts
+  // unverified and must confirm its email first (see /verify-email).
   register: (data: UserRegister) =>
     request<UserOut>("/auth/register", { method: "POST", body: data, auth: false }),
+  verifyEmail: (data: VerifyEmailRequest) =>
+    request<SimpleMessage>("/auth/verify-email", { method: "POST", body: data, auth: false }),
+  resendVerification: (data: ResendVerificationRequest) =>
+    request<SimpleMessage>("/auth/resend-verification", { method: "POST", body: data, auth: false }),
   me: () => request<UserOut>("/auth/me"),
   logout: () => clearTokens(),
 };

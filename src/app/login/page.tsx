@@ -50,6 +50,8 @@ function LoginForm() {
   const [accessCode, setAccessCode] = useState(DEMO_CREDENTIALS.hw.password);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
 
   const [loginMode, setLoginMode] = useState<LoginMode>("password");
   const [abhaId, setAbhaId] = useState("");
@@ -132,6 +134,7 @@ function LoginForm() {
       return abhaOtpSent ? handleVerifyAbhaOtp(e) : handleSendAbhaOtp(e);
     }
     setError(null);
+    setNeedsVerification(false);
     setLoading(true);
     try {
       await authApi.login({ email: identifier, password: accessCode });
@@ -146,11 +149,34 @@ function LoginForm() {
         (next.startsWith(roleHome.replace("/dashboard", "")) || next === roleHome);
       router.push(nextAllowed ? next : fallback);
     } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Unable to reach the server. Please try again.";
-      setError(message);
+      if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
+        setNeedsVerification(true);
+        setError("Your email isn't verified yet. Check your inbox for the verification link.");
+      } else if (err instanceof ApiError && err.code === "RATE_LIMITED") {
+        const retryAfter = (err.details as { retry_after_seconds?: number } | undefined)
+          ?.retry_after_seconds;
+        setError(
+          retryAfter
+            ? `Too many attempts. Try again in ${retryAfter} seconds.`
+            : "Too many attempts. Please try again later."
+        );
+      } else {
+        const message =
+          err instanceof ApiError ? err.message : "Unable to reach the server. Please try again.";
+        setError(message);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (resendState === "sending") return;
+    setResendState("sending");
+    try {
+      await authApi.resendVerification({ email: identifier });
+    } finally {
+      setResendState("sent");
     }
   };
 
@@ -282,8 +308,22 @@ function LoginForm() {
                 </div>
 
                 {error && (
-                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
-                    {error}
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold space-y-2">
+                    <p>{error}</p>
+                    {needsVerification && (
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        disabled={resendState !== "idle"}
+                        className="text-teal-800 dark:text-teal-300 font-bold underline disabled:opacity-60 cursor-pointer"
+                      >
+                        {resendState === "sent"
+                          ? "Verification link sent — check your inbox"
+                          : resendState === "sending"
+                            ? "Sending…"
+                            : "Resend verification link"}
+                      </button>
+                    )}
                   </div>
                 )}
 

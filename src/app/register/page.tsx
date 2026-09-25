@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { authApi, ApiError } from "@/lib/api/client";
@@ -11,101 +10,188 @@ import { Loader2 } from "lucide-react";
 import {
   User,
   HeartPulse,
-  Stethoscope,
-  Building2,
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
+  Mail,
+  Send,
 } from "lucide-react";
 
-type RoleType = "patient" | "hw" | "doctor" | "facility";
+type RoleType = "patient" | "hw";
 
 const ROLE_TO_API: Record<RoleType, Role> = {
   patient: "PATIENT",
   hw: "HEALTH_WORKER",
-  doctor: "DOCTOR",
-  facility: "FACILITY_STAFF",
 };
 
-const ROLE_TO_ROUTE: Record<Role, string> = {
-  PATIENT: "/patient/dashboard",
-  HEALTH_WORKER: "/hw/dashboard",
-  DOCTOR: "/doctor/dashboard",
-  FACILITY_STAFF: "/facility/dashboard",
-  FACILITY_ADMIN: "/facility/dashboard",
-  ADMIN: "/facility/dashboard",
-};
+const PHONE_RE = /^[6-9]\d{9}$/;
+const PINCODE_RE = /^[1-9]\d{5}$/;
+
+function normalizePhone(raw: string): string | null {
+  let cleaned = raw.replace(/[\s\-().]/g, "");
+  if (cleaned.startsWith("+91")) cleaned = cleaned.slice(3);
+  else if (cleaned.startsWith("91") && cleaned.length === 12) cleaned = cleaned.slice(2);
+  else if (cleaned.startsWith("0") && cleaned.length === 11) cleaned = cleaned.slice(1);
+  return PHONE_RE.test(cleaned) ? cleaned : null;
+}
+
+function passwordIssues(pw: string): string[] {
+  const issues: string[] = [];
+  if (pw.length < 8) issues.push("at least 8 characters");
+  if (!/[A-Z]/.test(pw)) issues.push("an uppercase letter");
+  if (!/[a-z]/.test(pw)) issues.push("a lowercase letter");
+  if (!/[0-9]/.test(pw)) issues.push("a number");
+  if (!/[!@#$%^&*()\-_=+[\]{};:,.<>?/|~`'"\\]/.test(pw)) issues.push("a special character");
+  return issues;
+}
+
+type FieldErrors = Record<string, string>;
 
 export default function RegisterPage() {
   const { t } = useLanguage();
-  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<RoleType>("patient");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mobile, setMobile] = useState("9876543210");
-  const [location, setLocation] = useState("Rampur Village");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [addressLine, setAddressLine] = useState("");
+  const [villageArea, setVillageArea] = useState("");
+  const [cityDistrict, setCityDistrict] = useState("");
+  const [stateField, setStateField] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [landmark, setLandmark] = useState("");
   const [preferredLang, setPreferredLang] = useState("Hindi");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "cooldown">("idle");
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const roles = [
-    {
-      id: "patient" as RoleType,
-      titleKey: "patient",
-      descKey: "patientSpaceDesc",
-      icon: User,
-      route: "/patient/dashboard",
-    },
-    {
-      id: "hw" as RoleType,
-      titleKey: "healthWorker",
-      descKey: "hwSpaceDesc",
-      icon: HeartPulse,
-      route: "/hw/dashboard",
-    },
-    {
-      id: "doctor" as RoleType,
-      titleKey: "doctor",
-      descKey: "doctorSpaceDesc",
-      icon: Stethoscope,
-      route: "/doctor/dashboard",
-    },
-    {
-      id: "facility" as RoleType,
-      titleKey: "healthcareFacility",
-      descKey: "facilitySpaceDesc",
-      icon: Building2,
-      route: "/facility/dashboard",
-    },
+    { id: "patient" as RoleType, titleKey: "patient", descKey: "patientSpaceDesc", icon: User },
+    { id: "hw" as RoleType, titleKey: "healthWorker", descKey: "hwSpaceDesc", icon: HeartPulse },
   ];
+
+  const validate = (): FieldErrors => {
+    const errs: FieldErrors = {};
+    if (!fullName.trim()) errs.full_name = "Full name is required";
+    if (!email.trim()) errs.email = "Email is required";
+    const pwIssues = passwordIssues(password);
+    if (pwIssues.length) errs.password = "Password must contain " + pwIssues.join(", ");
+    if (password !== confirmPassword) errs.confirm_password = "Passwords do not match";
+    if (!normalizePhone(mobile)) errs.phone = "Enter a valid 10-digit Indian mobile number.";
+    if (!addressLine.trim()) errs.address_line = "House/street is required";
+    if (!villageArea.trim()) errs.village_area = "Village/area is required";
+    if (!cityDistrict.trim()) errs.city_district = "City/district is required";
+    if (!stateField.trim()) errs.state = "State is required";
+    if (!PINCODE_RE.test(pincode.trim())) errs.pincode = "Enter a valid 6-digit PIN code.";
+    return errs;
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
+    const errs = validate();
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+
     setLoading(true);
     try {
       const role = ROLE_TO_API[selectedRole];
+      const phone = normalizePhone(mobile) as string;
       await authApi.register({
         email,
         password,
         full_name: fullName,
         role,
-        phone: mobile,
-        village: location,
+        phone,
         preferred_language: preferredLang,
+        address: {
+          address_line: addressLine,
+          village_area: villageArea,
+          city_district: cityDistrict,
+          state: stateField,
+          pincode: pincode.trim(),
+          landmark: landmark || null,
+        },
       });
-      await authApi.login({ email, password });
-      setSuccess("Account created. Opening your dashboard…");
-      router.push(ROLE_TO_ROUTE[role]);
+      setRegisteredEmail(email);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not create account. Try a different email.");
+      if (err instanceof ApiError) {
+        const details = err.details as { loc?: string[] }[] | undefined;
+        if (Array.isArray(details)) {
+          const backendErrs: FieldErrors = {};
+          for (const d of details) {
+            const field = d.loc?.[d.loc.length - 1];
+            if (field && typeof field === "string") backendErrs[field] = err.message;
+          }
+          if (Object.keys(backendErrs).length) setFieldErrors(backendErrs);
+        }
+        setError(err.message);
+      } else {
+        setError("Could not create account. Try a different email.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const handleResend = async () => {
+    if (!registeredEmail || resendState !== "idle") return;
+    setResendState("sending");
+    setResendMessage(null);
+    try {
+      await authApi.resendVerification({ email: registeredEmail });
+      setResendMessage("If your account needs verification, a new link has been sent.");
+    } catch {
+      setResendMessage("Could not resend right now. Please try again shortly.");
+    } finally {
+      setResendState("cooldown");
+      setTimeout(() => setResendState("idle"), 60_000);
+    }
+  };
+
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
+        <TopBar />
+        <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-8 flex flex-col justify-center my-6">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700 shadow-md space-y-6 text-center">
+            <Mail className="w-10 h-10 text-teal-700 mx-auto" />
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
+              Check your email
+            </h1>
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              We&apos;ve sent a verification link to <strong>{registeredEmail}</strong>. Click it
+              to activate your account, then come back to sign in.
+            </p>
+            {resendMessage && (
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
+                {resendMessage}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendState !== "idle"}
+              className="w-full py-3 px-6 rounded-2xl bg-slate-100 dark:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Send className="w-4 h-4" />
+              {resendState === "sending" ? "Sending…" : "Resend verification link"}
+            </button>
+            <Link
+              href="/login"
+              className="block text-teal-800 dark:text-teal-300 font-semibold text-sm hover:underline"
+            >
+              Go to sign in
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
@@ -171,6 +257,10 @@ export default function RegisterPage() {
                   );
                 })}
               </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Doctor and admin accounts are created by an administrator — contact your facility
+                admin to get access.
+              </p>
             </div>
 
             {/* Registration Input Fields */}
@@ -187,6 +277,9 @@ export default function RegisterPage() {
                   placeholder="e.g. Priya Sharma"
                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                 />
+                {fieldErrors.full_name && (
+                  <p className="text-rose-600 mt-1">{fieldErrors.full_name}</p>
+                )}
               </div>
 
               <div>
@@ -201,51 +294,138 @@ export default function RegisterPage() {
                   placeholder="you@example.com"
                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                 />
-              </div>
-
-              <div>
-                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 8 characters"
-                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
-                />
+                {fieldErrors.email && <p className="text-rose-600 mt-1">{fieldErrors.email}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    {t("mobileOrName")}
+                    Password
                   </label>
                   <input
-                    type="text"
+                    type="password"
                     required
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
-                    placeholder="9876543210"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 8 characters"
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                   />
+                  {fieldErrors.password && (
+                    <p className="text-rose-600 mt-1">{fieldErrors.password}</p>
+                  )}
                 </div>
-
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    {t("locationField")}
+                    Confirm Password
                   </label>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                  />
+                  {fieldErrors.confirm_password && (
+                    <p className="text-rose-600 mt-1">{fieldErrors.confirm_password}</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Mobile Number
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  placeholder="9876543210"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                />
+                {fieldErrors.phone && <p className="text-rose-600 mt-1">{fieldErrors.phone}</p>}
+              </div>
+
+              <div className="pt-2 space-y-3">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                  Address
+                </label>
+                <div>
                   <input
                     type="text"
                     required
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Rampur Village"
+                    value={addressLine}
+                    onChange={(e) => setAddressLine(e.target.value)}
+                    placeholder="House/flat number and street"
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                   />
+                  {fieldErrors.address_line && (
+                    <p className="text-rose-600 mt-1">{fieldErrors.address_line}</p>
+                  )}
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <input
+                      type="text"
+                      required
+                      value={villageArea}
+                      onChange={(e) => setVillageArea(e.target.value)}
+                      placeholder="Village/area"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                    />
+                    {fieldErrors.village_area && (
+                      <p className="text-rose-600 mt-1">{fieldErrors.village_area}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      required
+                      value={cityDistrict}
+                      onChange={(e) => setCityDistrict(e.target.value)}
+                      placeholder="City/district"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                    />
+                    {fieldErrors.city_district && (
+                      <p className="text-rose-600 mt-1">{fieldErrors.city_district}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <input
+                      type="text"
+                      required
+                      value={stateField}
+                      onChange={(e) => setStateField(e.target.value)}
+                      placeholder="State"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                    />
+                    {fieldErrors.state && <p className="text-rose-600 mt-1">{fieldErrors.state}</p>}
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      required
+                      inputMode="numeric"
+                      value={pincode}
+                      onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="PIN code"
+                      className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                    />
+                    {fieldErrors.pincode && (
+                      <p className="text-rose-600 mt-1">{fieldErrors.pincode}</p>
+                    )}
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  value={landmark}
+                  onChange={(e) => setLandmark(e.target.value)}
+                  placeholder="Landmark (optional)"
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
+                />
               </div>
 
               <div>
@@ -268,11 +448,6 @@ export default function RegisterPage() {
             {error && (
               <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
                 {error}
-              </div>
-            )}
-            {success && (
-              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
-                {success}
               </div>
             )}
 
