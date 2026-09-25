@@ -1,0 +1,69 @@
+source_record_id,doctor_source_record_id,day_of_week,start_time,end_time,consultation_type,consultation_fee,status
+MOCK-DOC-001-AVAIL-001,MOCK-DOC-001,Monday,09:00,12:00,In-person + Teleconsultation,0,Open
+MOCK-DOC-001-AVAIL-002,MOCK-DOC-001,Tuesday,14:00,17:00,In-person + Teleconsultation,0,Open
+MOCK-DOC-001-AVAIL-003,MOCK-DOC-001,Saturday,09:00,12:00,In-person + Teleconsultation,0,Open
+MOCK-DOC-002-AVAIL-004,MOCK-DOC-002,Tuesday,11:00,14:00,In-person + Teleconsultation,150,Open
+MOCK-DOC-002-AVAIL-005,MOCK-DOC-002,Thursday,16:00,19:00,In-person + Teleconsultation,150,Open
+MOCK-DOC-003-AVAIL-006,MOCK-DOC-003,Tuesday,14:00,17:00,In-person + Teleconsultation,200,Open
+MOCK-DOC-003-AVAIL-007,MOCK-DOC-003,Friday,11:00,14:00,In-person + Teleconsultation,200,Open
+MOCK-DOC-003-AVAIL-008,MOCK-DOC-003,Saturday,14:00,17:00,In-person + Teleconsultation,200,Open
+MOCK-DOC-004-AVAIL-009,MOCK-DOC-004,Monday,09:00,12:00,In-person,200,Open
+MOCK-DOC-004-AVAIL-010,MOCK-DOC-004,Tuesday,16:00,19:00,In-person,200,Open
+MOCK-DOC-004-AVAIL-011,MOCK-DOC-004,Friday,16:00,19:00,In-person,200,Open
+MOCK-DOC-005-AVAIL-012,MOCK-DOC-005,Tuesday,09:00,12:00,In-person,0,Open
+MOCK-DOC-005-AVAIL-013,MOCK-DOC-005,Friday,10:00,13:00,In-person,0,Open
+MOCK-DOC-006-AVAIL-014,MOCK-DOC-006,Monday,10:00,13:00,In-person,500,Open
+MOCK-DOC-006-AVAIL-015,MOCK-DOC-006,Wednesday,11:00,14:00,In-person,500,Open
+MOCK-DOC-008-AVAIL-016,MOCK-DOC-008,Tuesday,16:00,19:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-008-AVAIL-017,MOCK-DOC-008,Friday,14:00,17:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-008-AVAIL-018,MOCK-DOC-008,Saturday,10:00,13:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-009-AVAIL-019,MOCK-DOC-009,Monday,14:00,17:00,In-person,700,Open
+MOCK-DOC-009-AVAIL-020,MOCK-DOC-009,Tuesday,11:00,14:00,In-person,700,Open
+MOCK-DOC-009-AVAIL-021,MOCK-DOC-009,Thursday,14:00,17:00,In-person,700,Open
+MOCK-DOC-010-AVAIL-022,MOCK-DOC-010,Monday,11:00,14:00,In-person,300,Open
+MOCK-DOC-010-AVAIL-023,MOCK-DOC-010,Thursday,09:00,12:00,In-person,300,Open
+MOCK-DOC-010-AVAIL-024,MOCK-DOC-010,Friday,10:00,13:00,In-person,300,Open
+MOCK-DOC-011-AVAIL-025,MOCK-DOC-011,Tuesday,14:00,17:00,Teleconsultation,150,Open
+MOCK-DOC-011-AVAIL-026,MOCK-DOC-011,Friday,10:00,13:00,Teleconsultation,150,Open
+MOCK-DOC-012-AVAIL-027,MOCK-DOC-012,Monday,09:00,12:00,Teleconsultation,500,Open
+MOCK-DOC-012-AVAIL-028,MOCK-DOC-012,Tuesday,09:00,12:00,Teleconsultation,500,Open
+MOCK-DOC-012-AVAIL-029,MOCK-DOC-012,Thursday,16:00,19:00,Teleconsultation,500,Open
+MOCK-DOC-013-AVAIL-030,MOCK-DOC-013,Monday,14:00,17:00,In-person,300,Open
+MOCK-DOC-013-AVAIL-031,MOCK-DOC-013,Tuesday,14:00,17:00,In-person,300,Open
+MOCK-DOC-014-AVAIL-032,MOCK-DOC-014,Monday,09:00,12:00,In-person,300,Open
+MOCK-DOC-014-AVAIL-033,MOCK-DOC-014,Thursday,14:00,17:00,In-person,300,Open
+MOCK-DOC-015-AVAIL-034,MOCK-DOC-015,Wednesday,16:00,19:00,In-person + Teleconsultation,700,Open
+MOCK-DOC-015-AVAIL-035,MOCK-DOC-015,Thursday,14:00,17:00,In-person + Teleconsultation,700,Open
+MOCK-DOC-015-AVAIL-036,MOCK-DOC-015,Saturday,10:00,13:00,In-person + Teleconsultation,700,Open
+MOCK-DOC-016-AVAIL-037,MOCK-DOC-016,Tuesday,16:00,19:00,In-person,500,Open
+MOCK-DOC-016-AVAIL-038,MOCK-DOC-016,Wednesday,09:00,12:00,In-person,500,Open
+MOCK-DOC-017-AVAIL-039,MOCK-DOC-017,Monday,10:00,13:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-017-AVAIL-040,MOCK-DOC-017,Thursday,09:00,12:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-017-AVAIL-041,MOCK-DOC-017,Saturday,16:00,19:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-018-AVAIL-042,MOCK-DOC-018,Monday,10:00,13:00,In-person + Teleconsultation,0,Open
+MOCK-DOC-018-AVAIL-043,MOCK-DOC-018,Tuesday,14:00,17:00,In-person + Teleconsultation,0,Open
+MOCK-DOC-019-AVAIL-044,MOCK-DOC-019,Tuesday,09:00,12:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-019-AVAIL-045,MOCK-DOC-019,Friday,16:00,19:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-020-AVAIL-046,MOCK-DOC-020,Thursday,11:00,14:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-020-AVAIL-047,MOCK-DOC-020,Friday,11:00,14:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-022-AVAIL-048,MOCK-DOC-022,Wednesday,14:00,17:00,In-person,200,Open
+MOCK-DOC-022-AVAIL-049,MOCK-DOC-022,Saturday,10:00,13:00,In-person,200,Open
+MOCK-DOC-023-AVAIL-050,MOCK-DOC-023,Monday,16:00,19:00,In-person,300,Open
+MOCK-DOC-023-AVAIL-051,MOCK-DOC-023,Wednesday,16:00,19:00,In-person,300,Open
+MOCK-DOC-023-AVAIL-052,MOCK-DOC-023,Thursday,09:00,12:00,In-person,300,Open
+MOCK-DOC-024-AVAIL-053,MOCK-DOC-024,Tuesday,10:00,13:00,In-person + Teleconsultation,200,Open
+MOCK-DOC-024-AVAIL-054,MOCK-DOC-024,Friday,11:00,14:00,In-person + Teleconsultation,200,Open
+MOCK-DOC-025-AVAIL-055,MOCK-DOC-025,Tuesday,14:00,17:00,Teleconsultation,150,Open
+MOCK-DOC-025-AVAIL-056,MOCK-DOC-025,Wednesday,16:00,19:00,Teleconsultation,150,Open
+MOCK-DOC-026-AVAIL-057,MOCK-DOC-026,Monday,11:00,14:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-026-AVAIL-058,MOCK-DOC-026,Friday,09:00,12:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-026-AVAIL-059,MOCK-DOC-026,Saturday,10:00,13:00,In-person + Teleconsultation,500,Open
+MOCK-DOC-027-AVAIL-060,MOCK-DOC-027,Monday,16:00,19:00,Teleconsultation,200,Open
+MOCK-DOC-027-AVAIL-061,MOCK-DOC-027,Tuesday,10:00,13:00,Teleconsultation,200,Open
+MOCK-DOC-027-AVAIL-062,MOCK-DOC-027,Saturday,11:00,14:00,Teleconsultation,200,Open
+MOCK-DOC-028-AVAIL-063,MOCK-DOC-028,Wednesday,11:00,14:00,In-person + Teleconsultation,300,Open
+MOCK-DOC-028-AVAIL-064,MOCK-DOC-028,Saturday,09:00,12:00,In-person + Teleconsultation,300,Open
+MOCK-DOC-029-AVAIL-065,MOCK-DOC-029,Thursday,09:00,12:00,Teleconsultation,0,Open
+MOCK-DOC-029-AVAIL-066,MOCK-DOC-029,Saturday,11:00,14:00,Teleconsultation,0,Open
+MOCK-DOC-030-AVAIL-067,MOCK-DOC-030,Wednesday,14:00,17:00,In-person,700,Open
+MOCK-DOC-030-AVAIL-068,MOCK-DOC-030,Saturday,16:00,19:00,In-person,700,Open
