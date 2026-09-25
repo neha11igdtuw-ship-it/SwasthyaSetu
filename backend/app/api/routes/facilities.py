@@ -10,6 +10,8 @@ from app.models.enums import Role
 from app.repositories.facilities import FacilityRepository
 from app.repositories.users import UserRepository
 from app.schemas.common import IDModel
+from app.schemas.facility_resource import FacilityResourceOut, FacilityResourceUpdate
+from app.services.facility_resources import FacilityResourceService
 from app.services.osm_facilities import search_osm_health_facilities
 
 router = APIRouter(prefix="/facilities", tags=["facilities"])
@@ -111,3 +113,24 @@ async def get_facility(
     if facility is None:
         raise NotFoundError("Facility not found")
     return facility
+
+
+@router.get("/{facility_id}/resources", response_model=FacilityResourceOut)
+async def get_facility_resources(
+    facility_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    assert_facility_access(user, facility_id)
+    return await FacilityResourceService(db).get_or_create(facility_id)
+
+
+@router.put("/{facility_id}/resources", response_model=FacilityResourceOut)
+async def update_facility_resources(
+    facility_id: uuid.UUID,
+    data: FacilityResourceUpdate,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    assert_facility_access(user, facility_id)
+    return await FacilityResourceService(db).upsert(facility_id, data)

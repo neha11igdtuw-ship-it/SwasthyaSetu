@@ -4,9 +4,10 @@ import React, { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { authApi, doctorAvailabilityApi, ApiError } from "@/lib/api/client";
-import type { DoctorAvailabilityOut } from "@/lib/api/types";
-import { Calendar, Clock, Loader2, Plus, X } from "lucide-react";
+import Link from "next/link";
+import { authApi, doctorAvailabilityApi, appointmentsApi, ApiError } from "@/lib/api/client";
+import type { DoctorAvailabilityOut, AppointmentOut } from "@/lib/api/types";
+import { Calendar, Clock, Loader2, Plus, Video, X } from "lucide-react";
 
 function localDateKey(date: Date) {
   return [
@@ -33,6 +34,7 @@ function isTodayLocal(value: string) {
 export default function DoctorSchedulePage() {
   const { t } = useLanguage();
   const [slots, setSlots] = useState<DoctorAvailabilityOut[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentOut[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -132,6 +134,16 @@ export default function DoctorSchedulePage() {
           .filter((s) => s.doctor_id === me.id && isTodayLocal(s.start_time))
           .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
         if (!cancelled) setSlots(mine);
+
+        try {
+          const facilityAppointments = await appointmentsApi.byFacility(me.facility_id);
+          const todays = facilityAppointments
+            .filter((a) => a.status === "SCHEDULED" && isTodayLocal(a.scheduled_at))
+            .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+          if (!cancelled) setAppointments(todays);
+        } catch {
+          if (!cancelled) setAppointments([]);
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load schedule from server.");
       } finally {
@@ -159,6 +171,34 @@ export default function DoctorSchedulePage() {
       {saveSuccess && (
         <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
           {saveSuccess}
+        </div>
+      )}
+
+      {!loading && appointments.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300">
+            {t("todaysAppointments")}
+          </div>
+          <div className="divide-y divide-slate-100 dark:divide-slate-700">
+            {appointments.map((app) => (
+              <div key={app.id} className="p-4 flex items-center justify-between gap-3 text-xs">
+                <div className="space-y-1">
+                  <span className="flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-100">
+                    <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                    {new Date(app.scheduled_at).toLocaleString()}
+                  </span>
+                  <p className="pl-5 text-slate-500 dark:text-slate-400">{app.reason || t("maternalCare")}</p>
+                </div>
+                <Link
+                  href={`/doctor/consult/${app.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold cursor-pointer shrink-0"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  {t("startVideoConsult")}
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

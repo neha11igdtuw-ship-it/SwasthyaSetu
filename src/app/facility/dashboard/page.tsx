@@ -11,9 +11,15 @@ import {
   referralsApi,
   inventoryApi,
   facilitiesApi,
+  facilityResourcesApi,
   ApiError,
 } from "@/lib/api/client";
-import type { InventoryItemOut, FacilityOut } from "@/lib/api/types";
+import type {
+  InventoryItemOut,
+  FacilityOut,
+  FacilityResourceOut,
+  FacilityResourceUpdate,
+} from "@/lib/api/types";
 import { FacilityQueueSection } from "@/components/care/FacilityQueueSection";
 import {
   Inbox,
@@ -24,7 +30,6 @@ import {
   BedDouble,
   Plus,
   Minus,
-  X,
   Wind,
   Ambulance,
   Droplet,
@@ -37,53 +42,77 @@ type FacilityResource = {
   total: number;
   available: number;
   icon: React.ElementType;
+  // Backend field names this UI row reads/writes on FacilityResourceOut/Update.
+  totalField: keyof FacilityResourceUpdate;
+  availableField: keyof FacilityResourceUpdate;
 };
 
-const DEFAULT_RESOURCES: FacilityResource[] = [
-  { id: "general-beds", name: "General Beds", total: 40, available: 12, icon: BedDouble },
-  { id: "icu-beds", name: "ICU Beds", total: 8, available: 2, icon: BedDouble },
-  { id: "oxygen-beds", name: "Oxygen Beds", total: 15, available: 5, icon: Wind },
-  { id: "ambulances", name: "Ambulances", total: 3, available: 1, icon: Ambulance },
-  { id: "blood-units", name: "Blood Bank Units", total: 20, available: 9, icon: Droplet },
-  { id: "vaccine-stock", name: "Vaccine Stock", total: 100, available: 34, icon: Syringe },
+const RESOURCE_DEFS: Omit<FacilityResource, "total" | "available">[] = [
+  { id: "general-beds", name: "General Beds", icon: BedDouble, totalField: "beds_total", availableField: "beds_available" },
+  { id: "icu-beds", name: "ICU Beds", icon: BedDouble, totalField: "icu_total", availableField: "icu_available" },
+  { id: "oxygen-units", name: "Oxygen Units", icon: Wind, totalField: "oxygen_units", availableField: "oxygen_units" },
+  { id: "ambulances", name: "Ambulances", icon: Ambulance, totalField: "ambulances_available", availableField: "ambulances_available" },
+  { id: "blood-units", name: "Blood Bank Units", icon: Droplet, totalField: "blood_units", availableField: "blood_units" },
+  { id: "vaccine-stock", name: "Vaccine Stock", icon: Syringe, totalField: "vaccine_doses", availableField: "vaccine_doses" },
 ];
 
-function FacilityResourcesSection() {
-  const [resources, setResources] = useState<FacilityResource[]>(DEFAULT_RESOURCES);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newTotal, setNewTotal] = useState(0);
+function toResources(data: FacilityResourceOut): FacilityResource[] {
+  return RESOURCE_DEFS.map((def) => ({
+    ...def,
+    total: Number(data[def.totalField as keyof FacilityResourceOut] ?? 0),
+    available: Number(data[def.availableField as keyof FacilityResourceOut] ?? 0),
+  }));
+}
 
-  const adjustAvailable = (id: string, delta: number) => {
-    setResources((prev) =>
-      prev.map((r) =>
-        r.id === id
-          ? { ...r, available: Math.max(0, Math.min(r.total, r.available + delta)) }
-          : r
-      )
-    );
-  };
+function FacilityResourcesSection({ facilityId }: { facilityId: string }) {
+  const [resources, setResources] = useState<FacilityResource[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
-  const removeResource = (id: string) => {
-    setResources((prev) => prev.filter((r) => r.id !== id));
-  };
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await facilityResourcesApi.get(facilityId);
+        if (!cancelled) setResources(toResources(data));
+      } catch (e) {
+        if (!cancelled) {
+          setError(e instanceof ApiError ? e.message : "Failed to load facility resources.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [facilityId]);
 
-  const handleAddResource = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName.trim() || newTotal <= 0) return;
-    setResources((prev) => [
-      ...prev,
-      {
-        id: `${newName.trim().toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
-        name: newName.trim(),
-        total: newTotal,
-        available: newTotal,
-        icon: BedDouble,
-      },
-    ]);
-    setNewName("");
-    setNewTotal(0);
-    setShowAddForm(false);
+  const adjustAvailable = async (id: string, delta: number) => {
+    const target = resources.find((r) => r.id === id);
+    if (!target) return;
+    const nextAvailable = Math.max(0, Math.min(target.total, target.available + delta));
+    if (nextAvailable === target.available) return;
+
+    setResources((prev) => prev.map((r) => (r.id === id ? { ...r, available: nextAvailable } : r)));
+    setSavingId(id);
+    setError(null);
+    try {
+      const updated = await facilityResourcesApi.update(facilityId, {
+        [target.availableField]: nextAvailable,
+      });
+      setResources(toResources(updated));
+    } catch (e) {
+      // Roll back on failure.
+      setResources((prev) => prev.map((r) => (r.id === id ? { ...r, available: target.available } : r)));
+      setError(e instanceof ApiError ? e.message : "Failed to save facility resource update.");
+    } finally {
+      setSavingId(null);
+    }
   };
 
   return (
@@ -95,56 +124,19 @@ function FacilityResourcesSection() {
             Beds and essentials patients can see availability for
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowAddForm((v) => !v)}
-          className="shrink-0 py-2 px-4 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold flex items-center gap-1.5 cursor-pointer transition-colors"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Add Facility
-        </button>
       </div>
 
-      {showAddForm && (
-        <form
-          onSubmit={handleAddResource}
-          className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-stretch sm:items-end gap-3"
-        >
-          <div className="flex-1">
-            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
-              Resource name
-            </label>
-            <input
-              type="text"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="e.g. Pediatric Beds"
-              className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div className="w-full sm:w-32">
-            <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
-              Total count
-            </label>
-            <input
-              type="number"
-              min={1}
-              value={newTotal || ""}
-              onChange={(e) => setNewTotal(Number(e.target.value))}
-              placeholder="0"
-              className="w-full p-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="py-2.5 px-4 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold cursor-pointer transition-colors"
-          >
-            Save
-          </button>
-        </form>
+      {error && (
+        <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
+          {error}
+        </div>
       )}
 
-      {resources.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm p-6">
+          <Loader2 className="w-4 h-4 animate-spin" /> Loading facility resources…
+        </div>
+      ) : resources.length === 0 ? (
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 text-center font-medium">
           No facility resources added yet.
         </div>
@@ -167,14 +159,6 @@ function FacilityResourcesSection() {
                       {r.name}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeResource(r.id)}
-                    className="text-slate-400 hover:text-rose-600 cursor-pointer shrink-0"
-                    aria-label={`Remove ${r.name}`}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -191,7 +175,8 @@ function FacilityResourcesSection() {
                     <button
                       type="button"
                       onClick={() => adjustAvailable(r.id, -1)}
-                      className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:border-slate-300 cursor-pointer"
+                      disabled={savingId === r.id}
+                      className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={`Decrease available ${r.name}`}
                     >
                       <Minus className="w-3 h-3" />
@@ -199,7 +184,8 @@ function FacilityResourcesSection() {
                     <button
                       type="button"
                       onClick={() => adjustAvailable(r.id, 1)}
-                      className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:border-slate-300 cursor-pointer"
+                      disabled={savingId === r.id}
+                      className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:border-slate-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label={`Increase available ${r.name}`}
                     >
                       <Plus className="w-3 h-3" />
@@ -331,7 +317,7 @@ export default function FacilityDashboardPage() {
           <div className="grid grid-cols-1 gap-6">
             {facilityId && <FacilityQueueSection facilityId={facilityId} />}
 
-            <FacilityResourcesSection />
+            {facilityId && <FacilityResourcesSection facilityId={facilityId} />}
 
             {/* Real inventory */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">

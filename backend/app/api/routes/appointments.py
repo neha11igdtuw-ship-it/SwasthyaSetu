@@ -36,6 +36,19 @@ async def list_appointments(
     return await AppointmentRepository(db).list_active(patient_id=patient_id)
 
 
+@router.get("/facility/{facility_id}", response_model=list[AppointmentOut])
+async def list_facility_appointments(
+    facility_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if user.role == Role.PATIENT:
+        raise ForbiddenError("Patients cannot list facility appointments")
+    if user.facility_id and user.facility_id != facility_id:
+        raise ForbiddenError("Cannot view appointments for another facility")
+    return await AppointmentRepository(db).list_active(facility_id=facility_id)
+
+
 @router.post("", response_model=AppointmentOut, status_code=201)
 async def create_appointment(
     data: AppointmentCreate,
