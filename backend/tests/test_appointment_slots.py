@@ -9,17 +9,17 @@ from app.services.auth import AuthService
 pytestmark = pytest.mark.asyncio
 
 
-async def _login(client, email, password="StrongPass123"):
+async def _login(client, email, password="StrongPass123!"):
     resp = await client.post("/api/v1/auth/login", json={"email": email, "password": password})
     assert resp.status_code == 200, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}
 
 
 async def _doctor_headers(client, db_session, facility):
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email="doc@example.com",
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name="Doc Test",
             role=Role.DOCTOR,
             facility_id=facility.id,
@@ -29,10 +29,10 @@ async def _doctor_headers(client, db_session, facility):
 
 
 async def _patient_headers(client, db_session, facility):
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email="patient@example.com",
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name="Patient Test",
             role=Role.PATIENT,
             facility_id=facility.id,
@@ -138,10 +138,10 @@ async def test_booking_a_slot_marks_it_booked_and_double_booking_conflicts(clien
     assert avail.json() == []
 
     # A second patient trying to book the same slot gets a conflict, not a double booking.
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email="patient2@example.com",
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name="Patient Two",
             role=Role.PATIENT,
             facility_id=facility.id,

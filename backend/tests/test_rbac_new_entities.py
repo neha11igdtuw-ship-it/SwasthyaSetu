@@ -14,17 +14,17 @@ pytestmark = pytest.mark.asyncio
 
 
 async def _register_and_login(client, db_session, *, email, role, facility_id=None):
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email=email,
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name=email.split("@")[0],
             role=role,
             facility_id=facility_id,
         )
     )
     resp = await client.post(
-        "/api/v1/auth/login", json={"email": email, "password": "StrongPass123"}
+        "/api/v1/auth/login", json={"email": email, "password": "StrongPass123!"}
     )
     assert resp.status_code == 200, resp.text
     return {"Authorization": f"Bearer {resp.json()['access_token']}"}

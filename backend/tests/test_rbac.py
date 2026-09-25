@@ -19,17 +19,17 @@ pytestmark = pytest.mark.asyncio
 
 
 async def _register_and_login(client, db_session, *, email, role, facility_id=None):
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email=email,
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name=email.split("@")[0],
             role=role,
             facility_id=facility_id,
         )
     )
     resp = await client.post(
-        "/api/v1/auth/login", json={"email": email, "password": "StrongPass123"}
+        "/api/v1/auth/login", json={"email": email, "password": "StrongPass123!"}
     )
     assert resp.status_code == 200, resp.text
     token = resp.json()["access_token"]
@@ -84,10 +84,10 @@ async def tenants(client, db_session):
     await db_session.commit()
     await db_session.refresh(patient_b)
 
-    patient_a_user = await AuthService(db_session).register(
+    patient_a_user = await AuthService(db_session).create_trusted_user(
         UserRegister(
             email="patient.a@rbac.example.com",
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name="Patient A",
             role=Role.PATIENT,
             facility_id=fac_a.id,
@@ -98,7 +98,7 @@ async def tenants(client, db_session):
     ).scalar_one()
     resp = await client.post(
         "/api/v1/auth/login",
-        json={"email": "patient.a@rbac.example.com", "password": "StrongPass123"},
+        json={"email": "patient.a@rbac.example.com", "password": "StrongPass123!"},
     )
     patient_a_headers = {"Authorization": f"Bearer {resp.json()['access_token']}"}
 

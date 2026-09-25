@@ -16,6 +16,22 @@ export interface UserOut {
   phone: string | null;
   facility_id: string | null;
   is_active: boolean;
+  is_verified: boolean;
+  address_line: string | null;
+  village_area: string | null;
+  city_district: string | null;
+  state: string | null;
+  pincode: string | null;
+  landmark: string | null;
+}
+
+export interface AddressInput {
+  address_line: string;
+  village_area: string;
+  city_district: string;
+  state: string;
+  pincode: string;
+  landmark?: string | null;
 }
 
 export interface TokenPair {
@@ -34,11 +50,34 @@ export interface UserRegister {
   password: string;
   full_name: string;
   role: Role;
-  phone?: string | null;
+  phone: string;
   facility_id?: string | null;
   village?: string | null;
   preferred_language?: string | null;
+  address: AddressInput;
 }
+
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
+export interface SimpleMessage {
+  message: string;
+}
+
+export type ApiErrorCode =
+  | "EMAIL_NOT_VERIFIED"
+  | "RATE_LIMITED"
+  | "VALIDATION_ERROR"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "CONFLICT"
+  | string;
 
 export interface PatientOut {
   id: string;

@@ -91,12 +91,14 @@ async def seed() -> None:
                 full_name="ANM Sunita Devi",
                 role=Role.HEALTH_WORKER,
                 facility_id=phc.id,
+                is_verified=True,
             )
             db.add(worker)
             await db.flush()
         else:
             worker.full_name = "ANM Sunita Devi"
             worker.facility_id = phc.id
+            worker.is_verified = True
 
         result = await db.execute(select(User).where(User.email == "doctor@swasthyasetu.dev"))
         doctor = result.scalar_one_or_none()
@@ -107,12 +109,14 @@ async def seed() -> None:
                 full_name="Dr. Meera Singh",
                 role=Role.DOCTOR,
                 facility_id=hospital.id,
+                is_verified=True,
             )
             db.add(doctor)
             await db.flush()
         else:
             doctor.full_name = "Dr. Meera Singh"
             doctor.facility_id = hospital.id
+            doctor.is_verified = True
 
         result = await db.execute(select(User).where(User.email == "admin@swasthyasetu.dev"))
         admin = result.scalar_one_or_none()
@@ -123,12 +127,14 @@ async def seed() -> None:
                 full_name="District Civil Hospital Admin",
                 role=Role.ADMIN,
                 facility_id=hospital.id,
+                is_verified=True,
             )
             db.add(admin)
             await db.flush()
         else:
             admin.full_name = "District Civil Hospital Admin"
             admin.facility_id = hospital.id
+            admin.is_verified = True
 
         result = await db.execute(select(User).where(User.email == "patient@swasthyasetu.dev"))
         patient_user = result.scalar_one_or_none()
@@ -139,12 +145,14 @@ async def seed() -> None:
                 full_name="Priya Sharma",
                 role=Role.PATIENT,
                 facility_id=phc.id,
+                is_verified=True,
             )
             db.add(patient_user)
             await db.flush()
         else:
             patient_user.full_name = "Priya Sharma"
             patient_user.facility_id = phc.id
+            patient_user.is_verified = True
 
         result = await db.execute(select(Patient).where(Patient.user_id == patient_user.id))
         patient = result.scalar_one_or_none()

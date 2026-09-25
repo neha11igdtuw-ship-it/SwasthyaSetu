@@ -10,17 +10,17 @@ pytestmark = pytest.mark.asyncio
 
 @pytest_asyncio.fixture
 async def doctor_headers(client, db_session, facility):
-    await AuthService(db_session).register(
+    await AuthService(db_session).create_trusted_user(
         UserRegister(
             email="doctor@example.com",
-            password="StrongPass123",
+            password="StrongPass123!",
             full_name="Test Doctor",
             role=Role.DOCTOR,
             facility_id=facility.id,
         )
     )
     resp = await client.post(
-        "/api/v1/auth/login", json={"email": "doctor@example.com", "password": "StrongPass123"}
+        "/api/v1/auth/login", json={"email": "doctor@example.com", "password": "StrongPass123!"}
     )
     token = resp.json()["access_token"]
     doctor_me = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
