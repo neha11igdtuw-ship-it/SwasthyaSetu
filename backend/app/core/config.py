@@ -65,6 +65,13 @@ class Settings(BaseSettings):
     @property
     def sqlalchemy_database_url(self) -> str:
         if self.database_url:
+            # Hosting providers (Railway, Supabase, Heroku-style) hand out a
+            # plain postgresql:// or postgres:// URL. SQLAlchemy's async
+            # engine needs the asyncpg dialect spelled out explicitly.
+            if self.database_url.startswith("postgres://"):
+                return "postgresql+asyncpg://" + self.database_url[len("postgres://") :]
+            if self.database_url.startswith("postgresql://"):
+                return "postgresql+asyncpg://" + self.database_url[len("postgresql://") :]
             return self.database_url
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
