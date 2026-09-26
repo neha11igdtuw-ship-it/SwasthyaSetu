@@ -7,7 +7,12 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(settings.sqlalchemy_database_url, future=True, pool_pre_ping=True)
+engine = create_async_engine(
+    settings.sqlalchemy_database_url,
+    future=True,
+    pool_pre_ping=True,
+    connect_args={"statement_cache_size": 0},
+)
 AsyncSessionLocal = async_sessionmaker(
     bind=engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
 )
