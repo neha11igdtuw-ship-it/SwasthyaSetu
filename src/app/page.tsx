@@ -26,6 +26,7 @@ import {
   Sprout,
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
+import { TeamSection } from "@/components/TeamSection";
 
 export default function LandingPage() {
   const { t } = useLanguage();
@@ -372,6 +373,10 @@ export default function LandingPage() {
         {/* Feedback & Support Section */}
         <section id="feedback-section" className="px-4 sm:px-8 max-w-7xl mx-auto scroll-mt-20">
           <FeedbackFormSection />
+        </section>
+
+        <section id="team-section" className="px-4 sm:px-8 max-w-7xl mx-auto scroll-mt-20">
+          <TeamSection />
         </section>
       </main>
 
