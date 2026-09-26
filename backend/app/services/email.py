@@ -1,8 +1,12 @@
-"""Outgoing email via stdlib smtplib.
+"""Outgoing email via Resend's HTTPS API, with stdlib smtplib as a fallback.
 
-Falls back to logging a dev-only verification link when SMTP isn't
-configured, so registration works with zero setup in dev/CI. Never raises
-out of send() — a slow/unreachable SMTP server must not break registration.
+Resend is the primary path because hosts like Railway/Render block outbound
+SMTP ports (25/465/587) on their network — smtplib can never open that
+socket there regardless of credentials (fails with ENETUNREACH), whereas an
+HTTPS API call is unaffected. Falls back to logging a dev-only verification
+link when neither is configured, so registration works with zero setup in
+dev/CI. Never raises out of send() — a failed/unreachable provider must not
+break registration.
 """
 
 from __future__ import annotations
@@ -11,9 +15,13 @@ import logging
 import smtplib
 from email.message import EmailMessage
 
+import httpx
+
 from app.core.config import Settings, get_settings
 
 logger = logging.getLogger("app.email")
+
+RESEND_API_URL = "https://api.resend.com/emails"
 
 
 class EmailService:
@@ -22,18 +30,54 @@ class EmailService:
 
     @property
     def configured(self) -> bool:
-        return self.settings.smtp_configured
+        return self.settings.resend_configured or self.settings.smtp_configured
 
     def send(self, *, to: str, subject: str, text_body: str, html_body: str | None = None) -> bool:
-        if not self.configured:
-            if self.settings.environment != "production":
-                logger.info(
-                    "EMAIL (dev fallback, not sent) to=%s subject=%s\n%s", to, subject, text_body
-                )
-            else:
-                logger.info("Email not sent: SMTP is not configured.")
+        if self.settings.resend_configured:
+            return self._send_via_resend(
+                to=to, subject=subject, text_body=text_body, html_body=html_body
+            )
+        if self.settings.smtp_configured:
+            return self._send_via_smtp(
+                to=to, subject=subject, text_body=text_body, html_body=html_body
+            )
+
+        if self.settings.environment != "production":
+            logger.info(
+                "EMAIL (dev fallback, not sent) to=%s subject=%s\n%s", to, subject, text_body
+            )
+        else:
+            logger.info("Email not sent: no email provider is configured.")
+        return False
+
+    def _send_via_resend(
+        self, *, to: str, subject: str, text_body: str, html_body: str | None
+    ) -> bool:
+        payload = {
+            "from": f"{self.settings.smtp_from_name} <{self.settings.smtp_from_email}>",
+            "to": [to],
+            "subject": subject,
+            "text": text_body,
+        }
+        if html_body:
+            payload["html"] = html_body
+
+        try:
+            response = httpx.post(
+                RESEND_API_URL,
+                headers={"Authorization": f"Bearer {self.settings.resend_api_key}"},
+                json=payload,
+                timeout=10,
+            )
+            response.raise_for_status()
+            return True
+        except httpx.HTTPError as exc:
+            logger.warning("Failed to send email to %s via Resend: %s", to, exc)
             return False
 
+    def _send_via_smtp(
+        self, *, to: str, subject: str, text_body: str, html_body: str | None
+    ) -> bool:
         msg = EmailMessage()
         msg["Subject"] = subject
         msg["From"] = f"{self.settings.smtp_from_name} <{self.settings.smtp_from_email}>"
@@ -51,7 +95,7 @@ class EmailService:
                 server.send_message(msg)
             return True
         except (smtplib.SMTPException, OSError) as exc:
-            logger.warning("Failed to send email to %s: %s", to, exc)
+            logger.warning("Failed to send email to %s via SMTP: %s", to, exc)
             return False
 
     def send_verification_email(self, *, to: str, full_name: str, verify_url: str) -> bool:

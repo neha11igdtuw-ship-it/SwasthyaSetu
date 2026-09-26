@@ -38,9 +38,16 @@ class Settings(BaseSettings):
     # Base URL of the frontend, used to build email verification links.
     frontend_base_url: str = "http://localhost:3000"
 
-    # SMTP settings for outgoing verification emails. Never log
-    # smtp_password. When smtp_host/username/password are empty, EmailService
-    # falls back to logging a dev-only verification link instead of sending.
+    # Outgoing verification email is sent via Resend's HTTPS API (not raw
+    # SMTP) — hosts like Railway/Render block outbound SMTP ports (25/465/587)
+    # on their network, which makes smtplib unusable there regardless of
+    # credentials. Never log resend_api_key.
+    resend_api_key: str = ""
+
+    # Legacy SMTP settings, kept as a fallback for local/dev environments
+    # where outbound SMTP isn't blocked. Never log smtp_password. When
+    # nothing is configured, EmailService logs a dev-only verification link
+    # instead of sending.
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_username: str = ""
@@ -97,6 +104,10 @@ class Settings(BaseSettings):
             role: {d.strip().lower() for d in value.split(",") if d.strip()}
             for role, value in raw.items()
         }
+
+    @property
+    def resend_configured(self) -> bool:
+        return bool(self.resend_api_key and self.smtp_from_email)
 
     @property
     def smtp_configured(self) -> bool:
