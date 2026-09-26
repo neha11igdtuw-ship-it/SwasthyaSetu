@@ -7,8 +7,8 @@ const teamMembers: string[] = [
   "Neha",
   "Palak Mishra",
   "Nandini Singh",
-  "Nandini Goyal",
-  "Nidhi Gupta",
+  "Nandini Goel",
+  "Nidhi",
   "Marushika",
 ];
 
