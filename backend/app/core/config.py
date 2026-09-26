@@ -38,10 +38,15 @@ class Settings(BaseSettings):
     # Base URL of the frontend, used to build email verification links.
     frontend_base_url: str = "http://localhost:3000"
 
-    # Outgoing verification email is sent via Resend's HTTPS API (not raw
-    # SMTP) — hosts like Railway/Render block outbound SMTP ports (25/465/587)
-    # on their network, which makes smtplib unusable there regardless of
-    # credentials. Never log resend_api_key.
+    # Outgoing verification email is sent via Brevo/Resend's HTTPS APIs (not
+    # raw SMTP) — hosts like Railway/Render block outbound SMTP ports
+    # (25/465/587) on their network, which makes smtplib unusable there
+    # regardless of credentials. Brevo is tried first because it only needs a
+    # single verified sender email (no owned domain required) and can deliver
+    # to any recipient; Resend's sandbox key can only deliver to the Resend
+    # account's own email until a domain is verified there. Never log
+    # brevo_api_key / resend_api_key.
+    brevo_api_key: str = ""
     resend_api_key: str = ""
 
     # Legacy SMTP settings, kept as a fallback for local/dev environments
@@ -57,6 +62,12 @@ class Settings(BaseSettings):
 
     email_verification_ttl_hours: int = 24
     email_verification_resend_cooldown_seconds: int = 60
+
+    # When True (default), login is blocked until the user clicks the
+    # verification link. Set False to let unverified accounts log in anyway
+    # (e.g. for demoing/exploring the app when email delivery isn't set up
+    # yet) — the verification email is still sent either way.
+    email_verification_required: bool = True
 
     # Comma-separated, case-insensitive allow-lists of email domains per
     # role. Empty = no restriction (falls back to generic email validation).
@@ -104,6 +115,10 @@ class Settings(BaseSettings):
             role: {d.strip().lower() for d in value.split(",") if d.strip()}
             for role, value in raw.items()
         }
+
+    @property
+    def brevo_configured(self) -> bool:
+        return bool(self.brevo_api_key and self.smtp_from_email)
 
     @property
     def resend_configured(self) -> bool:

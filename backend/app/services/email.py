@@ -1,12 +1,17 @@
-"""Outgoing email via Resend's HTTPS API, with stdlib smtplib as a fallback.
+"""Outgoing email via Brevo/Resend's HTTPS APIs, with stdlib smtplib as a
+fallback.
 
-Resend is the primary path because hosts like Railway/Render block outbound
-SMTP ports (25/465/587) on their network — smtplib can never open that
-socket there regardless of credentials (fails with ENETUNREACH), whereas an
-HTTPS API call is unaffected. Falls back to logging a dev-only verification
-link when neither is configured, so registration works with zero setup in
-dev/CI. Never raises out of send() — a failed/unreachable provider must not
-break registration.
+Brevo/Resend are tried before SMTP because hosts like Railway/Render block
+outbound SMTP ports (25/465/587) on their network — smtplib can never open
+that socket there regardless of credentials (fails with ENETUNREACH),
+whereas an HTTPS API call is unaffected. Brevo is preferred over Resend when
+both are configured: Brevo only requires a single verified sender email (no
+owned domain) and can then deliver to any recipient, while a Resend sandbox
+key can only deliver to the Resend account's own email until a domain is
+verified there. Falls back to logging a dev-only verification link when
+nothing is configured, so registration works with zero setup in dev/CI.
+Never raises out of send() — a failed/unreachable provider must not break
+registration.
 """
 
 from __future__ import annotations
@@ -21,6 +26,7 @@ from app.core.config import Settings, get_settings
 
 logger = logging.getLogger("app.email")
 
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 RESEND_API_URL = "https://api.resend.com/emails"
 
 
@@ -30,9 +36,17 @@ class EmailService:
 
     @property
     def configured(self) -> bool:
-        return self.settings.resend_configured or self.settings.smtp_configured
+        return (
+            self.settings.brevo_configured
+            or self.settings.resend_configured
+            or self.settings.smtp_configured
+        )
 
     def send(self, *, to: str, subject: str, text_body: str, html_body: str | None = None) -> bool:
+        if self.settings.brevo_configured:
+            return self._send_via_brevo(
+                to=to, subject=subject, text_body=text_body, html_body=html_body
+            )
         if self.settings.resend_configured:
             return self._send_via_resend(
                 to=to, subject=subject, text_body=text_body, html_body=html_body
@@ -49,6 +63,37 @@ class EmailService:
         else:
             logger.info("Email not sent: no email provider is configured.")
         return False
+
+    def _send_via_brevo(
+        self, *, to: str, subject: str, text_body: str, html_body: str | None
+    ) -> bool:
+        payload = {
+            "sender": {
+                "name": self.settings.smtp_from_name,
+                "email": self.settings.smtp_from_email,
+            },
+            "to": [{"email": to}],
+            "subject": subject,
+            "textContent": text_body,
+        }
+        if html_body:
+            payload["htmlContent"] = html_body
+
+        try:
+            response = httpx.post(
+                BREVO_API_URL,
+                headers={
+                    "api-key": self.settings.brevo_api_key,
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=10,
+            )
+            response.raise_for_status()
+            return True
+        except httpx.HTTPError as exc:
+            logger.warning("Failed to send email to %s via Brevo: %s", to, exc)
+            return False
 
     def _send_via_resend(
         self, *, to: str, subject: str, text_body: str, html_body: str | None

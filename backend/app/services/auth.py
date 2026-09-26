@@ -3,6 +3,7 @@ import uuid
 from fastapi import BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.errors import EmailNotVerifiedError, UnauthorizedError, ValidationAppError
 from app.core.security import (
     create_access_token,
@@ -109,7 +110,7 @@ class AuthService:
             raise UnauthorizedError("Invalid email or password")
         if not user.is_active:
             raise UnauthorizedError("Account is disabled")
-        if not user.is_verified:
+        if not user.is_verified and get_settings().email_verification_required:
             raise EmailNotVerifiedError("Please verify your email address before signing in.")
         return user
 
