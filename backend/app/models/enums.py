@@ -1,7 +1,7 @@
 import enum
 
 
-class Role(str, enum.Enum):
+class Role(enum.StrEnum):
     ADMIN = "ADMIN"
     FACILITY_ADMIN = "FACILITY_ADMIN"
     DOCTOR = "DOCTOR"
@@ -21,7 +21,7 @@ FACILITY_SCOPED_ROLES: set[Role] = {
 }
 
 
-class ReferralStatus(str, enum.Enum):
+class ReferralStatus(enum.StrEnum):
     CREATED = "CREATED"
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
@@ -61,36 +61,36 @@ REFERRAL_TRANSITIONS: dict[ReferralStatus, set[ReferralStatus]] = {
 }
 
 
-class CareGapStatus(str, enum.Enum):
+class CareGapStatus(enum.StrEnum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
 
 
-class SyncOperation(str, enum.Enum):
+class SyncOperation(enum.StrEnum):
     CREATE = "CREATE"
     UPDATE = "UPDATE"
     DELETE = "DELETE"
 
 
-class SyncEntityType(str, enum.Enum):
+class SyncEntityType(enum.StrEnum):
     PATIENT = "PATIENT"
     REFERRAL = "REFERRAL"
     CARE_GAP = "CARE_GAP"
 
 
-class PregnancyStatus(str, enum.Enum):
+class PregnancyStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     COMPLETED = "COMPLETED"
     TERMINATED = "TERMINATED"
 
 
-class RiskLevel(str, enum.Enum):
+class RiskLevel(enum.StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
 
 
-class AppointmentStatus(str, enum.Enum):
+class AppointmentStatus(enum.StrEnum):
     REQUESTED = "REQUESTED"
     SCHEDULED = "SCHEDULED"
     COMPLETED = "COMPLETED"
@@ -98,31 +98,31 @@ class AppointmentStatus(str, enum.Enum):
     NO_SHOW = "NO_SHOW"
 
 
-class AppointmentMode(str, enum.Enum):
+class AppointmentMode(enum.StrEnum):
     IN_PERSON = "IN_PERSON"
     TELECONSULT = "TELECONSULT"
 
 
-class DiagnosticOrderStatus(str, enum.Enum):
+class DiagnosticOrderStatus(enum.StrEnum):
     ORDERED = "ORDERED"
     COLLECTED = "COLLECTED"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
 
 
-class PrescriptionStatus(str, enum.Enum):
+class PrescriptionStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     DISPENSED = "DISPENSED"
     CANCELLED = "CANCELLED"
 
 
-class HealthWorkerCadre(str, enum.Enum):
+class HealthWorkerCadre(enum.StrEnum):
     ASHA = "ASHA"
     ANM = "ANM"
     OTHER = "OTHER"
 
 
-class QueueEntryStatus(str, enum.Enum):
+class QueueEntryStatus(enum.StrEnum):
     WAITING = "WAITING"
     CALLED = "CALLED"
     IN_CONSULTATION = "IN_CONSULTATION"
@@ -141,12 +141,12 @@ ACTIVE_QUEUE_STATUSES: set[QueueEntryStatus] = {
 }
 
 
-class NotificationChannel(str, enum.Enum):
+class NotificationChannel(enum.StrEnum):
     IN_APP = "IN_APP"
     SMS = "SMS"
 
 
-class NotificationStatus(str, enum.Enum):
+class NotificationStatus(enum.StrEnum):
     PENDING = "PENDING"
     SENT = "SENT"
     FAILED = "FAILED"
