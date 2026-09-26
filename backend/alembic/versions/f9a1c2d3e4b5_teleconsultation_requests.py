@@ -45,9 +45,7 @@ def upgrade() -> None:
         "appointments",
         sa.Column("doctor_id", app.models.types.GUID(), nullable=True),
     )
-    op.create_index(
-        op.f("ix_appointments_doctor_id"), "appointments", ["doctor_id"], unique=False
-    )
+    op.create_index(op.f("ix_appointments_doctor_id"), "appointments", ["doctor_id"], unique=False)
     op.create_foreign_key(
         "fk_appointments_doctor_id_users",
         "appointments",
@@ -56,7 +54,9 @@ def upgrade() -> None:
         ["id"],
     )
 
-    op.alter_column("notifications", "patient_id", existing_type=app.models.types.GUID(), nullable=True)
+    op.alter_column(
+        "notifications", "patient_id", existing_type=app.models.types.GUID(), nullable=True
+    )
     op.add_column(
         "notifications",
         sa.Column("recipient_user_id", app.models.types.GUID(), nullable=True),
@@ -82,7 +82,9 @@ def downgrade() -> None:
     )
     op.drop_index(op.f("ix_notifications_recipient_user_id"), table_name="notifications")
     op.drop_column("notifications", "recipient_user_id")
-    op.alter_column("notifications", "patient_id", existing_type=app.models.types.GUID(), nullable=False)
+    op.alter_column(
+        "notifications", "patient_id", existing_type=app.models.types.GUID(), nullable=False
+    )
 
     op.drop_constraint("fk_appointments_doctor_id_users", "appointments", type_="foreignkey")
     op.drop_index(op.f("ix_appointments_doctor_id"), table_name="appointments")

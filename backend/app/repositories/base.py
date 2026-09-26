@@ -1,15 +1,12 @@
 import uuid
-from typing import Generic, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ConflictError, NotFoundError
 
-ModelT = TypeVar("ModelT")
 
-
-class SyncableRepository(Generic[ModelT]):
+class SyncableRepository[ModelT]:
     """CRUD for models using SyncableMixin (id, version, is_deleted).
 
     Optimistic concurrency: every update/delete must pass the `base_version`

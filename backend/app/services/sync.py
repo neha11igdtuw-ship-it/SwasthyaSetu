@@ -28,7 +28,7 @@ def _serialize(obj) -> dict:
         value = getattr(obj, c.key)
         if isinstance(value, uuid.UUID):
             value = str(value)
-        elif hasattr(value, "value") and not isinstance(value, (int, str, float, bool)):
+        elif hasattr(value, "value") and not isinstance(value, int | str | float | bool):
             value = value.value  # enums
         elif isinstance(value, datetime):
             value = value.isoformat()

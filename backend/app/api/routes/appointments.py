@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import assert_patient_access, get_current_user, get_own_patient
 from app.core.errors import ForbiddenError, ValidationAppError
 from app.db.session import get_db
+from app.models.care import Appointment
 from app.models.enums import AppointmentMode, AppointmentStatus, Role
 from app.models.patient import Patient
-from app.models.care import Appointment
 from app.models.user import User
 from app.repositories.care import AppointmentRepository
 from app.repositories.patients import PatientRepository

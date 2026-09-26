@@ -221,7 +221,13 @@ HOSPITAL_DIRECTORY_COLUMN_ALIASES: dict[str, list[str]] = {
     "pincode": ["pincode", "pin code", "pin"],
     "latitude": ["latitude", "lat"],
     "longitude": ["longitude", "lon", "lng", "long"],
-    "phone": ["telephone", "phone", "contact number", "std code+ telephone number", "mobile number"],
+    "phone": [
+        "telephone",
+        "phone",
+        "contact number",
+        "std code+ telephone number",
+        "mobile number",
+    ],
     "email": ["email", "email id"],
     "website": ["website", "web site"],
     "services": ["specialities", "specialities offered", "services", "specialization"],
@@ -285,7 +291,8 @@ def normalize_row(
         name=name,
         facility_type=facility_type,
         category=category,
-        village=_clean(_row_value(row, header_map, "village")) or _clean(_row_value(row, header_map, "address")),
+        village=_clean(_row_value(row, header_map, "village"))
+        or _clean(_row_value(row, header_map, "address")),
         sub_district=_title_case(_row_value(row, header_map, "sub_district")),
         district=_title_case(_row_value(row, header_map, "district")),
         state=_title_case(_row_value(row, header_map, "state")),
@@ -453,7 +460,9 @@ def _print_summary(summaries: list[ImportSummary]) -> None:
 
 
 async def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument(
         "--hospital-directory-csv",
         type=Path,
@@ -479,7 +488,11 @@ async def main() -> None:
             parser.error(f"File not found: {args.hospital_directory_csv}")
         summary = ImportSummary(dataset_name=DATASET_1_NAME)
         await import_dataset(
-            args.hospital_directory_csv, HOSPITAL_DIRECTORY_COLUMN_ALIASES, DATASET_1_NAME, summary, seen_dedup_keys
+            args.hospital_directory_csv,
+            HOSPITAL_DIRECTORY_COLUMN_ALIASES,
+            DATASET_1_NAME,
+            summary,
+            seen_dedup_keys,
         )
         summaries.append(summary)
 
@@ -488,7 +501,11 @@ async def main() -> None:
             parser.error(f"File not found: {args.health_centres_csv}")
         summary = ImportSummary(dataset_name=DATASET_2_NAME)
         await import_dataset(
-            args.health_centres_csv, HEALTH_CENTRES_COLUMN_ALIASES, DATASET_2_NAME, summary, seen_dedup_keys
+            args.health_centres_csv,
+            HEALTH_CENTRES_COLUMN_ALIASES,
+            DATASET_2_NAME,
+            summary,
+            seen_dedup_keys,
         )
         summaries.append(summary)
 

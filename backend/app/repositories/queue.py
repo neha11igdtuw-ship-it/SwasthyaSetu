@@ -211,7 +211,9 @@ class NotificationRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def list_for_user(self, recipient_user_id: uuid.UUID, limit: int = 50) -> list[Notification]:
+    async def list_for_user(
+        self, recipient_user_id: uuid.UUID, limit: int = 50
+    ) -> list[Notification]:
         stmt = (
             select(Notification)
             .where(Notification.recipient_user_id == recipient_user_id)

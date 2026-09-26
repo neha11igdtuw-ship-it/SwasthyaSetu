@@ -52,8 +52,13 @@ from app.models.user import User  # noqa: E402
 
 SOURCE_DATASET = "MOCK_DEMO_DOCTORS"
 DAY_NAME_TO_INDEX = {
-    "Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3,
-    "Friday": 4, "Saturday": 5, "Sunday": 6,
+    "Monday": 0,
+    "Tuesday": 1,
+    "Wednesday": 2,
+    "Thursday": 3,
+    "Friday": 4,
+    "Saturday": 5,
+    "Sunday": 6,
 }
 
 
@@ -74,7 +79,9 @@ class ImportSummary:
 
 
 async def _get_active_facilities(db) -> list[Facility]:
-    result = await db.execute(select(Facility).where(Facility.is_active.is_(True)).order_by(Facility.id))
+    result = await db.execute(
+        select(Facility).where(Facility.is_active.is_(True)).order_by(Facility.id)
+    )
     return list(result.scalars().all())
 
 
@@ -86,7 +93,7 @@ def _find_facility_for_speciality(facilities: list[Facility], speciality: str) -
     return None
 
 
-async def import_doctors(doctors_csv: Path, summary: ImportSummary) -> dict[str, "User"]:
+async def import_doctors(doctors_csv: Path, summary: ImportSummary) -> dict[str, User]:
     """Returns a map of source_record_id -> User for use by the
     availability import step."""
     doctor_user_by_source_id: dict[str, User] = {}
@@ -115,7 +122,9 @@ async def import_doctors(doctors_csv: Path, summary: ImportSummary) -> dict[str,
                 summary.doctors_skipped_no_facility += 1
                 continue
 
-            facility = _find_facility_for_speciality(facilities, row.get("preferred_speciality_keyword", speciality))
+            facility = _find_facility_for_speciality(
+                facilities, row.get("preferred_speciality_keyword", speciality)
+            )
             if facility:
                 summary.facility_capability_matches += 1
             else:
@@ -158,7 +167,9 @@ async def import_doctors(doctors_csv: Path, summary: ImportSummary) -> dict[str,
                 facility_id=facility.id,
                 speciality=speciality or None,
                 qualification=row.get("qualification", "").strip() or None,
-                experience_years=int(row["experience_years"]) if row.get("experience_years") else None,
+                experience_years=(
+                    int(row["experience_years"]) if row.get("experience_years") else None
+                ),
                 languages=row.get("languages", "").strip() or None,
                 status=row.get("status", "Active").strip(),
                 source_dataset=SOURCE_DATASET,
@@ -186,14 +197,16 @@ def _next_occurrence(day_of_week: str, start_hhmm: str) -> datetime:
     now = datetime.utcnow()
     hour, minute = (int(p) for p in start_hhmm.split(":"))
     days_ahead = (target_idx - now.weekday()) % 7
-    candidate = (now + timedelta(days=days_ahead)).replace(hour=hour, minute=minute, second=0, microsecond=0)
+    candidate = (now + timedelta(days=days_ahead)).replace(
+        hour=hour, minute=minute, second=0, microsecond=0
+    )
     if candidate <= now:
         candidate += timedelta(days=7)
     return candidate
 
 
 async def import_availability(
-    availability_csv: Path, doctor_user_by_source_id: dict[str, "User"], summary: ImportSummary
+    availability_csv: Path, doctor_user_by_source_id: dict[str, User], summary: ImportSummary
 ) -> None:
     async with AsyncSessionLocal() as db:
         # Re-fetch DoctorProfiles for facility-consistency checks.
@@ -269,17 +282,25 @@ def _print_summary(s: ImportSummary) -> None:
     print(f"Availability inserted          : {s.availability_inserted}")
     print(f"Availability updated           : {s.availability_updated}")
     print(f"Availability skipped (unknown doctor)      : {s.availability_skipped_unknown_doctor}")
-    print(f"Availability skipped (facility mismatch)   : {s.availability_skipped_facility_mismatch}")
+    print(
+        f"Availability skipped (facility mismatch)   : {s.availability_skipped_facility_mismatch}"
+    )
     print("=" * 70)
-    print("Reminder: all rows above are FICTIONAL MOCK DATA (source_dataset = "
-          f"'{SOURCE_DATASET}'), for development/testing only.\n")
+    print(
+        "Reminder: all rows above are FICTIONAL MOCK DATA (source_dataset = "
+        f"'{SOURCE_DATASET}'), for development/testing only.\n"
+    )
 
 
 async def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     default_dir = Path(__file__).resolve().parents[1] / "data"
     parser.add_argument("--doctors-csv", type=Path, default=default_dir / "mock_doctors.csv")
-    parser.add_argument("--availability-csv", type=Path, default=default_dir / "mock_doctor_availability.csv")
+    parser.add_argument(
+        "--availability-csv", type=Path, default=default_dir / "mock_doctor_availability.csv"
+    )
     args = parser.parse_args()
 
     if not args.doctors_csv.exists():
