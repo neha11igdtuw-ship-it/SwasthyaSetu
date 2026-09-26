@@ -16,7 +16,7 @@
     "dexie-react-hooks": "^1.1.7",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.479.0",
-    "next": "15.2.1",
+    "next": "^15.5.26",
     "pg": "^8.23.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
