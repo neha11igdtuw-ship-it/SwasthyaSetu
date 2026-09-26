@@ -22,15 +22,13 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.add_column("queue_entries", sa.Column("facility_id", app.models.types.GUID(), nullable=True))
     op.add_column("queue_entries", sa.Column("doctor_id", app.models.types.GUID(), nullable=True))
-    op.execute(
-        """
+    op.execute("""
         UPDATE queue_entries AS e
         SET facility_id = d.facility_id,
             doctor_id = d.doctor_id
         FROM queue_desks AS d
         WHERE e.queue_desk_id = d.id
-        """
-    )
+        """)
     op.alter_column("queue_entries", "facility_id", nullable=False)
     op.alter_column("queue_entries", "doctor_id", nullable=False)
     op.create_index(
