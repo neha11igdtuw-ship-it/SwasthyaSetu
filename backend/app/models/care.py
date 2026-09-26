@@ -5,7 +5,12 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
-from app.models.enums import AppointmentStatus, DiagnosticOrderStatus, PrescriptionStatus
+from app.models.enums import (
+    AppointmentMode,
+    AppointmentStatus,
+    DiagnosticOrderStatus,
+    PrescriptionStatus,
+)
 from app.models.mixins import SyncableMixin
 from app.models.types import GUID
 
@@ -25,15 +30,24 @@ class Appointment(SyncableMixin, Base):
     availability_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("doctor_availability.id"), nullable=True
     )
+    doctor_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID(), ForeignKey("users.id"), nullable=True, index=True
+    )
     scheduled_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     status: Mapped[AppointmentStatus] = mapped_column(
         Enum(AppointmentStatus, name="appointment_status_enum"),
         nullable=False,
         default=AppointmentStatus.SCHEDULED,
     )
+    mode: Mapped[AppointmentMode] = mapped_column(
+        Enum(AppointmentMode, name="appointment_mode_enum"),
+        nullable=False,
+        default=AppointmentMode.IN_PERSON,
+    )
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     patient = relationship("Patient")
+    doctor = relationship("User")
 
 
 class DiagnosticOrder(SyncableMixin, Base):

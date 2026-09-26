@@ -91,10 +91,16 @@ class RiskLevel(str, enum.Enum):
 
 
 class AppointmentStatus(str, enum.Enum):
+    REQUESTED = "REQUESTED"
     SCHEDULED = "SCHEDULED"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
     NO_SHOW = "NO_SHOW"
+
+
+class AppointmentMode(str, enum.Enum):
+    IN_PERSON = "IN_PERSON"
+    TELECONSULT = "TELECONSULT"
 
 
 class DiagnosticOrderStatus(str, enum.Enum):

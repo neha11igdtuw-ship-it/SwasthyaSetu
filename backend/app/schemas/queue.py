@@ -170,7 +170,8 @@ class FacilityQueueOverviewOut(BaseModel):
 
 class NotificationOut(ORMBase):
     id: uuid.UUID
-    patient_id: uuid.UUID
+    patient_id: uuid.UUID | None
+    recipient_user_id: uuid.UUID | None
     queue_entry_id: uuid.UUID | None
     channel: NotificationChannel
     title: str

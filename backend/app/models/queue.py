@@ -130,8 +130,13 @@ class Notification(Base):
     __tablename__ = "notifications"
 
     id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
-    patient_id: Mapped[uuid.UUID] = mapped_column(
-        GUID(), ForeignKey("patients.id"), nullable=False, index=True
+    patient_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID(), ForeignKey("patients.id"), nullable=True, index=True
+    )
+    # Staff recipient (e.g. a doctor being notified of an incoming
+    # teleconsultation request). Null for patient-only notifications.
+    recipient_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID(), ForeignKey("users.id"), nullable=True, index=True
     )
     queue_entry_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("queue_entries.id"), nullable=True

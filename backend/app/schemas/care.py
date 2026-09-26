@@ -3,7 +3,12 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.models.enums import AppointmentStatus, DiagnosticOrderStatus, PrescriptionStatus
+from app.models.enums import (
+    AppointmentMode,
+    AppointmentStatus,
+    DiagnosticOrderStatus,
+    PrescriptionStatus,
+)
 from app.schemas.common import ORMBase
 
 
@@ -12,6 +17,8 @@ class AppointmentCreate(BaseModel):
     facility_id: uuid.UUID | None = None
     referral_id: uuid.UUID | None = None
     availability_id: uuid.UUID | None = None
+    doctor_id: uuid.UUID | None = None
+    mode: AppointmentMode = AppointmentMode.IN_PERSON
     scheduled_at: datetime
     reason: str | None = None
     notes: str | None = None
@@ -36,11 +43,15 @@ class AppointmentOut(ORMBase):
     facility_id: uuid.UUID | None
     referral_id: uuid.UUID | None
     availability_id: uuid.UUID | None
+    doctor_id: uuid.UUID | None
     scheduled_at: datetime
     status: AppointmentStatus
+    mode: AppointmentMode
     reason: str | None
     version: int
     is_deleted: bool
+    patient_name: str | None = None
+    doctor_name: str | None = None
 
 
 class DiagnosticOrderCreate(BaseModel):

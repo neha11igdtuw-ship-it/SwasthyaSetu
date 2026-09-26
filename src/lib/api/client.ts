@@ -47,6 +47,7 @@ import type {
   AppointmentCreate,
   AppointmentOut,
   AppointmentStatusUpdate,
+  NotificationOut,
   NearbyInventoryOut,
   DiagnosticOrderCreate,
   DiagnosticReportCreate,
@@ -397,10 +398,16 @@ export const appointmentsApi = {
   me: () => request<AppointmentOut[]>("/appointments/me"),
   byFacility: (facilityId: string) =>
     request<AppointmentOut[]>(`/appointments/facility/${facilityId}`),
+  doctorMe: (history = false) =>
+    request<AppointmentOut[]>(`/appointments/doctor/me?history=${history}`),
   create: (data: AppointmentCreate) =>
     request<AppointmentOut>("/appointments", { method: "POST", body: data }),
   updateStatus: (id: string, data: AppointmentStatusUpdate) =>
     request<AppointmentOut>(`/appointments/${id}/status`, { method: "PATCH", body: data }),
+};
+
+export const notificationsApi = {
+  me: () => request<NotificationOut[]>("/notifications/me"),
 };
 
 

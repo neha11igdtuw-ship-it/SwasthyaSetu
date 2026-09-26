@@ -198,17 +198,23 @@ export interface MatchCandidate {
   reasons: string[];
 }
 
+export type AppointmentMode = "IN_PERSON" | "TELECONSULT";
+
 export interface AppointmentOut {
   id: string;
   patient_id: string;
   facility_id: string | null;
   referral_id: string | null;
   availability_id: string | null;
+  doctor_id: string | null;
   scheduled_at: string;
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+  status: "REQUESTED" | "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
+  mode: AppointmentMode;
   reason: string | null;
   version: number;
   is_deleted: boolean;
+  patient_name?: string | null;
+  doctor_name?: string | null;
 }
 
 export interface AppointmentCreate {
@@ -216,6 +222,8 @@ export interface AppointmentCreate {
   facility_id?: string | null;
   referral_id?: string | null;
   availability_id?: string | null;
+  doctor_id?: string | null;
+  mode?: AppointmentMode;
   scheduled_at: string;
   reason?: string | null;
   notes?: string | null;
@@ -225,6 +233,20 @@ export interface AppointmentStatusUpdate {
   base_version: number;
   status: AppointmentOut["status"];
   scheduled_at?: string | null;
+}
+
+export interface NotificationOut {
+  id: string;
+  patient_id: string | null;
+  recipient_user_id: string | null;
+  queue_entry_id: string | null;
+  channel: "IN_APP" | "SMS";
+  title: string;
+  body: string;
+  status: "PENDING" | "SENT" | "FAILED" | "READ";
+  scheduled_at: string;
+  sent_at: string | null;
+  error_message: string | null;
 }
 
  

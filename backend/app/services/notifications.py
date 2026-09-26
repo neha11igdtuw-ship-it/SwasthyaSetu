@@ -113,6 +113,49 @@ class NotificationService:
         await self.db.flush()
         return notification
 
+    async def notify_staff(
+        self,
+        *,
+        recipient_user_id: uuid.UUID,
+        title: str,
+        body: str,
+        patient_id: uuid.UUID | None = None,
+    ) -> Notification:
+        """In-app-only notification for a staff recipient (e.g. a doctor
+        being told about an incoming teleconsultation request). There is no
+        SMS/consent concept for staff, so this always delivers immediately
+        rather than going through the patient-oriented channel adapters."""
+        from datetime import datetime
+
+        notification = await self.repo.create(
+            patient_id=patient_id,
+            recipient_user_id=recipient_user_id,
+            channel=NotificationChannel.IN_APP,
+            title=title,
+            body=body,
+            status=NotificationStatus.SENT,
+            sent_at=datetime.utcnow(),
+        )
+        return notification
+
+    async def notify_teleconsult_requested(
+        self, *, doctor_id: uuid.UUID, patient: Patient, appointment_id: uuid.UUID
+    ) -> Notification:
+        return await self.notify_staff(
+            recipient_user_id=doctor_id,
+            patient_id=patient.id,
+            title="New teleconsultation request",
+            body=f"{patient.full_name} has requested a teleconsultation with you.",
+        )
+
+    async def notify_teleconsult_confirmed(self, patient: Patient) -> None:
+        await self.notify(
+            patient,
+            title="Teleconsultation confirmed",
+            body="Your teleconsultation request has been confirmed by the doctor. "
+            "You can join at the scheduled time.",
+        )
+
     async def notify_joined(
         self, patient: Patient, queue_entry_id: uuid.UUID, token_number: int
     ) -> None:

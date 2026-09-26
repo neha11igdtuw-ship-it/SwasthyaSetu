@@ -13,6 +13,7 @@ export interface NavItem {
   href: string;
   icon: React.ElementType;
   label?: string;
+  badge?: number;
 }
 
 export interface SidebarProps {
@@ -83,7 +84,12 @@ export function Sidebar({
                     : "text-slate-400 dark:text-slate-500"
                 }`}
               />
-              <span className="truncate">{label}</span>
+              <span className="truncate flex-1">{label}</span>
+              {!!item.badge && (
+                <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full bg-rose-600 text-white text-[10px] font-extrabold shrink-0">
+                  {item.badge > 99 ? "99+" : item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

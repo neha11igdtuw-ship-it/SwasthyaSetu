@@ -79,6 +79,8 @@ function isValidCoordinate(lat: unknown, lon: unknown): lat is number {
 
 function appointmentLabel(status: AppointmentOut["status"]): string {
   switch (status) {
+    case "REQUESTED":
+      return "Awaiting doctor";
     case "SCHEDULED":
       return "Requested";
     case "COMPLETED":
@@ -93,6 +95,7 @@ function appointmentLabel(status: AppointmentOut["status"]): string {
 }
 
 function nextActor(status: AppointmentOut["status"]): string {
+  if (status === "REQUESTED") return "Next: waiting for the doctor to accept your teleconsultation request.";
   if (status === "SCHEDULED") return "Next: facility or doctor will confirm this visit.";
   if (status === "COMPLETED") return "Next: follow any instructions from your doctor.";
   if (status === "CANCELLED") return "Next: you can book a new appointment.";
@@ -116,6 +119,7 @@ export default function PatientAppointmentsPage() {
   const [actingId, setActingId] = useState<string | null>(null);
 
   const [facilityId, setFacilityId] = useState("");
+  const [mode, setMode] = useState<"IN_PERSON" | "TELECONSULT">("IN_PERSON");
   const [reason, setReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [date, setDate] = useState("");
@@ -207,6 +211,7 @@ export default function PatientAppointmentsPage() {
 
   const resetWizard = () => {
     setStep(0);
+    setMode("IN_PERSON");
     setReason("");
     setCustomReason("");
     setDate("");
@@ -265,7 +270,10 @@ export default function PatientAppointmentsPage() {
     if (step === 0) return Boolean(facilityId);
     if (step === 1) return Boolean(finalReason);
     if (step === 2) return Boolean(date);
-    if (step === 3) return Boolean(selectedSlot);
+    if (step === 3) {
+      if (mode === "TELECONSULT") return Boolean(selectedSlot?.id);
+      return Boolean(selectedSlot);
+    }
     return true;
   })();
 
@@ -280,12 +288,17 @@ export default function PatientAppointmentsPage() {
         patient_id: patient.id,
         facility_id: facilityId || null,
         availability_id: selectedSlot.id || null,
+        mode,
         scheduled_at: selectedSlot.start_time,
         reason: finalReason || "Clinic visit",
         notes: notes.trim() || null,
       });
       closeForm();
-      setSuccess("Appointment requested. The facility will confirm the slot.");
+      setSuccess(
+        mode === "TELECONSULT"
+          ? "Teleconsultation requested. You'll be notified once the doctor accepts."
+          : "Appointment requested. The facility will confirm the slot."
+      );
       await load();
     } catch (err) {
       setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not book appointment.");
@@ -401,7 +414,7 @@ export default function PatientAppointmentsPage() {
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">{nextActor(app.status)}</p>
             <div className="flex flex-wrap items-center gap-4">
-              {app.status === "SCHEDULED" && (
+              {app.status === "SCHEDULED" && app.mode === "TELECONSULT" && (
                 <Link
                   href={`/patient/consult/${app.id}`}
                   className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold cursor-pointer"
@@ -410,7 +423,7 @@ export default function PatientAppointmentsPage() {
                   {t("joinVideoConsult")}
                 </Link>
               )}
-              {app.status === "SCHEDULED" && (
+              {(app.status === "SCHEDULED" || app.status === "REQUESTED") && (
                 <button
                   type="button"
                   disabled={actingId === app.id}
@@ -469,7 +482,39 @@ export default function PatientAppointmentsPage() {
             <form onSubmit={submit} className="space-y-4 text-xs">
               {/* Step 1: Facility */}
               {step === 0 && (
-                <div className="space-y-2">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="font-bold text-slate-700 dark:text-slate-300">Visit type</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setMode("IN_PERSON")}
+                        className={`flex-1 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
+                          mode === "IN_PERSON"
+                            ? "border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200"
+                            : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-teal-300"
+                        }`}
+                      >
+                        In-person visit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setMode("TELECONSULT")}
+                        className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
+                          mode === "TELECONSULT"
+                            ? "border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200"
+                            : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-teal-300"
+                        }`}
+                      >
+                        <Video className="w-3.5 h-3.5" /> Teleconsultation
+                      </button>
+                    </div>
+                    {mode === "TELECONSULT" && (
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        The doctor for your chosen time slot will be notified and must accept before you can join the video call.
+                      </p>
+                    )}
+                  </div>
                   <p className="font-bold text-slate-700 dark:text-slate-300">Choose a facility</p>
                   <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                     {facilitiesWithDistance.map(({ facility: f, km }) => (
@@ -553,9 +598,15 @@ export default function PatientAppointmentsPage() {
               {step === 3 && (
                 <div className="space-y-2">
                   <p className="font-bold text-slate-700 dark:text-slate-300">Available time slots</p>
-                  {usingSimulatedSlots && !slotsLoading && (
+                  {usingSimulatedSlots && !slotsLoading && mode !== "TELECONSULT" && (
                     <p className="text-[11px] text-amber-700 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 rounded-lg px-2.5 py-1.5">
                       No confirmed doctor schedule yet — pick a preferred time and the facility will confirm it.
+                    </p>
+                  )}
+                  {usingSimulatedSlots && !slotsLoading && mode === "TELECONSULT" && (
+                    <p className="text-[11px] text-amber-700 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                      This facility has no doctor availability slots open yet, so a teleconsultation can&apos;t be requested here.
+                      Try another facility or an in-person visit.
                     </p>
                   )}
                   {slotsLoading ? (
