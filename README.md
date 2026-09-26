@@ -2,6 +2,14 @@
 
 AI-powered, multilingual and offline-first continuity-of-care platform connecting patients, health workers and doctors in rural and underserved areas.
 
+## Live Demo
+
+**Prototype:** [swasthya-setu-iota.vercel.app](https://swasthya-setu-iota.vercel.app/)
+
+<img src="docs/live_link_qr.png" alt="Scan to open the live SwasthyaSetu prototype" width="180" />
+
+Scan the QR code above or click the link to open the live app.
+
 ## Core USP
 
 > We do not just connect rural patients to healthcare—we ensure they complete their entire care journey.
@@ -75,20 +83,46 @@ Follow-up and Escalation
 Care Completed
 ```
 
+## Tech Stack
+
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS
+- **Backend:** FastAPI (Python), SQLAlchemy, Alembic
+- **Database:** PostgreSQL
+- **Offline support:** Dexie.js / IndexedDB
+- **Deployment:** Vercel (frontend), Railway (backend)
+
 ## Architecture and schema source of truth
 
-Live data path: **Frontend (Next.js) → FastAPI (`backend/`) → Postgres**. The Next.js app does not connect to Postgres.
+Live data path: **Frontend (Next.js) → FastAPI (`backend/`) → Postgres**. The Next.js app does not connect to Postgres directly.
 
-The **authoritative database schema** is the SQLAlchemy models in `backend/app/models/` plus Alembic migrations in `backend/alembic/versions/`. Apply with:
+The **authoritative database schema** is the SQLAlchemy models in `backend/app/models/` plus Alembic migrations in `backend/alembic/versions/`.
+
+`database/DATABASE_DESIGN.md` is **reference documentation only** — it does not necessarily match the running backend; treat the SQLAlchemy models and migrations as the source of truth.
+
+## Getting Started (local development)
+
+### Backend
 
 ```bash
 cd backend
+python -m venv .venv
 source .venv/bin/activate
+pip install -e .
+cp .env.example .env   # fill in your local DB credentials
 alembic upgrade head
 python -m seed.seed_data
+uvicorn app.main:app --reload
 ```
 
-`database/schema.sql`, `database/seed.sql`, and `database/DATABASE_DESIGN.md` are **legacy/reference only**. They do not match the running backend and must not be applied to the live database.
+### Frontend
+
+```bash
+npm install
+cp .env.local.example .env.local   # if present; otherwise set NEXT_PUBLIC_API_URL to your backend
+npm run dev
+```
+
+The app runs at `http://localhost:3000`, the API at `http://localhost:8000`.
 
 ### Demo story (seeded)
 
@@ -97,6 +131,7 @@ python -m seed.seed_data
 | Patient | Priya Sharma, Rampur Village, pregnancy week 28, high-risk maternal care | `patient@swasthyasetu.dev` / `Patient@123` |
 | Health worker | ANM Sunita Devi | `worker@swasthyasetu.dev` / `ChangeMe123!` |
 | Doctor | Dr. Meera Singh | `doctor@swasthyasetu.dev` / `ChangeMe123!` |
+| Facility admin | District Civil Hospital & Maternal Care Centre | `admin@swasthyasetu.dev` / `ChangeMe123!` |
 
 ## Queue management (OPD queues)
 
@@ -147,4 +182,3 @@ OPD token is approaching at District Hospital, Cardiology. Please reach the coun
 small, stable JSON shapes designed for 20–30s client-side polling (see the `POLL_INTERVAL_MS` constants in
 the frontend components) — no WebSocket is implemented yet, but the response shapes don't need to change
 to add one later.
-| Facility | District Civil Hospital & Maternal Care Centre | `admin@swasthyasetu.dev` / `ChangeMe123!` |
