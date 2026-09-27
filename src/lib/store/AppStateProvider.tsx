@@ -104,7 +104,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     essentialMeds: "In Stock",
   });
 
-  const [hwFollowUps, setHwFollowUps] = useState<HWFollowUp[]>(hwFollowUpsList);
+  const [hwFollowUps] = useState<HWFollowUp[]>(hwFollowUpsList);
 
   // ---- Real logged-in patient's OWN in-session screening result.
   // Starts null for every account — no seeded/default patient, maternal or
