@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState, useRef } from "react";
+import React, { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
@@ -10,6 +10,9 @@ import { useAppState } from "@/lib/store/AppStateProvider";
 import { useSpeechRecognition } from "@/lib/speech/useSpeechRecognition";
 import { resolveDuration } from "@/lib/symptoms/duration";
 import { assessMaternalRisk, detectSymptomsFromText } from "@/lib/symptoms/assessRisk";
+import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { isMaternalCarePathway } from "@/lib/carePathway";
+import type { PatientOut } from "@/lib/api/types";
 import { Mic, MicOff, Volume2, ArrowRight, AlertTriangle, Plus, X, Radio } from "lucide-react";
 
 function PatientSymptomsContent() {
@@ -18,15 +21,38 @@ function PatientSymptomsContent() {
   const { t, language } = useLanguage();
   const { updatePatientScreening } = useAppState();
 
+  // The AUTHENTICATED patient's own record — used both to gate
+  // pregnancy-specific fields to the maternal-care pathway (requirement:
+  // never show pregnancy info to non-maternal patients) and to submit the
+  // screening against this patient's real id (never a hardcoded/demo id).
+  const [ownPatient, setOwnPatient] = useState<PatientOut | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    loadOwnPatient().then((p) => {
+      if (!cancelled) setOwnPatient(p);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const isMaternal = isMaternalCarePathway(ownPatient?.care_pathway);
+
   // Read voice assistant URL parameters
   const initialTranscript = searchParams.get("transcript") || "";
   const detected = detectSymptomsFromText(initialTranscript);
   const initialHeadache = searchParams.get("headache") === "yes" || Boolean(detected.headache);
 
   // Form state — start from normal vitals; do not pre-tick danger signs.
-  const [pregnancyWeek, setPregnancyWeek] = useState<number>(28);
+  // Pregnancy week has no fake default (was hardcoded to 28) — it only
+  // has meaning at all for the maternal-care pathway, and even then it is
+  // seeded from this patient's own real record once loaded.
+  const [pregnancyWeek, setPregnancyWeek] = useState<number | "">("");
   const [systolicBp, setSystolicBp] = useState<string>("120");
   const [diastolicBp, setDiastolicBp] = useState<string>("80");
+
+  useEffect(() => {
+    if (ownPatient?.pregnancy_week) setPregnancyWeek(ownPatient.pregnancy_week);
+  }, [ownPatient?.pregnancy_week]);
 
   const [symptoms, setSymptoms] = useState({
     bleeding: Boolean(detected.bleeding),
@@ -104,16 +130,24 @@ function PatientSymptomsContent() {
     if (symptoms.reducedFetalMovement) activeSymptomsList.push("Reduced Fetal Movement");
     activeSymptomsList.push(...customSymptoms);
 
-    updatePatientScreening("P-7821", {
+    // Use the real, authenticated patient's own id — never a hardcoded
+    // demo id. If the record hasn't finished loading yet (very unlikely
+    // by the time someone submits this form), fall back to a placeholder
+    // that intentionally will not match any real or demo patient row.
+    const ownPatientId = ownPatient?.id ?? "unknown-patient";
+    const weekForSubmit = isMaternal && pregnancyWeek ? Number(pregnancyWeek) : undefined;
+
+    updatePatientScreening(ownPatientId, {
       riskLevel,
       bp: `${systolicBp}/${diastolicBp}`,
-      week: pregnancyWeek,
+      week: weekForSubmit,
       symptoms: activeSymptomsList,
+      carePathway: ownPatient?.care_pathway ?? undefined,
     });
 
     const query = new URLSearchParams({
       risk: riskLevel,
-      week: pregnancyWeek.toString(),
+      week: weekForSubmit ? weekForSubmit.toString() : "",
       bp: `${systolicBp}/${diastolicBp}`,
       headache: symptoms.headache ? "yes" : "no",
       vision: symptoms.blurredVision ? "yes" : "no",
@@ -133,7 +167,7 @@ function PatientSymptomsContent() {
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
         title="tellSymptomsVoiceTextTitle"
-        subtitle="maternalChecklistSubtitle"
+        subtitle={isMaternal ? "maternalChecklistSubtitle" : "symptomChecklistSubtitle"}
         roleBadge={<RoleBadge role="Patient" />}
       />
 
@@ -192,23 +226,27 @@ function PatientSymptomsContent() {
         {/* Basic Vitals & Pregnancy Week Inputs */}
         <div className="space-y-4">
           <h3 className="font-extrabold text-slate-900 dark:text-white text-base border-b border-slate-100 dark:border-slate-700 pb-2">
-            {t("vitalsPregnancyMonth")}
+            {isMaternal ? t("vitalsPregnancyMonth") : t("basicVitalsLabel")}
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div>
-              <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                {t("pregnancyWeekRange")}
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="42"
-                value={pregnancyWeek}
-                onChange={(e) => setPregnancyWeek(parseInt(e.target.value) || 28)}
-                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
-              />
-            </div>
+          <div className={`grid grid-cols-1 gap-4 text-xs ${isMaternal ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+            {/* Pregnancy week only applies to — and is only shown for — the
+                maternal-care pathway. Other pathways never see this field. */}
+            {isMaternal && (
+              <div>
+                <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  {t("pregnancyWeekRange")}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="42"
+                  value={pregnancyWeek}
+                  onChange={(e) => setPregnancyWeek(e.target.value ? parseInt(e.target.value, 10) : "")}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
+                />
+              </div>
+            )}
 
             <div>
               <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
@@ -296,15 +334,19 @@ function PatientSymptomsContent() {
               <span className="font-semibold text-rose-700">{t("vaginalBleedingDischarge")}</span>
             </label>
 
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={symptoms.reducedFetalMovement}
-                onChange={() => handleCheckboxChange("reducedFetalMovement")}
-                className="w-4 h-4 accent-teal-700"
-              />
-              <span className="font-semibold text-rose-700">{t("reducedFetalMovement")}</span>
-            </label>
+            {/* Fetal movement is a pregnancy-specific danger sign — only
+                relevant, and only shown, on the maternal-care pathway. */}
+            {isMaternal && (
+              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={symptoms.reducedFetalMovement}
+                  onChange={() => handleCheckboxChange("reducedFetalMovement")}
+                  className="w-4 h-4 accent-teal-700"
+                />
+                <span className="font-semibold text-rose-700">{t("reducedFetalMovement")}</span>
+              </label>
+            )}
           </div>
 
           {/* Custom symptom entries */}

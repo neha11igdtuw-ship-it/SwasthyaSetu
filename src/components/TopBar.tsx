@@ -226,9 +226,9 @@ export function TopBar({
           ) : showDashboardShortcut ? (
             <div className="flex items-center gap-2">
               <UserProfileAvatarMenu
-                userName={localizedUserName || "Priya Sharma"}
+                userName={localizedUserName || "Your account"}
                 role={role || "Patient"}
-                facilityOrLocation={localizedLocation || "Rampur Village"}
+                facilityOrLocation={localizedLocation || ""}
                 dashboardHref={dashboardHref}
                 onLogout={handleLogout}
               />

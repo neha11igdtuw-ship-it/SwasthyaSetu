@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { encountersApi, patientsApi, ApiError } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { isMaternalCarePathway } from "@/lib/carePathway";
 import type { EncounterOut, PatientOut, VitalOut } from "@/lib/api/types";
 import { Clock, Loader2, LocateFixed, Pencil, Plus, X } from "lucide-react";
 
@@ -223,13 +224,18 @@ export default function PatientRecordsPage() {
 
   const displayAge = ageFromDob(patient?.date_of_birth ?? null);
   const latestVital = encounters.map((e) => vitalsByEncounter[e.id]).find(Boolean) || null;
-  const maternal = Boolean(patient?.pregnancy_week || (patient?.care_pathway || "").toLowerCase().includes("maternal"));
+  const maternal = isMaternalCarePathway(patient?.care_pathway);
+  const recordsSubtitle = !patient?.care_pathway
+    ? "Complete your care setup to personalize your health journey."
+    : maternal
+    ? "Shared antenatal health details & health visit timeline"
+    : "Your shared health details & visit timeline";
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <PageHeader
         title="recordsTitle"
-        subtitle="recordsSubtitle"
+        subtitle={recordsSubtitle}
         roleBadge={<RoleBadge role="Patient" />}
         action={
           <button
@@ -277,10 +283,21 @@ export default function PatientRecordsPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-              <span className="text-[10px] font-bold text-slate-400 block">{t("pregnancyWeek")}</span>
-              <span className="text-sm font-extrabold text-slate-900 dark:text-white">
-                {patient.pregnancy_week ? `Week ${patient.pregnancy_week}` : "—"}
-              </span>
+              {maternal ? (
+                <>
+                  <span className="text-[10px] font-bold text-slate-400 block">{t("pregnancyWeek")}</span>
+                  <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                    {patient.pregnancy_week ? `Week ${patient.pregnancy_week}` : "—"}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[10px] font-bold text-slate-400 block">Care pathway</span>
+                  <span className="text-sm font-extrabold text-slate-900 dark:text-white">
+                    {patient.care_pathway || "Not set"}
+                  </span>
+                </>
+              )}
             </div>
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
               <span className="text-[10px] font-bold text-slate-400 block">{t("bloodPressureReading")}</span>
@@ -296,7 +313,9 @@ export default function PatientRecordsPage() {
             </div>
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
               <span className="text-[10px] font-bold text-slate-400 block">Emergency contact</span>
-              <span className="text-xs font-bold text-teal-800">{patient.emergency_contact || t("sunitaDeviWorker")}</span>
+              <span className="text-xs font-bold text-teal-800">
+                {patient.emergency_contact || "No emergency contact added"}
+              </span>
             </div>
           </div>
           <p className="text-[11px] text-slate-500">

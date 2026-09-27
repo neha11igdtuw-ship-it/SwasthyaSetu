@@ -115,11 +115,16 @@ async def test_resend_verification_returns_202_regardless_of_email_existing(clie
     assert "message" in body
 
 
-async def test_login_before_verification_returns_email_not_verified(client):
-    await _register(client, "unverified@example.com")
+async def test_login_immediately_after_register_succeeds(client):
+    """Signup no longer gates login behind an email-verification step: a
+    freshly registered account can log in right away."""
+    body = await _register(client, "no-verification-needed@example.com")
+    assert body["is_verified"] is True
+
     resp = await client.post(
         "/api/v1/auth/login",
-        json={"email": "unverified@example.com", "password": "StrongPass123!"},
+        json={"email": "no-verification-needed@example.com", "password": "StrongPass123!"},
     )
-    assert resp.status_code == 403
-    assert resp.json()["error"]["code"] == "EMAIL_NOT_VERIFIED"
+    assert resp.status_code == 200, resp.text
+    tokens = resp.json()
+    assert "access_token" in tokens and "refresh_token" in tokens

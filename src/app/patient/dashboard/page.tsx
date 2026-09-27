@@ -9,6 +9,7 @@ import {
   referralsApi,
 } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { isMaternalCarePathway } from "@/lib/carePathway";
 import type { CareGapOut, PatientOut, ReferralOut } from "@/lib/api/types";
 import { PatientHeader } from "@/components/patient/PatientHeader";
 import { LastSyncedBadge } from "@/components/patient/LastSyncedBadge";
@@ -16,7 +17,7 @@ import { CareStatusCard } from "@/components/care/CareStatusCard";
 import { NextActionCard } from "@/components/care/NextActionCard";
 import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
 import { QuickActionCard } from "@/components/patient/QuickActionCard";
-import { EmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
+import { EmergencyHelpCard, GeneralEmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
 import { QueueCard } from "@/components/patient/QueueCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
@@ -33,6 +34,11 @@ import {
   Sparkles,
 } from "lucide-react";
 
+// Generic community ASHA/health-worker support line shown only on the
+// maternal-care pathway when this patient hasn't set a personal emergency
+// contact — never used to label or represent a non-maternal patient.
+const FALLBACK_ASHA_PHONE = "9876500111";
+
 export default function PatientDashboardPage() {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
@@ -40,7 +46,9 @@ export default function PatientDashboardPage() {
   const [patient, setPatient] = useState<PatientOut | null>(null);
   const [referrals, setReferrals] = useState<ReferralOut[]>([]);
   const [careGaps, setCareGaps] = useState<CareGapOut[]>([]);
-  const [facilityName, setFacilityName] = useState("District Civil Hospital & Maternal Care Centre");
+  // No facility is assumed until this patient actually has an active
+  // referral that points to one — never a hardcoded maternal facility.
+  const [facilityName, setFacilityName] = useState<string | null>(null);
   const [nextVisit, setNextVisit] = useState<string | null>(null);
 
   useEffect(() => {
@@ -160,7 +168,7 @@ export default function PatientDashboardPage() {
         <div className="pt-2 space-y-3">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-700 dark:text-slate-300">
-              Hospital Transfer Stepper ({facilityName}):
+              Hospital Transfer Stepper{facilityName ? ` (${facilityName})` : ""}:
             </span>
             <Link href="/patient/referrals" className="text-teal-700 font-extrabold hover:underline">
               View Care Request Details
@@ -181,12 +189,10 @@ export default function PatientDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <CareStatusCard
           label={patient?.care_pathway || "General Primary Care"}
-          riskStatus={patient?.pregnancy_week ? "High Risk" : "Low Risk"}
+          riskStatus={careGaps.length > 0 ? "Watch / Moderate" : "Low Risk"}
           reasons={
             careGaps.length
               ? careGaps.map((g) => g.description || g.gap_type)
-              : patient?.pregnancy_week
-              ? ["High-risk pregnancy follow-up"]
               : ["No open care gaps yet. A health worker can add screening and vitals."]
           }
           disclaimer={t("aiPreliminaryNotice")}
@@ -197,14 +203,14 @@ export default function PatientDashboardPage() {
             nextVisit
               ? `Next visit: ${nextVisit}`
               : activeReferral
-              ? "Visit District Hospital for specialist checkup"
+              ? `Visit ${facilityName || "your referred facility"} for a specialist checkup`
               : "Ask your health worker to complete a health check"
           }
-          recommendedFacility={facilityName}
-          facilityType="District Hospital"
-          distance="18 km"
-          availableServices={["Obstetrics", "Maternal ICU"]}
-          doctorAvailability="Dr. Meera Singh"
+          recommendedFacility={facilityName || "No facility recommended yet"}
+          facilityType={activeReferral ? "Referred Facility" : "Not assigned yet"}
+          distance={activeReferral ? "" : "—"}
+          availableServices={[]}
+          doctorAvailability={activeReferral ? "Contact facility for availability" : "Not scheduled yet"}
           lastUpdated="Live"
           isLive={true}
         />
@@ -242,7 +248,11 @@ export default function PatientDashboardPage() {
         </div>
       </div>
 
-      <EmergencyHelpCard ashaPhone="9876500111" />
+      {isMaternalCarePathway(patient?.care_pathway) ? (
+        <EmergencyHelpCard ashaPhone={patient?.emergency_contact || FALLBACK_ASHA_PHONE} />
+      ) : (
+        <GeneralEmergencyHelpCard emergencyContact={patient?.emergency_contact || null} />
+      )}
     </div>
   );
 }

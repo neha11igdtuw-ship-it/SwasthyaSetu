@@ -380,7 +380,7 @@ export default function PatientAppointmentsPage() {
                     {t("appointmentId")}: {app.id.slice(0, 8)}
                   </span>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
-                    {app.reason || t("maternalCare")}
+                    {app.reason || "General appointment"}
                   </h4>
                 </div>
               </div>
