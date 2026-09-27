@@ -1,4 +1,5 @@
 import { NearbyFacility, priyaPatientMock } from "./mockData";
+import { isMaternalCarePathway } from "./carePathway";
 
 export interface MatchingInput {
   riskLevel?: string;
@@ -21,9 +22,16 @@ export interface MatchResult {
  */
 export function matchReferralFacility(
   input: MatchingInput,
+  // NOTE: this facility list is a generic demo hospital directory (names,
+  // distances, services) used only as a last-resort fallback when no real
+  // facility data is available. It carries no per-patient identity or
+  // vitals, so it is safe to reuse here as a fallback for any patient.
   facilitiesList: NearbyFacility[] = priyaPatientMock.nearbyFacilities
 ): MatchResult {
-  const { riskLevel = "High Risk", systolicBp = 145, diastolicBp = 92, symptoms = [], carePathway = "Maternal Care" } = input;
+  // Neutral defaults: absent real input, assume routine/low-risk rather
+  // than defaulting every unspecified caller to a high-risk maternal
+  // profile (145/92 mmHg, "Maternal Care") as before.
+  const { riskLevel = "Low Risk", systolicBp = 120, diastolicBp = 80, symptoms = [], carePathway } = input;
 
   const isHighBp = systolicBp >= 140 || diastolicBp >= 90;
   const hasDangerSigns = symptoms.some((s) => {
@@ -41,10 +49,9 @@ export function matchReferralFacility(
   if (isHighRisk) {
     targetType = "District Hospital";
     suggestedLevel = "District Hospital";
-    matchReason =
-      carePathway === "Maternal Care"
-        ? "High-risk pregnancy vitals (BP >= 140/90 or pre-eclampsia signs) require 24/7 specialist obstetrician care, high-risk ward, and blood bank availability."
-        : "High-risk clinical condition requiring specialist evaluation and hospital admission capability.";
+    matchReason = isMaternalCarePathway(carePathway)
+      ? "High-risk pregnancy vitals (BP >= 140/90 or pre-eclampsia signs) require 24/7 specialist obstetrician care, high-risk ward, and blood bank availability."
+      : "High-risk clinical condition requiring specialist evaluation and hospital admission capability.";
   } else if (isModerateRisk) {
     targetType = "Community Health Centre";
     suggestedLevel = "Community Health Centre";

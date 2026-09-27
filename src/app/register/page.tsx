@@ -2,26 +2,30 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { authApi, ApiError } from "@/lib/api/client";
 import type { Role } from "@/lib/api/types";
 import { Loader2 } from "lucide-react";
-import {
-  User,
-  HeartPulse,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Mail,
-  Send,
-} from "lucide-react";
+import { User, HeartPulse, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 type RoleType = "patient" | "hw";
 
 const ROLE_TO_API: Record<RoleType, Role> = {
   patient: "PATIENT",
   hw: "HEALTH_WORKER",
+};
+
+// Where each self-registrable role lands right after signup — mirrors the
+// mapping the login page uses once a session is established.
+const ROLE_HOME: Record<Role, string> = {
+  PATIENT: "/patient/dashboard",
+  HEALTH_WORKER: "/hw/dashboard",
+  DOCTOR: "/doctor/dashboard",
+  FACILITY_STAFF: "/facility/dashboard",
+  FACILITY_ADMIN: "/facility/dashboard",
+  ADMIN: "/facility/dashboard",
 };
 
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -49,6 +53,7 @@ type FieldErrors = Record<string, string>;
 
 export default function RegisterPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<RoleType>("patient");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -65,9 +70,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
-  const [resendState, setResendState] = useState<"idle" | "sending" | "cooldown">("idle");
-  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   const roles = [
     { id: "patient" as RoleType, titleKey: "patient", descKey: "patientSpaceDesc", icon: User },
@@ -117,7 +119,12 @@ export default function RegisterPage() {
           landmark: landmark || null,
         },
       });
-      setRegisteredEmail(email);
+      // Signup succeeds without an email-verification step, so log the new
+      // user in immediately and send them straight into their dashboard —
+      // the same session-establishing flow the login page uses.
+      await authApi.login({ email, password });
+      const me = await authApi.me();
+      router.push(ROLE_HOME[me.role] ?? "/patient/dashboard");
     } catch (err) {
       if (err instanceof ApiError) {
         const details = err.details as { loc?: string[] }[] | undefined;
@@ -137,61 +144,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
-  const handleResend = async () => {
-    if (!registeredEmail || resendState !== "idle") return;
-    setResendState("sending");
-    setResendMessage(null);
-    try {
-      await authApi.resendVerification({ email: registeredEmail });
-      setResendMessage("If your account needs verification, a new link has been sent.");
-    } catch {
-      setResendMessage("Could not resend right now. Please try again shortly.");
-    } finally {
-      setResendState("cooldown");
-      setTimeout(() => setResendState("idle"), 60_000);
-    }
-  };
-
-  if (registeredEmail) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
-        <TopBar />
-        <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-8 flex flex-col justify-center my-6">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-700 shadow-md space-y-6 text-center">
-            <Mail className="w-10 h-10 text-teal-700 mx-auto" />
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-              Check your email
-            </h1>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              We&apos;ve sent a verification link to <strong>{registeredEmail}</strong>. Click it
-              to activate your account, then come back to sign in.
-            </p>
-            {resendMessage && (
-              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">
-                {resendMessage}
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={resendState !== "idle"}
-              className="w-full py-3 px-6 rounded-2xl bg-slate-100 dark:bg-slate-700 disabled:opacity-60 text-slate-800 dark:text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-              {resendState === "sending" ? "Sending…" : "Resend verification link"}
-            </button>
-            <Link
-              href="/login"
-              className="block text-teal-800 dark:text-teal-300 font-semibold text-sm hover:underline"
-            >
-              Go to sign in
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">

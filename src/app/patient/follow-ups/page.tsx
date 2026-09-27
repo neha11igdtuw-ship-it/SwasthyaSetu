@@ -1,20 +1,70 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { FollowUpCard } from "@/components/care/FollowUpCard";
-import { priyaPatientMock, FollowUpItem } from "@/lib/mockData";
+import type { FollowUpItem } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
-import { HelpCircle } from "lucide-react";
+import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { careGapsApi } from "@/lib/api/client";
+import type { CareGapOut } from "@/lib/api/types";
+import { HelpCircle, Loader2, CalendarCheck } from "lucide-react";
+
+// Map a real backend CareGapOut (the actual "next visit / follow-up due"
+// record for THIS patient) onto the shape FollowUpCard already knows how
+// to render. No mock/seed data involved.
+function toFollowUpItem(gap: CareGapOut): FollowUpItem {
+  const typeMap: Record<string, FollowUpItem["type"]> = {
+    MEDICINE: "Medicine",
+    DIAGNOSTIC: "Diagnostic",
+    ASHA_VISIT: "ASHA Visit",
+    DOCTOR_VISIT: "Doctor Visit",
+  };
+
+  return {
+    id: gap.id,
+    title: gap.description || gap.gap_type.replace(/_/g, " "),
+    type: typeMap[gap.gap_type.toUpperCase()] || "Doctor Visit",
+    dueDate: gap.due_date || "Not scheduled",
+    status: gap.status === "CLOSED" ? "Completed" : "Due",
+    instructions: gap.description || "",
+  };
+}
 
 export default function PatientFollowUpsPage() {
   const { t } = useLanguage();
-  const [followUps, setFollowUps] = useState<FollowUpItem[]>(
-    priyaPatientMock.followUps
-  );
+  const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [needHelp, setNeedHelp] = useState(false);
 
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Real, per-patient care gaps for the AUTHENTICATED patient's own
+      // record only (never another account's, never seeded demo data).
+      const me = await loadOwnPatient();
+      if (!me) {
+        setFollowUps([]);
+        return;
+      }
+      const gaps = await careGapsApi.listForPatient(me.id);
+      setFollowUps(gaps.map(toFollowUpItem));
+    } catch (err) {
+      console.warn("patient/follow-ups: failed to load real follow-ups", err);
+      setFollowUps([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  // NOTE: there is currently no backend endpoint to mark a care gap as
+  // closed from the patient side, so this only updates local UI state
+  // (optimistic) — it does not fabricate or persist fake completion data.
   const handleMarkCompleted = (id: string) => {
     setFollowUps((prev) =>
       prev.map((fu) => (fu.id === id ? { ...fu, status: "Completed" } : fu))
@@ -58,13 +108,30 @@ export default function PatientFollowUpsPage() {
           </button>
         </div>
 
-        {followUps.map((item) => (
-          <FollowUpCard
-            key={item.id}
-            item={item}
-            onMarkCompleted={handleMarkCompleted}
-          />
-        ))}
+        {loading ? (
+          <div className="flex items-center justify-center py-14 text-slate-500 gap-2 text-sm">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Loading your follow-ups…
+          </div>
+        ) : followUps.length === 0 ? (
+          <div className="p-8 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center space-y-2">
+            <CalendarCheck className="w-8 h-8 text-slate-300 mx-auto" />
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+              No follow-ups scheduled
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              Any medicine refills, tests, or visits a health worker schedules for you will show up here.
+            </p>
+          </div>
+        ) : (
+          followUps.map((item) => (
+            <FollowUpCard
+              key={item.id}
+              item={item}
+              onMarkCompleted={handleMarkCompleted}
+            />
+          ))
+        )}
       </div>
     </div>
   );

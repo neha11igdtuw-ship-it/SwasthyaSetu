@@ -1,9 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RequireAuth } from "@/components/RequireAuth";
 import { NavItem } from "@/components/Sidebar";
+import { CarePathwayOnboarding } from "@/components/patient/CarePathwayOnboarding";
+import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { isMaternalCarePathway } from "@/lib/carePathway";
+import type { PatientOut } from "@/lib/api/types";
 import {
   LayoutDashboard,
   Mic,
@@ -16,6 +20,7 @@ import {
   AlertOctagon,
   FileCheck,
   Building2,
+  Loader2,
 } from "lucide-react";
 
 const patientNavItems: NavItem[] = [
@@ -38,16 +43,63 @@ export default function PatientLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Loaded from the AUTHENTICATED patient's own backend record
+  // (/auth/me + /patients/me) — never from mock/seed data, and never
+  // shared across accounts. `patient` starts as `null` and stays that way
+  // until the real record has loaded, so no other patient's name,
+  // location, or pregnancy data can ever flash on screen first.
+  const [patient, setPatient] = useState<PatientOut | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refreshPatient = useCallback(async () => {
+    const me = await loadOwnPatient();
+    setPatient(me);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    refreshPatient();
+  }, [refreshPatient]);
+
+  const location = patient
+    ? [
+        patient.village || null,
+        isMaternalCarePathway(patient.care_pathway) && patient.pregnancy_week
+          ? `Pregnancy W${patient.pregnancy_week}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" • ") || "Location not set"
+    : "Location not set";
+
+  // Onboarding gate: a brand-new patient record has care_pathway = null
+  // until they explicitly choose why they're here. Nothing downstream
+  // (dashboard, screening, referrals, medicines, etc.) should render for
+  // this account until that choice is saved to their real record.
+  const needsOnboarding = !loading && patient !== null && !patient.care_pathway;
+
   return (
     <RequireAuth>
-    <AppShell
-      role="Patient"
-      userName="Priya Sharma"
-      facilityOrLocation="Rampur Village • Pregnancy W28"
-      navItems={patientNavItems}
-    >
-      {children}
-    </AppShell>
+      <AppShell
+        role="Patient"
+        userName={patient?.full_name || "Your account"}
+        facilityOrLocation={location}
+        navItems={patientNavItems}
+      >
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-slate-500 gap-2 text-sm">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Loading your account…
+          </div>
+        ) : needsOnboarding && patient ? (
+          <CarePathwayOnboarding
+            patient={patient}
+            onSelected={(updated) => setPatient(updated)}
+          />
+        ) : (
+          children
+        )}
+      </AppShell>
     </RequireAuth>
   );
 }
