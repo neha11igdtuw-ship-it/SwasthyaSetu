@@ -50,6 +50,20 @@ export default function PatientFacilitiesPage() {
   const liveFacilitiesLoadedRef = useRef(false);
 
   function osmFacilityToNearby(f: OsmFacilityOut, idx: number): NearbyFacility {
+    const onDutyDoctors = (f.doctors || []).filter((d) => d.on_duty_now);
+    const doctorAvailability =
+      onDutyDoctors.length > 0
+        ? onDutyDoctors
+            .map((d) => `${d.name} (${d.specialization}) — On duty now, ${d.hours}`)
+            .join("; ")
+        : f.doctors && f.doctors.length > 0
+        ? `No doctor on duty right now. Next available: ${f.doctors[0].name} (${f.doctors[0].specialization}), ${f.doctors[0].hours}`
+        : "";
+
+    const checkedAt = f.checked_at
+      ? new Date(f.checked_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "";
+
     return {
       id: `osm-${idx}-${f.latitude}-${f.longitude}`,
       name: f.name,
@@ -57,10 +71,10 @@ export default function PatientFacilitiesPage() {
       distance: "",
       latitude: f.latitude,
       longitude: f.longitude,
-      availableServices: [],
-      doctorAvailability: "",
-      status: "Available",
-      lastUpdated: "",
+      availableServices: f.services_available || [],
+      doctorAvailability,
+      status: f.doctor_status === "Available" ? "Available" : "Unavailable",
+      lastUpdated: checkedAt ? `Checked at ${checkedAt}` : "",
       contactPhone: f.phone || "",
       address: f.address || "",
     };
@@ -78,6 +92,16 @@ export default function PatientFacilitiesPage() {
         if (apiFacs && apiFacs.length > 0) {
           const mapped: NearbyFacility[] = apiFacs.map((f, idx) => {
             const matchMock = priyaPatientMock.nearbyFacilities[idx];
+            const onDutyDoctors = (f.doctors || []).filter((d) => d.on_duty_now);
+            const doctorAvailability =
+              onDutyDoctors.length > 0
+                ? onDutyDoctors
+                    .map((d) => `${d.name} (${d.specialization}) — On duty now, ${d.hours}`)
+                    .join("; ")
+                : f.doctors && f.doctors.length > 0
+                ? `No doctor on duty right now. Next available: ${f.doctors[0].name} (${f.doctors[0].specialization}), ${f.doctors[0].hours}`
+                : matchMock?.doctorAvailability || "";
+
             return {
               id: f.id,
               name: f.name,
@@ -85,14 +109,15 @@ export default function PatientFacilitiesPage() {
               distance: matchMock ? matchMock.distance : "3.5 km",
               latitude: f.latitude ?? matchMock?.latitude ?? (26.98 - idx * 0.05),
               longitude: f.longitude ?? matchMock?.longitude ?? (81.20 - idx * 0.05),
-              availableServices: matchMock
-                ? matchMock.availableServices
-                : ["Medical Officer", "Emergency Care", "Diagnostics"],
-              doctorAvailability: matchMock
-                ? matchMock.doctorAvailability
-                : "Medical Officer on duty",
-              status: "Available",
-              lastUpdated: "Today at 9:00 AM",
+              availableServices:
+                f.services_available && f.services_available.length > 0
+                  ? f.services_available
+                  : matchMock
+                  ? matchMock.availableServices
+                  : ["Medical Officer", "Emergency Care", "Diagnostics"],
+              doctorAvailability,
+              status: f.doctor_status === "Available" ? "Available" : "Unavailable",
+              lastUpdated: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
               contactPhone: "+91 512 234 5678",
               address: matchMock ? matchMock.address : `${f.name}, Kanpur Dehat, UP`,
             };
