@@ -240,8 +240,8 @@ export const authApi = {
     setTokens(tokens);
     return tokens;
   },
-  // Registration no longer auto-logs the caller in — the account starts
-  // unverified and must confirm its email first (see /verify-email).
+  // Accounts are active immediately — no email-verification step. Callers
+  // (see the register page) follow this with login() to establish a session.
   register: (data: UserRegister) =>
     request<UserOut>("/auth/register", { method: "POST", body: data, auth: false }),
   verifyEmail: (data: VerifyEmailRequest) =>

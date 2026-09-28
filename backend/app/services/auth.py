@@ -17,7 +17,6 @@ from app.models.user import User
 from app.repositories.patients import PatientRepository
 from app.repositories.users import UserRepository
 from app.schemas.auth import AdminCreateUser, TokenPair, UserRegister
-from app.services.verification import VerificationService
 
 # A precomputed Argon2 hash of a random value. Used to pay the same hashing
 # cost on an unknown-email login attempt as on a real one, so response time
@@ -67,11 +66,16 @@ class AuthService:
     async def register(
         self, data: UserRegister, *, background: BackgroundTasks | None = None
     ) -> User:
-        """Public self-registration: account starts unverified and a
-        verification email is sent. Role/domain/address rules are enforced
-        one layer up by the PublicUserRegister schema."""
-        user = await self._create_user(data, is_verified=False)
-        await VerificationService(self.db).issue(user, background=background)
+        """Public self-registration: account is created and activated
+        immediately — no email verification step is required before the
+        new user can sign in. Role/domain/address rules are enforced one
+        layer up by the PublicUserRegister schema.
+
+        `background` is accepted (and unused) so this keeps the same call
+        signature as the route/tests that invoke it; the verification-email
+        side effect has simply been removed.
+        """
+        user = await self._create_user(data, is_verified=True)
         return user
 
     async def create_trusted_user(self, data: UserRegister) -> User:

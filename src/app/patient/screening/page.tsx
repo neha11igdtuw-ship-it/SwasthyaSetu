@@ -11,10 +11,11 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 import { useAppState } from "@/lib/store/AppStateProvider";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import { encountersApi } from "@/lib/api/client";
-import type { ScreeningOut, VitalOut } from "@/lib/api/types";
+import type { ScreeningOut, VitalOut, PatientOut } from "@/lib/api/types";
 import { matchReferralFacility } from "@/lib/referralMatching";
 import { assessMaternalRisk } from "@/lib/symptoms/assessRisk";
 import { isUnspecifiedDuration } from "@/lib/symptoms/duration";
+import { isMaternalCarePathway } from "@/lib/carePathway";
 import {
   Building2,
   Share2,
@@ -28,10 +29,10 @@ function ScreeningContent() {
   const { screeningResult } = useAppState();
   const searchParams = useSearchParams();
 
-  // Real screenings recorded for this patient by a health worker (GET is
-  // allowed for PATIENT role — writes are not, screenings are recorded on
-  // the hw/screening page). Falls back to the mock demo result if the
-  // backend has no screenings yet for this patient/account.
+  // The AUTHENTICATED patient's own record. Used to (a) load THIS
+  // patient's real screenings/vitals, isolated from every other account,
+  // and (b) gate pregnancy-specific wording to the maternal-care pathway.
+  const [ownPatient, setOwnPatient] = useState<PatientOut | null>(null);
   const [latestScreening, setLatestScreening] = useState<ScreeningOut | null>(null);
   const [latestVital, setLatestVital] = useState<VitalOut | null>(null);
 
@@ -40,7 +41,9 @@ function ScreeningContent() {
     (async () => {
       try {
         const me = await loadOwnPatient();
-        if (!me || cancelled) return;
+        if (cancelled) return;
+        setOwnPatient(me);
+        if (!me) return;
         const encounters = await encountersApi.list(me.id);
         if (cancelled || encounters.length === 0) return;
         // Most recent encounter first.
@@ -69,6 +72,8 @@ function ScreeningContent() {
     };
   }, []);
 
+  const isMaternal = isMaternalCarePathway(ownPatient?.care_pathway);
+
   const queryRisk = searchParams.get("risk");
   const queryBp = searchParams.get("bp");
   const queryWeek = searchParams.get("week");
@@ -76,7 +81,12 @@ function ScreeningContent() {
   const queryNotes = searchParams.get("notes") || "";
   const fromThisCheck = Boolean(queryRisk && queryBp);
 
-  const [sys, dia] = (queryBp || screeningResult.bp || "120/80")
+  // Do we have ANY real result to show — from this submission, from a
+  // backend-recorded screening, or from this session's own screening
+  // (never from a seeded/demo patient)?
+  const hasAnyResult = Boolean(fromThisCheck || latestScreening || screeningResult);
+
+  const [sys, dia] = (queryBp || screeningResult?.bp || "120/80")
     .split("/")
     .map((v) => parseInt(v.trim(), 10));
 
@@ -100,14 +110,17 @@ function ScreeningContent() {
         ? "Watch / Moderate"
         : latestScreening?.risk_level === "LOW"
           ? "Low Risk"
-          : searchParams.get("risk") || screeningResult.risk || "Low Risk";
+          : searchParams.get("risk") || screeningResult?.risk || "Low Risk";
 
   const bp = fromThisCheck
-    ? queryBp || screeningResult.bp
+    ? queryBp || screeningResult?.bp
     : latestVital?.systolic_bp && latestVital?.diastolic_bp
       ? `${latestVital.systolic_bp}/${latestVital.diastolic_bp}`
-      : queryBp || screeningResult.bp || "120/80";
-  const week = queryWeek || screeningResult.week || "28";
+      : queryBp || screeningResult?.bp || "120/80";
+  // No fallback pregnancy week — an empty value simply means "not
+  // recorded", and pregnancy wording is only shown at all when this
+  // patient is actually on the maternal-care pathway (see `isMaternal`).
+  const week = queryWeek || screeningResult?.week || "";
 
   const liveMatch = matchReferralFacility({
     riskLevel: risk,
@@ -119,24 +132,26 @@ function ScreeningContent() {
       thisCheck.flags.swelling ? "Swelling" : "",
       thisCheck.flags.bleeding ? "Bleeding" : "",
     ].filter(Boolean),
-    carePathway: "Maternal Care",
+    carePathway: ownPatient?.care_pathway ?? undefined,
   });
 
-  const matchedFacility = fromThisCheck ? liveMatch.facility : screeningResult.matchedFacility;
-  const matchReason = fromThisCheck ? liveMatch.matchReason : screeningResult.matchReason;
+  const matchedFacility = fromThisCheck ? liveMatch.facility : screeningResult?.matchedFacility ?? liveMatch.facility;
+  const matchReason = fromThisCheck ? liveMatch.matchReason : screeningResult?.matchReason ?? liveMatch.matchReason;
+
+  const bpWithWeek = isMaternal && week
+    ? `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})`
+    : `${t("bloodPressureReading")}: ${bp} mmHg`;
 
   const reasons = fromThisCheck
     ? [
-        `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})${
-          thisCheck.highBp ? "" : ` — ${t("bpWithinNormalRange")}`
-        }`,
+        `${bpWithWeek}${thisCheck.highBp ? "" : ` — ${t("bpWithinNormalRange")}`}`,
         thisCheck.highBp ? t("highBpDetected") : null,
         thisCheck.flags.headache ? t("persistentHeadache") : null,
         thisCheck.flags.blurredVision ? t("blurredVision") : null,
         thisCheck.flags.swelling ? t("swellingFaceHandsFeet") : null,
         thisCheck.flags.bleeding ? t("vaginalBleedingDischarge") : null,
         thisCheck.flags.abdominalPain ? t("severeAbdominalPain") : null,
-        thisCheck.flags.reducedFetalMovement ? t("reducedFetalMovement") : null,
+        isMaternal && thisCheck.flags.reducedFetalMovement ? t("reducedFetalMovement") : null,
         queryDuration && !isUnspecifiedDuration(queryDuration)
           ? `${t("durationLabel")}: ${queryDuration}`
           : null,
@@ -144,11 +159,9 @@ function ScreeningContent() {
       ].filter((item): item is string => Boolean(item))
     : latestScreening
       ? (latestScreening.result || "").split(";").map((s) => s.trim()).filter(Boolean)
-      : [
-          `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})`,
-          t("persistentHeadache"),
-          t("swellingFaceHandsFeet"),
-        ];
+      : screeningResult
+        ? [bpWithWeek, ...screeningResult.symptoms]
+        : [];
 
   if (fromThisCheck && risk === "Low Risk") {
     reasons.push(t("noSevereDangerSigns"));
@@ -167,7 +180,32 @@ function ScreeningContent() {
         variant="amber"
       />
 
-      {/* Main Screening Risk Result Box */}
+      {!hasAnyResult ? (
+        /* Genuinely new/no-screening state — no fabricated risk level,
+           BP, or pregnancy week is shown here. This is what every
+           brand-new patient sees until they actually complete a symptom
+           check or a health worker records one. */
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-slate-200/80 dark:border-slate-700 shadow-sm text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mx-auto">
+            <Sparkles className="w-5 h-5 text-slate-400" />
+          </div>
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white">
+              {t("noScreeningYetTitle")}
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+              {t("noScreeningYetSubtitle")}
+            </p>
+          </div>
+          <Link
+            href="/patient/symptoms"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-colors shadow-xs"
+          >
+            <span>{t("tellSymptomsVoiceTextTitle")}</span>
+          </Link>
+        </div>
+      ) : (
+      /* Main Screening Risk Result Box */
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
           <div>
@@ -196,23 +234,25 @@ function ScreeningContent() {
         </div>
 
         {/* Recommended Action & Smart Facility Match Summary */}
-        <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-900/30 border border-teal-200 text-teal-950 space-y-3">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-teal-700 shrink-0" />
-            <span className="text-xs font-extrabold uppercase tracking-wide text-teal-900">
-              {t("suggestedFacilityRules")}:
-            </span>
-          </div>
+        {matchedFacility && (
+          <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-900/30 border border-teal-200 text-teal-950 space-y-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-teal-700 shrink-0" />
+              <span className="text-xs font-extrabold uppercase tracking-wide text-teal-900">
+                {t("suggestedFacilityRules")}:
+              </span>
+            </div>
 
-          <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-teal-200/80 space-y-1 text-xs">
-            <span className="font-extrabold text-sm text-slate-900 dark:text-white block">
-              {matchedFacility.name.includes("District") ? t("districtHospitalName") : matchedFacility.name} ({matchedFacility.distance})
-            </span>
-            <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
-              {matchReason}
-            </p>
+            <div className="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-teal-200/80 space-y-1 text-xs">
+              <span className="font-extrabold text-sm text-slate-900 dark:text-white block">
+                {matchedFacility.name.includes("District") ? t("districtHospitalName") : matchedFacility.name} ({matchedFacility.distance})
+              </span>
+              <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed">
+                {matchReason}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Action Buttons Grid */}
         <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -241,6 +281,7 @@ function ScreeningContent() {
           </Link>
         </div>
       </div>
+      )}
     </div>
   );
 }

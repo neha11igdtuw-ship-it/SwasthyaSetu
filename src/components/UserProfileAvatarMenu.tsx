@@ -25,7 +25,6 @@ import { RoleType, RoleBadge } from "./RoleBadge";
 import { patientsApi, encountersApi, clearTokens } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import type { PatientOut } from "@/lib/api/types";
-import { priyaPatientMock } from "@/lib/mockData";
 
 interface UserProfileAvatarMenuProps {
   userName?: string;
@@ -36,9 +35,9 @@ interface UserProfileAvatarMenuProps {
 }
 
 export function UserProfileAvatarMenu({
-  userName = "Priya Sharma",
+  userName = "Your account",
   role = "Patient",
-  facilityOrLocation = "Rampur Village",
+  facilityOrLocation = "",
   dashboardHref = "/patient/dashboard",
   onLogout,
 }: UserProfileAvatarMenuProps) {
@@ -56,37 +55,50 @@ export function UserProfileAvatarMenu({
   // State for user profile & vitals
   const [patientData, setPatientData] = useState<PatientOut | null>(null);
 
-  // Editable Form State
+  // Editable Form State — starts blank/neutral for every account. Values
+  // are filled in ONLY from this authenticated patient's own backend
+  // record (see fetchPatientProfile below); there is no seeded fallback
+  // patient (maternal or otherwise) if that record has no data yet.
   const [fullName, setFullName] = useState(userName);
-  const [phone, setPhone] = useState("+91 98765 43210");
-  const [age, setAge] = useState("24");
+  const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
   const [village, setVillage] = useState(facilityOrLocation);
   const [preferredLanguage, setPreferredLanguage] = useState("Hindi (हिंदी)");
-  const [emergencyContact, setEmergencyContact] = useState("+91 94351 26620");
-  const [pregnancyWeek, setPregnancyWeek] = useState("28");
+  const [emergencyContact, setEmergencyContact] = useState("");
+  const [pregnancyWeek, setPregnancyWeek] = useState("");
 
-  // Vitals Form State
-  const [systolicBp, setSystolicBp] = useState("145");
-  const [diastolicBp, setDiastolicBp] = useState("92");
-  const [pulse, setPulse] = useState("82");
-  const [weight, setWeight] = useState("58");
+  // Vitals Form State — blank until this patient's own real vitals load.
+  const [systolicBp, setSystolicBp] = useState("");
+  const [diastolicBp, setDiastolicBp] = useState("");
+  const [pulse, setPulse] = useState("");
+  const [weight, setWeight] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fetch live patient profile and vitals
+  // Fetch live patient profile and vitals — always this authenticated
+  // account's own data via /patients/me. If there is no remote patient
+  // (e.g. not logged in as a patient), the form simply stays blank rather
+  // than falling back to any seeded/demo identity.
   const fetchPatientProfile = useCallback(async () => {
     try {
       const own = await loadOwnPatient();
       if (own) {
         setPatientData(own);
         setFullName(own.full_name || userName);
-        setPhone(own.phone || "+91 98765 43210");
+        setPhone(own.phone || "");
         setVillage(own.village || facilityOrLocation);
+        if (own.date_of_birth) {
+          const dob = new Date(own.date_of_birth);
+          if (!Number.isNaN(dob.getTime())) {
+            const computedAge = Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 3600 * 1000));
+            setAge(computedAge > 0 ? computedAge.toString() : "");
+          }
+        }
         if (own.preferred_language) setPreferredLanguage(own.preferred_language);
         if (own.emergency_contact) setEmergencyContact(own.emergency_contact);
-        if (own.pregnancy_week) setPregnancyWeek(own.pregnancy_week.toString());
+        setPregnancyWeek(own.pregnancy_week ? own.pregnancy_week.toString() : "");
 
         // Fetch latest vitals for this patient
         const encounters = await encountersApi.me().catch(() => []);
@@ -105,14 +117,6 @@ export function UserProfileAvatarMenu({
             if (lastV.weight_kg) setWeight(lastV.weight_kg.toString());
           }
         }
-      } else {
-        // Fallback to mock profile if not logged in as remote patient
-        const mockP = priyaPatientMock.profile;
-        setFullName(mockP.name);
-        setPhone("+91 98765 43210");
-        setAge(mockP.age.toString());
-        setVillage(mockP.location);
-        setPregnancyWeek(mockP.pregnancyWeek.toString());
       }
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);
@@ -249,7 +253,7 @@ export function UserProfileAvatarMenu({
                 </div>
                 <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                   <MapPin className="w-3 h-3 text-teal-600 shrink-0" />
-                  <span className="truncate">{village}</span>
+                  <span className="truncate">{village || "Location not set"}</span>
                 </div>
               </div>
             </div>
@@ -258,21 +262,21 @@ export function UserProfileAvatarMenu({
             <div className="grid grid-cols-2 gap-2 text-[11px] bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
               <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                 <Phone className="w-3 h-3 text-teal-600 shrink-0" />
-                <span className="font-medium truncate">{phone}</span>
+                <span className="font-medium truncate">{phone || "Not set"}</span>
               </div>
               <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                 <Calendar className="w-3 h-3 text-teal-600 shrink-0" />
-                <span className="font-medium">Age: {age} yrs</span>
+                <span className="font-medium">Age: {age ? `${age} yrs` : "Not set"}</span>
               </div>
               <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                 <HeartPulse className="w-3 h-3 text-rose-600 shrink-0" />
                 <span className="font-bold text-rose-700 dark:text-rose-400">
-                  BP: {systolicBp}/{diastolicBp}
+                  BP: {systolicBp && diastolicBp ? `${systolicBp}/${diastolicBp}` : "Not recorded"}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                 <Activity className="w-3 h-3 text-teal-600 shrink-0" />
-                <span className="font-medium">Pulse: {pulse} bpm</span>
+                <span className="font-medium">Pulse: {pulse ? `${pulse} bpm` : "Not recorded"}</span>
               </div>
             </div>
           </div>

@@ -23,9 +23,10 @@ export function CareStatusCard({
     if (lower.includes("headache")) return t("persistentHeadache");
     if (lower.includes("vision")) return t("blurredVision");
     if (lower.includes("anemia")) return t("moderateAnemia");
-    if (lower.includes("blood pressure") || lower.includes("bp")) {
-      return `${t("bloodPressureReading")}: 145/92 mmHg`;
-    }
+    // NOTE: previously this branch replaced any BP-related reason with a
+    // hardcoded "145/92 mmHg" reading regardless of the patient's actual
+    // data. Real BP values are already reported elsewhere (vitals/
+    // screening); this card should just pass the real reason text through.
     return t(reason);
   };
 

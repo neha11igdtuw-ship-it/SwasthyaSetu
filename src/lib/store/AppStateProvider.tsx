@@ -2,6 +2,10 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import {
+  // Demo dataset used ONLY to power health-worker / facility demo screens
+  // (see each field's usage note below). Never surfaced as a logged-in
+  // PATIENT's own data — patient pages load exclusively from /auth/me and
+  // /patients/me (see src/lib/api/ownPatient.ts).
   priyaPatientMock,
   hwPatientsList,
   hwReferralsList,
@@ -10,9 +14,6 @@ import {
   HWReferral,
   HWFollowUp,
   MedicineItem,
-  ReferralInfo,
-  ReferralStep,
-  FollowUpItem,
   NearbyFacility,
 } from "../mockData";
 import { db, OutboxItem } from "../offline/db";
@@ -20,11 +21,28 @@ import { matchReferralFacility } from "../referralMatching";
 import { syncApi, symptomsApi } from "../api/client";
 import type { SyncChange, SymptomSummarizeRequest, SymptomSummarizeResponse } from "../api/types";
 
+// The patient-facing screening result for the CURRENTLY LOGGED-IN patient,
+// held only in memory for this session. It starts at `null` for every
+// account — there is no seeded/default patient here, maternal or
+// otherwise. It is populated only when the logged-in patient actually
+// submits a symptom check (see updatePatientScreening below), which is
+// always called with that patient's own real record id.
+export interface ScreeningResultState {
+  risk: string;
+  bp: string;
+  week: string;
+  symptoms: string[];
+  matchedFacility: NearbyFacility | null;
+  matchReason: string;
+}
+
 export interface AppStateContextType {
-  priyaProfile: typeof priyaPatientMock.profile;
+  // Demo/seed data for HEALTH-WORKER and facility-side screens only. This
+  // is intentionally preserved (per product decision) for demoing those
+  // roles — it must never be read as the logged-in PATIENT's own data. See
+  // each consumer: only src/app/hw/* and src/app/facility/* pages use these.
   patients: HealthWorkerPatient[];
   referrals: HWReferral[];
-  patientReferral: ReferralInfo;
   patientMedicines: MedicineItem[];
   inventory: Record<string, MedicineItem>;
   facilityAggregates: NearbyFacility & {
@@ -33,16 +51,12 @@ export interface AppStateContextType {
     oxytocinAvailability: string;
     essentialMeds: "In Stock" | "Limited" | "Out of Stock";
   };
-  followUps: FollowUpItem[];
   hwFollowUps: HWFollowUp[];
-  screeningResult: {
-    risk: string;
-    bp: string;
-    week: string;
-    symptoms: string[];
-    matchedFacility: NearbyFacility;
-    matchReason: string;
-  };
+
+  // Real logged-in patient's own in-session screening result. Null until
+  // that patient actually completes a symptom check.
+  screeningResult: ScreeningResultState | null;
+
   lastSyncedTime: string | null;
   outboxItems: OutboxItem[];
   outboxCount: number;
@@ -52,36 +66,28 @@ export interface AppStateContextType {
   updateFacilityAggregates: (data: Partial<AppStateContextType["facilityAggregates"]>) => void;
   togglePatientMedicineReceived: (medId: string) => void;
   createReferral: (newRefData: Omit<HWReferral, "id" | "createdDate" | "currentStep">) => void;
-  acceptFacilityReferral: (refId: string) => void;
-  redirectFacilityReferral: (refId: string, targetFacilityName: string) => void;
-  sendBackFacilityReferral: (refId: string) => void;
-  advancePatientReferralStep: () => void;
   addPatient: (patientData: Omit<HealthWorkerPatient, "id"> & { id?: string }) => void;
-  updatePatientScreening: (patientId: string, data: { riskLevel: "High Risk" | "Watch / Moderate" | "Low Risk"; bp: string; week?: number; symptoms: string[] }) => void;
-  markFollowUpCompleted: (fuId: string) => void;
+  /**
+   * Records an in-session screening result for the CALLER'S OWN patient
+   * record. `patientId` must be the real, authenticated patient's id
+   * (e.g. from loadOwnPatient()) — never a hardcoded/demo id.
+   */
+  updatePatientScreening: (patientId: string, data: { riskLevel: "High Risk" | "Watch / Moderate" | "Low Risk"; bp: string; week?: number; symptoms: string[]; carePathway?: string }) => void;
   triggerSyncNow: () => Promise<{ success: boolean; message: string }>;
   submitSymptomSummary: (
     data: SymptomSummarizeRequest
   ) => Promise<{ queued: boolean; response: SymptomSummarizeResponse | null; error: string | null }>;
 }
 
-const initialMatch = matchReferralFacility({
-  riskLevel: "High Risk",
-  systolicBp: 145,
-  diastolicBp: 92,
-  symptoms: ["Headache", "Blurred vision"],
-  carePathway: "Maternal Care",
-});
-
 const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [priyaProfile] = useState(priyaPatientMock.profile);
+  // ---- Health-worker / facility DEMO data only (see field docs above) ----
   const [patients, setPatients] = useState<HealthWorkerPatient[]>(hwPatientsList);
   const [referrals, setReferrals] = useState<HWReferral[]>(hwReferralsList);
-  const [patientReferral, setPatientReferral] = useState<ReferralInfo>(priyaPatientMock.referral);
 
-  // Initialize medicine inventory
+  // Demo medicine inventory shown on HW/facility stock screens
+  // (src/app/hw/high-risk, src/app/facility/medicines). Not patient data.
   const initialInvMap: Record<string, MedicineItem> = {};
   priyaPatientMock.medicines.forEach((m) => {
     initialInvMap[m.id] = { ...m };
@@ -89,7 +95,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [inventory, setInventory] = useState<Record<string, MedicineItem>>(initialInvMap);
   const [patientMedicines, setPatientMedicines] = useState<MedicineItem[]>(priyaPatientMock.medicines);
 
-  // Facility stock aggregates
+  // Demo facility stock aggregates shown on the facility dashboard.
   const [facilityAggregates, setFacilityAggregates] = useState<AppStateContextType["facilityAggregates"]>({
     ...priyaPatientMock.nearbyFacilities[0],
     bloodBankUnits: 24,
@@ -98,19 +104,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     essentialMeds: "In Stock",
   });
 
-  const [followUps, setFollowUps] = useState<FollowUpItem[]>(priyaPatientMock.followUps);
-  const [hwFollowUps, setHwFollowUps] = useState<HWFollowUp[]>(hwFollowUpsList);
+  const [hwFollowUps] = useState<HWFollowUp[]>(hwFollowUpsList);
 
-  const [screeningResult, setScreeningResult] = useState({
-    risk: "High Risk",
-    bp: "145/92",
-    week: "28",
-    symptoms: ["Continuous Headache", "Blurred Vision"],
-    matchedFacility: initialMatch.facility,
-    matchReason: initialMatch.matchReason,
-  });
+  // ---- Real logged-in patient's OWN in-session screening result.
+  // Starts null for every account — no seeded/default patient, maternal or
+  // otherwise. Only set once the logged-in patient submits a symptom check.
+  const [screeningResult, setScreeningResult] = useState<ScreeningResultState | null>(null);
 
-  const [lastSyncedTime, setLastSyncedTime] = useState<string | null>("Today at 9:30 AM");
+  const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
   const [outboxItems, setOutboxItems] = useState<OutboxItem[]>([]);
 
   // Load outbox items from Dexie on mount
@@ -205,122 +206,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       )
     );
 
-    // If it's for Priya, update patientReferral stepper
-    if (newRefData.patientId === "P-7821" || newRefData.patientName.includes("Priya")) {
-      setPatientReferral({
-        id,
-        facilityName: newRefData.facilityName,
-        reason: newRefData.reason,
-        priority: newRefData.priority,
-        expectedVisitDate: newRefData.expectedVisitDate,
-        currentStep: "Created",
-        steps: [
-          { name: "Created", status: "completed", date: createdDate },
-          { name: "Accepted", status: "pending" },
-          { name: "Patient Visit", status: "pending" },
-          { name: "Test Completed", status: "pending" },
-          { name: "Treatment Started", status: "pending" },
-          { name: "Follow-up Due", status: "pending" },
-          { name: "Closed", status: "pending" },
-        ],
-      });
-    }
-
     enqueueOutbox("referral_creation", `New Care Request: ${newRefData.patientName} -> ${newRefData.facilityName}`, newRef);
-  };
-
-  const acceptFacilityReferral = (refId: string) => {
-    setReferrals((prev) =>
-      prev.map((r) =>
-        r.id === refId ? { ...r, status: "Accepted", currentStep: "Accepted" } : r
-      )
-    );
-
-    const refObj = referrals.find((r) => r.id === refId);
-    if (refObj) {
-      setPatients((prev) =>
-        prev.map((p) =>
-          p.id === refObj.patientId ? { ...p, referralStatus: "Accepted" } : p
-        )
-      );
-    }
-
-    // Sync Priya's stepper
-    setPatientReferral((prev) => ({
-      ...prev,
-      currentStep: "Accepted",
-      steps: prev.steps.map((s) => {
-        if (s.name === "Created") return { ...s, status: "completed" };
-        if (s.name === "Accepted") return { ...s, status: "completed", date: "Today" };
-        if (s.name === "Patient Visit") return { ...s, status: "current" };
-        return s;
-      }),
-    }));
-  };
-
-  const redirectFacilityReferral = (refId: string, targetFacilityName: string) => {
-    setReferrals((prev) =>
-      prev.map((r) =>
-        r.id === refId
-          ? { ...r, facilityName: targetFacilityName, status: "Pending Acceptance" }
-          : r
-      )
-    );
-
-    setPatientReferral((prev) =>
-      prev.id === refId ? { ...prev, facilityName: targetFacilityName } : prev
-    );
-  };
-
-  const sendBackFacilityReferral = (refId: string) => {
-    setReferrals((prev) =>
-      prev.map((r) =>
-        r.id === refId ? { ...r, status: ("Sent Back to Health Worker" as unknown as HWReferral["status"]) } : r
-      )
-    );
-
-    const refObj = referrals.find((r) => r.id === refId);
-    if (refObj) {
-      setPatients((prev) =>
-        prev.map((p) =>
-          p.id === refObj.patientId ? { ...p, referralStatus: "Waiting for action" } : p
-        )
-      );
-    }
-  };
-
-  const advancePatientReferralStep = () => {
-    const stepOrder: ReferralStep[] = [
-      "Created",
-      "Accepted",
-      "Patient Visit",
-      "Test Completed",
-      "Treatment Started",
-      "Follow-up Due",
-      "Closed",
-    ];
-
-    setPatientReferral((prev) => {
-      const currentIndex = stepOrder.indexOf(prev.currentStep);
-      if (currentIndex < 0 || currentIndex >= stepOrder.length - 1) return prev;
-
-      const nextStep = stepOrder[currentIndex + 1];
-
-      return {
-        ...prev,
-        currentStep: nextStep,
-        steps: prev.steps.map((s, idx) => {
-          if (idx <= currentIndex + 1) {
-            return {
-              ...s,
-              status: idx === currentIndex + 1 ? "current" : "completed",
-              date: s.date || "Today",
-            };
-          }
-          return s;
-        }),
-      };
-    });
   };
 
   // 3. HW Patient Registration & Screening
@@ -337,7 +223,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const updatePatientScreening = (
     patientId: string,
-    data: { riskLevel: "High Risk" | "Watch / Moderate" | "Low Risk"; bp: string; week?: number; symptoms: string[] }
+    data: { riskLevel: "High Risk" | "Watch / Moderate" | "Low Risk"; bp: string; week?: number; symptoms: string[]; carePathway?: string }
   ) => {
     const [sys, dia] = data.bp.split("/").map((v) => parseInt(v.trim()) || 120);
 
@@ -346,9 +232,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       systolicBp: sys,
       diastolicBp: dia,
       symptoms: data.symptoms,
-      carePathway: "Maternal Care",
+      carePathway: data.carePathway,
     });
 
+    // Only touch the HW demo patient list if this call happens to concern
+    // one of the demo patients (e.g. testing from a HW screen). A real
+    // logged-in patient's id will not match any hwPatientsList row, so
+    // this is a no-op for them — their result only lives in
+    // `screeningResult` below and is never written into demo/seed data.
     setPatients((prev) =>
       prev.map((p) =>
         p.id === patientId
@@ -366,22 +257,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setScreeningResult({
       risk: data.riskLevel,
       bp: data.bp,
-      week: (data.week || 28).toString(),
+      week: data.week ? data.week.toString() : "",
       symptoms: data.symptoms,
       matchedFacility: match.facility,
       matchReason: match.matchReason,
     });
 
-    enqueueOutbox("screening", `Health Check Screening: ${patientId}`, { patientId, ...data, matchedFacility: match.facility.name });
-  };
-
-  const markFollowUpCompleted = (fuId: string) => {
-    setFollowUps((prev) =>
-      prev.map((f) => (f.id === fuId ? { ...f, status: "Completed" } : f))
-    );
-    setHwFollowUps((prev) =>
-      prev.map((f) => (f.id === fuId ? { ...f, status: "Completed" } : f))
-    );
+    enqueueOutbox("screening", `Health Check Screening: ${patientId}`, { patientId, ...data, matchedFacility: match.facility?.name ?? null });
   };
 
   // 4. Dexie Offline Sync — real POST /api/v1/sync/push + GET-equivalent
@@ -527,14 +409,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppStateContext.Provider
       value={{
-        priyaProfile,
         patients,
         referrals,
-        patientReferral,
         patientMedicines,
         inventory,
         facilityAggregates,
-        followUps,
         hwFollowUps,
         screeningResult,
         lastSyncedTime,
@@ -545,13 +424,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         updateFacilityAggregates,
         togglePatientMedicineReceived,
         createReferral,
-        acceptFacilityReferral,
-        redirectFacilityReferral,
-        sendBackFacilityReferral,
-        advancePatientReferralStep,
         addPatient,
         updatePatientScreening,
-        markFollowUpCompleted,
         triggerSyncNow,
         submitSymptomSummary,
       }}

@@ -35,16 +35,8 @@ async def test_register_and_login(client, db_session):
     )
     assert resp.status_code == 201, resp.text
     body = resp.json()
-    assert body["is_verified"] is False
-
-    # Unverified accounts cannot log in yet.
-    resp = await client.post(
-        "/api/v1/auth/login", json={"email": "a@example.com", "password": "StrongPass123!"}
-    )
-    assert resp.status_code == 403
-    assert resp.json()["error"]["code"] == "EMAIL_NOT_VERIFIED"
-
-    await _mark_verified(db_session, "a@example.com")
+    # No email-verification step: accounts are active immediately.
+    assert body["is_verified"] is True
 
     resp = await client.post(
         "/api/v1/auth/login", json={"email": "a@example.com", "password": "StrongPass123!"}

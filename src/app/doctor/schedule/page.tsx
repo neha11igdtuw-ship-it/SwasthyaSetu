@@ -187,7 +187,7 @@ export default function DoctorSchedulePage() {
                     <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                     {new Date(app.scheduled_at).toLocaleString()}
                   </span>
-                  <p className="pl-5 text-slate-500 dark:text-slate-400">{app.reason || t("maternalCare")}</p>
+                  <p className="pl-5 text-slate-500 dark:text-slate-400">{app.reason || "General appointment"}</p>
                 </div>
                 <Link
                   href={`/doctor/consult/${app.id}`}
