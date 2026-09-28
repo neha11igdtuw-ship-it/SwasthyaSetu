@@ -39,23 +39,37 @@ class ShiftTemplate:
 DOCTOR_POOL_BY_TYPE: dict[str, list[ShiftTemplate]] = {
     "hospital": [
         ShiftTemplate("Dr. Ramesh Gupta", "General Medicine", ALL_DAYS, time(9, 0), time(17, 0)),
-        ShiftTemplate("Dr. Kavita Sharma", "Gynecology & Obstetrics", WEEKDAYS_ONLY, time(9, 0), time(15, 0)),
+        ShiftTemplate(
+            "Dr. Kavita Sharma", "Gynecology & Obstetrics", WEEKDAYS_ONLY, time(9, 0), time(15, 0)
+        ),
         ShiftTemplate("Dr. Arvind Yadav", "Orthopedics", WEEKDAYS_ONLY, time(10, 0), time(18, 0)),
         ShiftTemplate("Dr. Nisha Verma", "Pediatrics", ALL_DAYS, time(8, 0), time(14, 0)),
-        ShiftTemplate("Dr. Sanjay Mishra", "Emergency Medicine", ALL_DAYS, time(0, 0), time(23, 59)),
-        ShiftTemplate("Dr. Pooja Tiwari", "Pathology & Lab Medicine", WEEKDAYS_ONLY, time(9, 0), time(16, 0)),
+        ShiftTemplate(
+            "Dr. Sanjay Mishra", "Emergency Medicine", ALL_DAYS, time(0, 0), time(23, 59)
+        ),
+        ShiftTemplate(
+            "Dr. Pooja Tiwari", "Pathology & Lab Medicine", WEEKDAYS_ONLY, time(9, 0), time(16, 0)
+        ),
         ShiftTemplate("Dr. Manoj Singh", "General Surgery", (0, 2, 4, 5), time(11, 0), time(19, 0)),
         ShiftTemplate("Dr. Farah Khan", "Anesthesiology", WEEKDAYS_ONLY, time(9, 0), time(17, 0)),
     ],
     "clinic": [
-        ShiftTemplate("Dr. Alok Pandey", "General Physician", WEEKDAYS_ONLY, time(10, 0), time(20, 0)),
-        ShiftTemplate("Dr. Shalini Rao", "Family Medicine", WEEKDAYS_ONLY, time(9, 30), time(14, 0)),
+        ShiftTemplate(
+            "Dr. Alok Pandey", "General Physician", WEEKDAYS_ONLY, time(10, 0), time(20, 0)
+        ),
+        ShiftTemplate(
+            "Dr. Shalini Rao", "Family Medicine", WEEKDAYS_ONLY, time(9, 30), time(14, 0)
+        ),
         ShiftTemplate("Dr. Vikram Chauhan", "Dermatology", (1, 3, 5), time(11, 0), time(17, 0)),
         ShiftTemplate("Dr. Anjali Bose", "ENT", (0, 2, 4), time(10, 0), time(16, 0)),
     ],
     "doctors": [
-        ShiftTemplate("Dr. Suresh Nair", "General Physician", WEEKDAYS_ONLY, time(9, 0), time(18, 0)),
-        ShiftTemplate("Dr. Ritu Agarwal", "General Physician", WEEKDAYS_ONLY, time(10, 0), time(19, 0)),
+        ShiftTemplate(
+            "Dr. Suresh Nair", "General Physician", WEEKDAYS_ONLY, time(9, 0), time(18, 0)
+        ),
+        ShiftTemplate(
+            "Dr. Ritu Agarwal", "General Physician", WEEKDAYS_ONLY, time(10, 0), time(19, 0)
+        ),
     ],
 }
 
