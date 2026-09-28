@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { FacilityCard } from "@/components/patient/FacilityCard";
@@ -45,11 +45,17 @@ export default function PatientFacilitiesPage() {
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
   const [usingFallbackData, setUsingFallbackData] = useState(false);
 
+  // Tracks whether a real proximity-based facility list (from Overpass) has
+  // been loaded, so the backend facilitiesApi lookup below never clobbers it
+  // with facilities that use unrelated hardcoded coordinates.
+  const liveFacilitiesLoadedRef = useRef(false);
+
   // Fetch live nearby facilities from OpenStreetMap Overpass API for the given coords
   const loadLiveFacilities = useCallback((lat: number, lng: number) => {
     getNearbyHospitals(lat, lng)
       .then((liveFacilities) => {
         if (liveFacilities.length > 0) {
+          liveFacilitiesLoadedRef.current = true;
           setFacilities(liveFacilities);
           setUsingFallbackData(false);
         } else {
@@ -99,6 +105,7 @@ export default function PatientFacilitiesPage() {
           lng: DEFAULT_VILLAGE_LOCATION.longitude,
         });
         setLastUpdatedTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+        loadLiveFacilities(DEFAULT_VILLAGE_LOCATION.latitude, DEFAULT_VILLAGE_LOCATION.longitude);
       },
       {
         enableHighAccuracy: true,
@@ -115,6 +122,11 @@ export default function PatientFacilitiesPage() {
     facilitiesApi
       .list()
       .then((apiFacs: FacilityOut[]) => {
+        // Never clobber a real proximity-based (Overpass) result with this
+        // backend list — it only has meaningful lat/lng for facilities that
+        // set them explicitly, and otherwise falls back to arbitrary fixed
+        // coordinates unrelated to the user's actual location.
+        if (liveFacilitiesLoadedRef.current) return;
         if (apiFacs && apiFacs.length > 0) {
           const mapped: NearbyFacility[] = apiFacs.map((f, idx) => {
             // Find existing mock facility matching or assign fallback coords
