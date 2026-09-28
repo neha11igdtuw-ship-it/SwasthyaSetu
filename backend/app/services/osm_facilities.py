@@ -28,10 +28,14 @@ async def search_osm_health_facilities(
     out center tags;
     """
 
+    # Overpass's usage policy requires an identifying User-Agent — without
+    # one, overpass-api.de rejects every request with a 406 outright.
+    headers = {"User-Agent": "SwasthyaSetu/1.0 (contact: support@swasthyasetu.app)"}
+
     last_error = None
     data = None
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(timeout=30, headers=headers) as client:
         for url in OVERPASS_URLS:
             try:
                 response = await client.post(url, data={"data": query})

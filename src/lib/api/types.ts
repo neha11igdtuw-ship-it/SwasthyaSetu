@@ -260,6 +260,25 @@ export interface FacilityOut {
   [key: string]: unknown;
 }
 
+export interface OsmFacilityOut {
+  name: string;
+  facility_type: string;
+  latitude: number;
+  longitude: number;
+  phone?: string | null;
+  address?: string | null;
+  capabilities?: string | null;
+  data_source: string;
+  verification_status: string;
+}
+
+export interface NearbyOsmResponse {
+  source: string;
+  verification_note: string;
+  count: number;
+  facilities: OsmFacilityOut[];
+}
+
 export interface CareGapOut {
   id: string;
   patient_id: string;

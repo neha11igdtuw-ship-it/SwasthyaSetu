@@ -7,8 +7,7 @@ import { FacilityCard } from "@/components/patient/FacilityCard";
 import { priyaPatientMock, NearbyFacility } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { facilitiesApi } from "@/lib/api/client";
-import type { FacilityOut } from "@/lib/api/types";
-import { getNearbyHospitals } from "@/lib/osmFacilities";
+import type { FacilityOut, OsmFacilityOut } from "@/lib/api/types";
 import {
   DEFAULT_VILLAGE_LOCATION,
   calculateHaversineDistance,
@@ -50,10 +49,31 @@ export default function PatientFacilitiesPage() {
   // with facilities that use unrelated hardcoded coordinates.
   const liveFacilitiesLoadedRef = useRef(false);
 
-  // Fetch live nearby facilities from OpenStreetMap Overpass API for the given coords
+  function osmFacilityToNearby(f: OsmFacilityOut, idx: number): NearbyFacility {
+    return {
+      id: `osm-${idx}-${f.latitude}-${f.longitude}`,
+      name: f.name,
+      type: "Primary Health Centre",
+      distance: "",
+      latitude: f.latitude,
+      longitude: f.longitude,
+      availableServices: [],
+      doctorAvailability: "",
+      status: "Available",
+      lastUpdated: "",
+      contactPhone: f.phone || "",
+      address: f.address || "",
+    };
+  }
+
+  // Fetch live nearby facilities via the backend's OSM/Overpass proxy for the
+  // given coords. Proxied server-side because calling Overpass directly from
+  // the browser is unreliable (CORS, rate limits on the public mirrors).
   const loadLiveFacilities = useCallback((lat: number, lng: number) => {
-    getNearbyHospitals(lat, lng)
-      .then((liveFacilities) => {
+    facilitiesApi
+      .nearbyOsm(lat, lng)
+      .then((res) => {
+        const liveFacilities = res.facilities.map(osmFacilityToNearby);
         if (liveFacilities.length > 0) {
           liveFacilitiesLoadedRef.current = true;
           setFacilities(liveFacilities);
@@ -64,7 +84,7 @@ export default function PatientFacilitiesPage() {
         }
       })
       .catch((err) => {
-        console.warn("Overpass API request failed, falling back to mock data:", err);
+        console.warn("OSM nearby-facilities request failed, falling back to mock data:", err);
         setFacilities(priyaPatientMock.nearbyFacilities);
         setUsingFallbackData(true);
       });
