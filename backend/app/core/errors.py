@@ -70,6 +70,11 @@ class RateLimitError(AppError):
     code = "RATE_LIMITED"
 
 
+class ServiceUnavailableError(AppError):
+    status_code = 503
+    code = "SERVICE_UNAVAILABLE"
+
+
 def _envelope(code: str, message: str, details: Any = None) -> dict:
     return {"error": {"code": code, "message": message, "details": jsonable_encoder(details)}}
 

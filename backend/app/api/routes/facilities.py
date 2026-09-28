@@ -66,13 +66,18 @@ async def nearby_osm_facilities(
     lng: float,
     radius_km: int = 10,
 ):
+    from app.core.errors import ServiceUnavailableError
+
     radius_m = radius_km * 1000
 
-    facilities = await search_osm_health_facilities(
-        lat=lat,
-        lng=lng,
-        radius_m=radius_m,
-    )
+    try:
+        facilities = await search_osm_health_facilities(
+            lat=lat,
+            lng=lng,
+            radius_m=radius_m,
+        )
+    except RuntimeError as exc:
+        raise ServiceUnavailableError("Unable to reach OpenStreetMap facility search") from exc
 
     return {
         "source": "OpenStreetMap",

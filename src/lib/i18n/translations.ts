@@ -456,6 +456,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     viewHospitalDetails: "View Hospital Details",
     distance: "Distance",
     updated: "Updated",
+    notReported: "Not reported",
     available: "Available",
     unavailable: "Unavailable",
 
@@ -1054,6 +1055,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     viewHospitalDetails: "अस्पताल की जानकारी देखें",
     distance: "दूरी",
     updated: "अपडेट",
+    notReported: "रिपोर्ट नहीं की गई",
     available: "उपलब्ध",
     unavailable: "अनुपलब्ध",
 
@@ -1651,6 +1653,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     viewHospitalDetails: "रुग्णालयाची माहिती पहा",
     distance: "अंतर",
     updated: "अपडेट",
+    notReported: "नोंदवलेले नाही",
     available: "उपलब्ध",
     unavailable: "अनुपलब्ध",
 
@@ -2116,6 +2119,7 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     viewHospitalDetails: "View Hospital Details",
     distance: "Distance",
     updated: "Updated",
+    notReported: "Not reported",
     available: "Available",
     unavailable: "Unavailable",
 

@@ -46,12 +46,42 @@ interface WindowWithSpeech extends Window {
   SpeechRecognition?: SpeechRecognitionConstructor;
 }
 
-const SPEECH_LANG_BY_APP_LANGUAGE: Record<string, string> = {
-  en: "en-IN",
-  hi: "hi-IN",
-  mr: "mr-IN",
-  local: "hi-IN",
-};
+/** Starting recognition language, based on the app's selected UI language. */
+function initialSpeechLang(appLanguage: string): string {
+  switch (appLanguage) {
+    case "en":
+      return "en-IN";
+    case "hi":
+      return "hi-IN";
+    case "mr":
+      return "mr-IN";
+    case "local":
+      return "hi-IN";
+    default:
+      return "en-IN";
+  }
+}
+
+/**
+ * Detects which script the just-recognized words were spoken in, so
+ * recognition can switch to that language even if it differs from the
+ * UI's selected language — the user may speak Hindi while English is
+ * selected, or vice versa, and both should be transcribed correctly.
+ */
+function detectSpokenLang(text: string): string | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  switch (true) {
+    case /[ऀ-ॿ]/.test(trimmed):
+      // Devanagari script covers both Hindi and Marathi; hi-IN recognizes
+      // it reliably for either.
+      return "hi-IN";
+    case /[a-zA-Z]/.test(trimmed):
+      return "en-IN";
+    default:
+      return null;
+  }
+}
 
 /** Keep restarting through Chrome's ~2–3s no-speech cutoff until this cap. */
 const MAX_LISTEN_MS = 120_000;
@@ -91,6 +121,11 @@ export function useSpeechRecognition({
   const getTextRef = useRef(getText);
   const isPlaceholderRef = useRef(isPlaceholder);
   const languageRef = useRef(language);
+  // Recognition's current spoken-language guess, and a pending switch
+  // requested by detectSpokenLang() once the speaker's actual language
+  // becomes clear from what they just said.
+  const activeLangRef = useRef<string>("en-IN");
+  const pendingLangRef = useRef<string | null>(null);
 
   onTextRef.current = onText;
   getTextRef.current = getText;
@@ -145,6 +180,18 @@ export function useSpeechRecognition({
       }
       if (finals.trim()) {
         committedRef.current = joinTranscript(committedRef.current, finals);
+        const detectedLang = detectSpokenLang(finals);
+        if (detectedLang && detectedLang !== activeLangRef.current) {
+          // Speaker switched language mid-sentence (or spoke in a
+          // different language than the UI's selection) — restart
+          // recognition tuned to that language for what comes next.
+          pendingLangRef.current = detectedLang;
+          try {
+            recognition.stop();
+          } catch {
+            // ignore
+          }
+        }
       }
       emit(joinTranscript(committedRef.current, interim));
     };
@@ -177,6 +224,12 @@ export function useSpeechRecognition({
         stopInternal(false);
         return;
       }
+      if (pendingLangRef.current && pendingLangRef.current !== recognition.lang) {
+        recognition.lang = pendingLangRef.current;
+        activeLangRef.current = pendingLangRef.current;
+      }
+      pendingLangRef.current = null;
+
       clearRestartTimer();
       restartTimerRef.current = setTimeout(() => {
         if (!isRecordingRef.current) return;
@@ -217,7 +270,10 @@ export function useSpeechRecognition({
       } catch {
         // some engines do not expose maxAlternatives
       }
-      recognition.lang = SPEECH_LANG_BY_APP_LANGUAGE[languageRef.current] || "en-IN";
+      const startLang = initialSpeechLang(languageRef.current);
+      recognition.lang = startLang;
+      activeLangRef.current = startLang;
+      pendingLangRef.current = null;
       attachHandlers(recognition);
       recognitionRef.current = recognition;
       isRecordingRef.current = true;
