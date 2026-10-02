@@ -13,6 +13,7 @@ from app.api.routes import (
     fhir,
     health_worker_profiles,
     inventory,
+    messages,
     notifications,
     patients,
     pregnancies,
@@ -57,6 +58,7 @@ app.include_router(health_worker_profiles.router, prefix="/api/v1")
 app.include_router(symptoms.router, prefix="/api/v1")
 app.include_router(queue.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(messages.router, prefix="/api/v1")
 app.include_router(fhir.router, prefix="/api/v1")
 
 

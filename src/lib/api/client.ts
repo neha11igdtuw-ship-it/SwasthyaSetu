@@ -64,6 +64,10 @@ import type {
   DoctorQueueOut,
   FacilityQueueOverviewOut,
   FacilityDoctorOut,
+  CareMessageOut,
+  CareMessageCreate,
+  CareConversationSummaryOut,
+  UnreadCountOut,
 } from "./types";
 
 const API_ROOT =
@@ -497,6 +501,47 @@ export const syncApi = {
     request<SyncPushResponse>("/sync/push", { method: "POST", body: data }),
   pull: (since?: string | null) =>
     request<SyncPullResponse>("/sync/pull", { method: "POST", body: { since: since ?? null } }),
+};
+
+// ---- Care messaging ----
+
+export interface CareConversationOut {
+  id: string;
+  patient_id: string;
+  messages: CareMessageOut[];
+  total_messages: number;
+}
+
+export interface PatientCareConversationOut {
+  id: string;
+  patient_id: string;
+  patient_name: string;
+  messages: CareMessageOut[];
+  total_messages: number;
+}
+
+export const messagesApi = {
+  getOwnConversation: () => request<CareConversationOut>("/care-messages/conversation/me"),
+  getPatientConversation: (patientId: string) =>
+    request<PatientCareConversationOut>(`/care-messages/patients/${patientId}`),
+  sendMessage: (patientId: string, data: CareMessageCreate) =>
+    request<CareMessageOut>(`/care-messages/patients/${patientId}`, {
+      method: "POST",
+      body: data,
+    }),
+  markAsRead: (conversationId: string, messageIds?: string[]) =>
+    request<{ marked_read_count: number }>(
+      `/care-messages/conversations/${conversationId}/read`,
+      {
+        method: "POST",
+        body: messageIds ? { message_ids: messageIds } : {},
+      }
+    ),
+  getUnreadCount: (conversationId?: string) => {
+    const url = `/care-messages/unread-count${conversationId ? `?conversation_id=${conversationId}` : ""}`;
+    return request<UnreadCountOut>(url);
+  },
+  getInbox: () => request<CareConversationSummaryOut[]>("/care-messages/inbox"),
 };
 
 export { request as apiRequest };

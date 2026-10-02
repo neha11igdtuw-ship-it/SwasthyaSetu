@@ -19,7 +19,7 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
       {items.map((item, idx) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
-        const label = t(item.labelKey) || item.defaultLabel;
+        const label = item.label ?? (t(item.labelKey) || item.defaultLabel);
 
         return (
           <Link

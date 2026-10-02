@@ -13,6 +13,7 @@ import {
   Share2,
   Clock,
   Video,
+  MessageSquare,
 } from "lucide-react";
 
 const PENDING_POLL_MS = 30000;
@@ -52,6 +53,7 @@ export default function DoctorLayout({
     { labelKey: "overview", defaultLabel: "Overview", href: "/doctor/dashboard", icon: LayoutDashboard },
     { labelKey: "patientsToReview", defaultLabel: "Patients to Review", href: "/doctor/patients-to-review", icon: Stethoscope },
     { labelKey: "records", defaultLabel: "People Records", label: "Patient Record", href: "/doctor/patients", icon: Users },
+    { labelKey: "messages", defaultLabel: "Patient Messages", label: "messages", href: "/doctor/messages", icon: MessageSquare },
     { labelKey: "referrals", defaultLabel: "Care Requests", href: "/doctor/care-requests", icon: Share2 },
     { labelKey: "todaysSchedule", defaultLabel: "Today's Schedule", href: "/doctor/schedule", icon: Clock },
     {

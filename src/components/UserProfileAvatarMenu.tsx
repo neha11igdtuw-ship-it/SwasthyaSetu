@@ -87,6 +87,7 @@ export function UserProfileAvatarMenu({
   // (e.g. not logged in as a patient), the form simply stays blank rather
   // than falling back to any seeded/demo identity.
   const fetchPatientProfile = useCallback(async () => {
+    if (role !== "Patient") return;
     try {
       const own = await loadOwnPatient();
       if (own) {
@@ -126,7 +127,7 @@ export function UserProfileAvatarMenu({
     } catch (err) {
       console.warn("Could not fetch remote profile:", err);
     }
-  }, [userName, facilityOrLocation]);
+  }, [userName, facilityOrLocation, role]);
 
   useEffect(() => {
     fetchPatientProfile();

@@ -6,6 +6,7 @@ services:
     container_name: swasthyasetu_pg
     restart: unless-stopped
     environment:
+     NEXT_PUBLIC_API_URL: http://localhost:8000
       POSTGRES_USER: ${POSTGRES_USER:-swasthyasetu}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
       POSTGRES_DB: ${POSTGRES_DB:-swasthyasetu}

@@ -9,6 +9,13 @@ from app.models.facility import Facility  # noqa: F401
 from app.models.facility_resource import FacilityResource  # noqa: F401
 from app.models.inventory import InventoryItem, InventoryTransaction  # noqa: F401
 from app.models.maternal import Encounter, Pregnancy, Screening, Symptom, Vital  # noqa: F401
+from app.models.messages import (  # noqa: F401
+    CareConversation,
+    CareMessage,
+    CareMessageRead,
+    MessageCategory,
+    MessagePriority,
+)
 from app.models.patient import Patient  # noqa: F401
 from app.models.queue import (  # noqa: F401
     Notification,

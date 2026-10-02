@@ -151,7 +151,8 @@ def get_facility_availability(
     roster = rng.sample(doctor_pool, roster_size)
 
     services_pool = SERVICES_BY_TYPE.get(norm_type, SERVICES_BY_TYPE["clinic"])
-    services_size = min(len(services_pool), rng.randint(3, len(services_pool)))
+    services_lower_bound = min(3, len(services_pool))
+    services_size = rng.randint(services_lower_bound, len(services_pool))
     services = rng.sample(services_pool, services_size)
 
     doctors = []
