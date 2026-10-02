@@ -6,6 +6,9 @@ import { TopBar } from "./TopBar";
 import { Sidebar, NavItem } from "./Sidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
+import { TourProvider } from "@/components/tour/TourProvider";
+import { SupportProvider } from "@/components/support/SupportProvider";
+import { HelpButton } from "@/components/support/HelpButton";
 
 interface AppShellProps {
   role: RoleType;
@@ -42,6 +45,8 @@ export function AppShell({
       : facilityOrLocation;
 
   return (
+    <TourProvider user={liveUser}>
+    <SupportProvider>
     <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
       <TopBar
         role={role}
@@ -71,6 +76,9 @@ export function AppShell({
       </div>
 
       {showMobileNav && <MobileBottomNav items={navItems} />}
+      <HelpButton variant="floating" />
     </div>
+    </SupportProvider>
+    </TourProvider>
   );
 }

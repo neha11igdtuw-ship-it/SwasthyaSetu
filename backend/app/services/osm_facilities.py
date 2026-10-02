@@ -1,5 +1,7 @@
 import httpx
 
+from app.services.doctor_availability import get_facility_availability
+
 OVERPASS_URLS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
@@ -28,10 +30,14 @@ async def search_osm_health_facilities(
     out center tags;
     """
 
+    # Overpass's usage policy requires an identifying User-Agent — without
+    # one, overpass-api.de rejects every request with a 406 outright.
+    headers = {"User-Agent": "SwasthyaSetu/1.0 (contact: support@swasthyasetu.app)"}
+
     last_error = None
     data = None
 
-    async with httpx.AsyncClient(timeout=30) as client:
+    async with httpx.AsyncClient(timeout=30, headers=headers) as client:
         for url in OVERPASS_URLS:
             try:
                 response = await client.post(url, data={"data": query})
@@ -59,10 +65,13 @@ async def search_osm_health_facilities(
         if not name:
             continue
 
+        facility_type = tags.get("amenity") or tags.get("healthcare") or "healthcare"
+        availability = get_facility_availability(name, facility_type)
+
         facilities.append(
             {
                 "name": name,
-                "facility_type": tags.get("amenity") or tags.get("healthcare") or "healthcare",
+                "facility_type": facility_type,
                 "latitude": facility_lat,
                 "longitude": facility_lng,
                 "phone": tags.get("phone") or tags.get("contact:phone"),
@@ -81,6 +90,10 @@ async def search_osm_health_facilities(
                 "capabilities": "Public map listing",
                 "data_source": "OpenStreetMap",
                 "verification_status": "Unverified public listing",
+                "doctor_status": availability["doctor_status"],
+                "doctors": availability["doctors"],
+                "services_available": availability["services_available"],
+                "checked_at": availability["checked_at"],
             }
         )
 

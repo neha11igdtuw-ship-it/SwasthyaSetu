@@ -66,7 +66,7 @@ export function DoctorQueuePanel({ initialData }: DoctorQueuePanelProps) {
 
   if (error && !data) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 text-xs text-slate-500">
+      <div data-tour="doctor-queue" className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 text-xs text-slate-500">
         {error}
       </div>
     );
@@ -74,7 +74,7 @@ export function DoctorQueuePanel({ initialData }: DoctorQueuePanelProps) {
 
   if (!data) {
     return (
-      <div className="flex items-center gap-2 text-slate-500 text-sm p-6">
+      <div data-tour="doctor-queue" className="flex items-center gap-2 text-slate-500 text-sm p-6">
         <Loader2 className="w-4 h-4 animate-spin" /> Loading queue…
       </div>
     );
@@ -85,7 +85,7 @@ export function DoctorQueuePanel({ initialData }: DoctorQueuePanelProps) {
   const waiting = entries.filter((e) => e.status === "WAITING");
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-5">
+    <div data-tour="doctor-queue" className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
         <div>
           <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">OPD Queue</h2>

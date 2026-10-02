@@ -71,6 +71,7 @@ export function Sidebar({
             <Link
               key={`${item.labelKey}-${item.href}-${idx}`}
               href={item.href}
+              data-tour={`nav:${item.labelKey}`}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                 isActive
                   ? "bg-teal-50 dark:bg-teal-900/40 text-teal-900 dark:text-teal-200 border border-teal-200/80 dark:border-teal-700/60 shadow-xs"

@@ -17,6 +17,7 @@ import { RoleType, RoleBadge } from "./RoleBadge";
 import { LanguageSelector } from "@/components/shared/LanguageSelector";
 import { ThreeDotMenu } from "@/components/ThreeDotMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { HelpButton } from "@/components/support/HelpButton";
 import { OfflinePill } from "@/components/shared/OfflinePill";
 import { GlobalSearch } from "@/components/search/GlobalSearch";
 import { UserProfileAvatarMenu } from "@/components/UserProfileAvatarMenu";
@@ -192,6 +193,7 @@ export function TopBar({
             <OfflinePill />
           </div>
 
+          <HelpButton variant="header" />
           <LanguageSelector />
           <div className="hidden sm:inline-flex">
             <ThemeToggle />

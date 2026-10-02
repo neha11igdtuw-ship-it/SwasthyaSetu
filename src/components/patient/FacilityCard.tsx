@@ -13,20 +13,23 @@ export function FacilityCard({ facility, distanceOverride, locationSource }: Fac
   const { t } = useLanguage();
   const isAvailable = facility.status === "Available";
 
+  // Only the mock/demo facility names have dedicated translation keys; real
+  // facility names (from the backend or OSM) are displayed verbatim so they
+  // never risk colliding with an unrelated i18n dictionary key.
   const displayName = facility.name.includes("District Civil")
     ? t("districtHospitalName")
     : facility.name.includes("Kalyanpur")
     ? t("chcKalyanpur")
     : facility.name.includes("Sub-Centre")
     ? t("subCentreRampur")
-    : t(facility.name);
+    : facility.name;
 
   const displayDoctor = facility.doctorAvailability.includes("Ananya Rao") ||
     facility.doctorAvailability.includes("Meera Singh")
     ? `${t("drMeeraSingh")} — On Duty Today`
     : facility.doctorAvailability.includes("Sunita Devi")
     ? `${t("sunitaDeviWorker")} — Available Daily`
-    : t(facility.doctorAvailability);
+    : facility.doctorAvailability || t("notReported");
 
   const directionsUrl =
     facility.latitude != null && facility.longitude != null
@@ -119,7 +122,7 @@ export function FacilityCard({ facility, distanceOverride, locationSource }: Fac
 
       <div className="pt-2 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
         <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" /> {t("updated")}: {t("todayAt")} 8:00 AM
+          <Clock className="w-3 h-3" /> {t("updated")}: {facility.lastUpdated || t("notReported")}
         </span>
       </div>
 

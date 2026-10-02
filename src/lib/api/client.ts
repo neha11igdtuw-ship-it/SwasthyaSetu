@@ -49,6 +49,7 @@ import type {
   AppointmentStatusUpdate,
   NotificationOut,
   NearbyInventoryOut,
+  NearbyOsmResponse,
   DiagnosticOrderCreate,
   DiagnosticReportCreate,
   SelfVitalCreate,
@@ -310,6 +311,13 @@ export const facilitiesApi = {
   get: (id: string) => request<FacilityOut>(`/facilities/${id}`),
   doctors: (facilityId: string) =>
     request<FacilityDoctorOut[]>(`/facilities/${facilityId}/doctors`),
+  // Server-side OSM/Overpass proxy — avoids the browser hitting Overpass
+  // directly, which is unreliable from client-side JS (CORS, rate limits).
+  nearbyOsm: (lat: number, lng: number, radiusKm = 10) =>
+    request<NearbyOsmResponse>(
+      `/facilities/nearby/osm?lat=${lat}&lng=${lng}&radius_km=${radiusKm}`,
+      { auth: false }
+    ),
 };
 
 // ---- Facility resources (beds/ICU/oxygen/ambulances/blood/vaccines) ----

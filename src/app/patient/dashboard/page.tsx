@@ -116,7 +116,7 @@ export default function PatientDashboardPage() {
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="dashboard-header">
         <PatientHeader
           name={patient?.full_name || "Your account"}
           location={patient?.village || "Location not set"}
@@ -128,7 +128,7 @@ export default function PatientDashboardPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border-2 border-teal-500/80 shadow-md space-y-6 ring-1 ring-teal-500/20">
+      <div data-tour="care-journey" className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border-2 border-teal-500/80 shadow-md space-y-6 ring-1 ring-teal-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-teal-700 text-white flex items-center justify-center font-extrabold shadow-xs">

@@ -113,6 +113,7 @@ export default function HealthWorkerDashboardPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Welcome Section */}
+      <div data-tour={loading ? undefined : "dashboard-header"}>
       <PageHeader
         title={`${t("welcomeWorker")}, ANM Sunita Devi`}
         subtitle={`${t("assignedVillage")} Rampur Block • Sub-Centre Area 2 • Date: Sunday, Sep 6, 2026`}
@@ -127,6 +128,7 @@ export default function HealthWorkerDashboardPage() {
           </Link>
         }
       />
+      </div>
 
       {loading && (
         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-slate-600 text-xs font-semibold flex items-center gap-2">

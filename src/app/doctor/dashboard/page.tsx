@@ -86,11 +86,13 @@ export default function DoctorDashboardPage() {
 
   return (
     <div className="space-y-6">
+      <div data-tour={loading ? undefined : "dashboard-header"}>
       <PageHeader
         title={`${t("clinicalReviewTitle")} ${doctorName || ""}`}
         subtitle={t("districtHospitalName")}
         roleBadge={<RoleBadge role="Doctor" />}
       />
+      </div>
 
       {labSuccess && (
         <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 text-emerald-900 text-xs font-semibold">

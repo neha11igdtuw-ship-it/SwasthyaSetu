@@ -11,6 +11,7 @@ from app.repositories.facilities import FacilityRepository
 from app.repositories.users import UserRepository
 from app.schemas.common import IDModel
 from app.schemas.facility_resource import FacilityResourceOut, FacilityResourceUpdate
+from app.services.doctor_availability import get_facility_availability
 from app.services.facility_resources import FacilityResourceService
 from app.services.osm_facilities import search_osm_health_facilities
 
@@ -29,6 +30,14 @@ class FacilityCreate(BaseModel):
     capabilities: str | None = None
 
 
+class DoctorAvailabilityOut(BaseModel):
+    name: str
+    specialization: str
+    on_duty_now: bool
+    days: list[str]
+    hours: str
+
+
 class FacilityOut(IDModel):
     name: str
     facility_type: str
@@ -39,6 +48,9 @@ class FacilityOut(IDModel):
     longitude: float | None
     phone: str | None
     capabilities: str | None
+    doctor_status: str = "Unavailable"
+    doctors: list[DoctorAvailabilityOut] = []
+    services_available: list[str] = []
 
 
 @router.get("", response_model=list[FacilityOut])
@@ -46,7 +58,28 @@ async def list_facilities(
     db: AsyncSession = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return await FacilityRepository(db).list_all()
+    facilities = await FacilityRepository(db).list_all()
+    enriched = []
+    for f in facilities:
+        availability = get_facility_availability(f.name, f.facility_type)
+        enriched.append(
+            FacilityOut(
+                id=f.id,
+                name=f.name,
+                facility_type=f.facility_type,
+                village=f.village,
+                district=f.district,
+                state=f.state,
+                latitude=f.latitude,
+                longitude=f.longitude,
+                phone=f.phone,
+                capabilities=f.capabilities,
+                doctor_status=availability["doctor_status"],
+                doctors=availability["doctors"],
+                services_available=availability["services_available"],
+            )
+        )
+    return enriched
 
 
 @router.post("", response_model=FacilityOut, status_code=201)
@@ -66,13 +99,18 @@ async def nearby_osm_facilities(
     lng: float,
     radius_km: int = 10,
 ):
+    from app.core.errors import ServiceUnavailableError
+
     radius_m = radius_km * 1000
 
-    facilities = await search_osm_health_facilities(
-        lat=lat,
-        lng=lng,
-        radius_m=radius_m,
-    )
+    try:
+        facilities = await search_osm_health_facilities(
+            lat=lat,
+            lng=lng,
+            radius_m=radius_m,
+        )
+    except RuntimeError as exc:
+        raise ServiceUnavailableError("Unable to reach OpenStreetMap facility search") from exc
 
     return {
         "source": "OpenStreetMap",

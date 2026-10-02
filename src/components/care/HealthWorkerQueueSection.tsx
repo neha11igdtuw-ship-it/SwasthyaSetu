@@ -121,7 +121,7 @@ export function HealthWorkerQueueSection({
     : "No open OPD desk is available for this patient’s referral facility.";
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
+    <div data-tour="hw-queue" className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
       <div className="border-b border-slate-100 dark:border-slate-700 pb-3">
         <h2 className="font-extrabold text-slate-900 dark:text-white text-lg flex items-center gap-2">
           <Ticket className="w-5 h-5 text-teal-700" /> OPD Queue Status

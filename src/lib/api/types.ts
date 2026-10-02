@@ -257,7 +257,41 @@ export interface FacilityOut {
   village?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  doctor_status?: "Available" | "Unavailable";
+  doctors?: DoctorAvailabilityOut[];
+  services_available?: string[];
   [key: string]: unknown;
+}
+
+export interface DoctorAvailabilityOut {
+  name: string;
+  specialization: string;
+  on_duty_now: boolean;
+  days: string[];
+  hours: string;
+}
+
+export interface OsmFacilityOut {
+  name: string;
+  facility_type: string;
+  latitude: number;
+  longitude: number;
+  phone?: string | null;
+  address?: string | null;
+  capabilities?: string | null;
+  data_source: string;
+  verification_status: string;
+  doctor_status?: "Available" | "Unavailable";
+  doctors?: DoctorAvailabilityOut[];
+  services_available?: string[];
+  checked_at?: string;
+}
+
+export interface NearbyOsmResponse {
+  source: string;
+  verification_note: string;
+  count: number;
+  facilities: OsmFacilityOut[];
 }
 
 export interface CareGapOut {

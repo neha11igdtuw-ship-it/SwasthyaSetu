@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { FacilityCard } from "@/components/patient/FacilityCard";
 import { priyaPatientMock, NearbyFacility } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { facilitiesApi } from "@/lib/api/client";
-import type { FacilityOut } from "@/lib/api/types";
-import { getNearbyHospitals } from "@/lib/osmFacilities";
+import type { FacilityOut, OsmFacilityOut } from "@/lib/api/types";
 import {
   DEFAULT_VILLAGE_LOCATION,
   calculateHaversineDistance,
@@ -45,24 +44,118 @@ export default function PatientFacilitiesPage() {
   const [lastUpdatedTime, setLastUpdatedTime] = useState<string>("");
   const [usingFallbackData, setUsingFallbackData] = useState(false);
 
-  // Fetch live nearby facilities from OpenStreetMap Overpass API for the given coords
+  // Tracks whether a real proximity-based facility list (from Overpass) has
+  // been loaded, so the backend facilitiesApi lookup below never clobbers it
+  // with facilities that use unrelated hardcoded coordinates.
+  const liveFacilitiesLoadedRef = useRef(false);
+
+  function osmFacilityToNearby(f: OsmFacilityOut, idx: number): NearbyFacility {
+    const onDutyDoctors = (f.doctors || []).filter((d) => d.on_duty_now);
+    const doctorAvailability =
+      onDutyDoctors.length > 0
+        ? onDutyDoctors
+            .map((d) => `${d.name} (${d.specialization}) — On duty now, ${d.hours}`)
+            .join("; ")
+        : f.doctors && f.doctors.length > 0
+        ? `No doctor on duty right now. Next available: ${f.doctors[0].name} (${f.doctors[0].specialization}), ${f.doctors[0].hours}`
+        : "";
+
+    const checkedAt = f.checked_at
+      ? new Date(f.checked_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "";
+
+    return {
+      id: `osm-${idx}-${f.latitude}-${f.longitude}`,
+      name: f.name,
+      type: "Primary Health Centre",
+      distance: "",
+      latitude: f.latitude,
+      longitude: f.longitude,
+      availableServices: f.services_available || [],
+      doctorAvailability,
+      status: f.doctor_status === "Available" ? "Available" : "Unavailable",
+      lastUpdated: checkedAt ? `Checked at ${checkedAt}` : "",
+      contactPhone: f.phone || "",
+      address: f.address || "",
+    };
+  }
+
+  // Fallback to the backend's plain facility list only once the live
+  // Overpass-based lookup has definitively failed or returned nothing —
+  // called from loadLiveFacilities below rather than run in parallel, so it
+  // can never race ahead of and clobber a real GPS-based result.
+  const loadBackendFacilities = useCallback(() => {
+    facilitiesApi
+      .list()
+      .then((apiFacs: FacilityOut[]) => {
+        if (liveFacilitiesLoadedRef.current) return;
+        if (apiFacs && apiFacs.length > 0) {
+          const mapped: NearbyFacility[] = apiFacs.map((f, idx) => {
+            const matchMock = priyaPatientMock.nearbyFacilities[idx];
+            const onDutyDoctors = (f.doctors || []).filter((d) => d.on_duty_now);
+            const doctorAvailability =
+              onDutyDoctors.length > 0
+                ? onDutyDoctors
+                    .map((d) => `${d.name} (${d.specialization}) — On duty now, ${d.hours}`)
+                    .join("; ")
+                : f.doctors && f.doctors.length > 0
+                ? `No doctor on duty right now. Next available: ${f.doctors[0].name} (${f.doctors[0].specialization}), ${f.doctors[0].hours}`
+                : matchMock?.doctorAvailability || "";
+
+            return {
+              id: f.id,
+              name: f.name,
+              type: (f.facility_type as NearbyFacility["type"]) || "Primary Health Centre",
+              distance: matchMock ? matchMock.distance : "3.5 km",
+              latitude: f.latitude ?? matchMock?.latitude ?? (26.98 - idx * 0.05),
+              longitude: f.longitude ?? matchMock?.longitude ?? (81.20 - idx * 0.05),
+              availableServices:
+                f.services_available && f.services_available.length > 0
+                  ? f.services_available
+                  : matchMock
+                  ? matchMock.availableServices
+                  : ["Medical Officer", "Emergency Care", "Diagnostics"],
+              doctorAvailability,
+              status: f.doctor_status === "Available" ? "Available" : "Unavailable",
+              lastUpdated: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              contactPhone: "+91 512 234 5678",
+              address: matchMock ? matchMock.address : `${f.name}, Kanpur Dehat, UP`,
+            };
+          });
+          setFacilities(mapped);
+          setUsingFallbackData(true);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch remote facilities, fallback to mock data:", err);
+      });
+  }, []);
+
+  // Fetch live nearby facilities via the backend's OSM/Overpass proxy for the
+  // given coords. Proxied server-side because calling Overpass directly from
+  // the browser is unreliable (CORS, rate limits on the public mirrors).
   const loadLiveFacilities = useCallback((lat: number, lng: number) => {
-    getNearbyHospitals(lat, lng)
-      .then((liveFacilities) => {
+    facilitiesApi
+      .nearbyOsm(lat, lng)
+      .then((res) => {
+        const liveFacilities = res.facilities.map(osmFacilityToNearby);
         if (liveFacilities.length > 0) {
+          liveFacilitiesLoadedRef.current = true;
           setFacilities(liveFacilities);
           setUsingFallbackData(false);
         } else {
           setFacilities(priyaPatientMock.nearbyFacilities);
           setUsingFallbackData(true);
+          loadBackendFacilities();
         }
       })
       .catch((err) => {
-        console.warn("Overpass API request failed, falling back to mock data:", err);
+        console.warn("OSM nearby-facilities request failed, falling back to mock data:", err);
         setFacilities(priyaPatientMock.nearbyFacilities);
         setUsingFallbackData(true);
+        loadBackendFacilities();
       });
-  }, []);
+  }, [loadBackendFacilities]);
 
   // Request browser GPS position
   const detectLiveLocation = useCallback(() => {
@@ -99,6 +192,7 @@ export default function PatientFacilitiesPage() {
           lng: DEFAULT_VILLAGE_LOCATION.longitude,
         });
         setLastUpdatedTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+        loadLiveFacilities(DEFAULT_VILLAGE_LOCATION.latitude, DEFAULT_VILLAGE_LOCATION.longitude);
       },
       {
         enableHighAccuracy: true,
@@ -108,42 +202,11 @@ export default function PatientFacilitiesPage() {
     );
   }, [loadLiveFacilities]);
 
-  // Fetch facilities from API and merge with mock coordinates if needed
+  // Kick off the GPS-based live facility lookup; the backend plain-list
+  // fallback (loadBackendFacilities) only runs once that attempt settles,
+  // via loadLiveFacilities, so it can never race ahead of it.
   useEffect(() => {
     detectLiveLocation();
-
-    facilitiesApi
-      .list()
-      .then((apiFacs: FacilityOut[]) => {
-        if (apiFacs && apiFacs.length > 0) {
-          const mapped: NearbyFacility[] = apiFacs.map((f, idx) => {
-            // Find existing mock facility matching or assign fallback coords
-            const matchMock = priyaPatientMock.nearbyFacilities[idx];
-            return {
-              id: f.id,
-              name: f.name,
-              type: (f.facility_type as NearbyFacility["type"]) || "Primary Health Centre",
-              distance: matchMock ? matchMock.distance : "3.5 km",
-              latitude: f.latitude ?? matchMock?.latitude ?? (26.98 - idx * 0.05),
-              longitude: f.longitude ?? matchMock?.longitude ?? (81.20 - idx * 0.05),
-              availableServices: matchMock
-                ? matchMock.availableServices
-                : ["Medical Officer", "Emergency Care", "Diagnostics"],
-              doctorAvailability: matchMock
-                ? matchMock.doctorAvailability
-                : "Medical Officer on duty",
-              status: "Available",
-              lastUpdated: "Today at 9:00 AM",
-              contactPhone: "+91 512 234 5678",
-              address: matchMock ? matchMock.address : `${f.name}, Kanpur Dehat, UP`,
-            };
-          });
-          setFacilities(mapped);
-        }
-      })
-      .catch((err) => {
-        console.warn("Could not fetch remote facilities, fallback to mock data:", err);
-      });
   }, [detectLiveLocation]);
 
   // Compute calculated distances for each facility from current user coords
