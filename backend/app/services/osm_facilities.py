@@ -1,3 +1,6 @@
+import asyncio
+import time
+
 import httpx
 
 from app.services.doctor_availability import get_facility_availability
@@ -8,12 +11,35 @@ OVERPASS_URLS = [
     "https://overpass.openstreetmap.ru/api/interpreter",
 ]
 
+# Per-mirror timeout. Queried concurrently (not sequentially) so a dead/slow
+# mirror can't block the others — worst case is one timeout, not N stacked.
+MIRROR_TIMEOUT_S = 10
+
+# In-memory cache so repeat lookups for roughly the same spot (a) don't
+# hammer the free public Overpass mirrors, which rate-limit aggressively on
+# shared cloud egress IPs, and (b) can fall back to a recent result instead
+# of an error when every mirror is momentarily down/throttled.
+_CACHE: dict[tuple[float, float, int], tuple[float, list[dict]]] = {}
+_FRESH_TTL_S = 600  # serve instantly without hitting Overpass again
+_STALE_TTL_S = 6 * 3600  # still usable as a fallback if every mirror fails
+
+
+def _cache_key(lat: float, lng: float, radius_m: int) -> tuple[float, float, int]:
+    # ~1.1km grid — plenty precise for "nearby hospitals" and keeps nearby
+    # repeat requests (e.g. GPS jitter) hitting the same cache entry.
+    return (round(lat, 2), round(lng, 2), radius_m)
+
 
 async def search_osm_health_facilities(
     lat: float,
     lng: float,
     radius_m: int = 10000,
 ):
+    key = _cache_key(lat, lng, radius_m)
+    cached = _CACHE.get(key)
+    now = time.monotonic()
+    if cached and now - cached[0] < _FRESH_TTL_S:
+        return cached[1]
     query = f"""
     [out:json][timeout:25];
     (
@@ -34,20 +60,28 @@ async def search_osm_health_facilities(
     # one, overpass-api.de rejects every request with a 406 outright.
     headers = {"User-Agent": "SwasthyaSetu/1.0 (contact: support@swasthyasetu.app)"}
 
-    last_error = None
-    data = None
+    async def _query(client: httpx.AsyncClient, url: str) -> dict:
+        response = await client.post(url, data={"data": query}, timeout=MIRROR_TIMEOUT_S)
+        response.raise_for_status()
+        return response.json()
 
-    async with httpx.AsyncClient(timeout=30, headers=headers) as client:
-        for url in OVERPASS_URLS:
+    data = None
+    last_error: Exception | None = None
+
+    async with httpx.AsyncClient(headers=headers) as client:
+        tasks = [asyncio.create_task(_query(client, url)) for url in OVERPASS_URLS]
+        for task in asyncio.as_completed(tasks):
             try:
-                response = await client.post(url, data={"data": query})
-                response.raise_for_status()
-                data = response.json()
+                data = await task
                 break
             except Exception as e:
                 last_error = e
+        for task in tasks:
+            task.cancel()
 
     if data is None:
+        if cached and now - cached[0] < _STALE_TTL_S:
+            return cached[1]
         raise RuntimeError(f"All Overpass endpoints failed: {last_error}")
 
     facilities = []
@@ -97,4 +131,5 @@ async def search_osm_health_facilities(
             }
         )
 
+    _CACHE[key] = (now, facilities)
     return facilities

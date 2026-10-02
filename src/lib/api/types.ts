@@ -813,3 +813,53 @@ export interface FacilityDoctorOut {
   full_name: string;
   email: string;
 }
+
+// backend/app/schemas/messages.py
+export type MessageCategory =
+  | "GENERAL"
+  | "SYMPTOM"
+  | "MEDICINE"
+  | "APPOINTMENT"
+  | "REFERRAL"
+  | "FOLLOW_UP";
+
+export type MessagePriority = "NORMAL" | "URGENT";
+
+export interface CareMessageOut {
+  id: string;
+  conversation_id: string;
+  sender_user_id: string;
+  sender_role: string;
+  sender_display_name: string;
+  body: string;
+  category: MessageCategory;
+  priority: MessagePriority;
+  related_type: string | null;
+  related_id: string | null;
+  created_at: string;
+  is_read: boolean;
+  read_at: string | null;
+}
+
+export interface CareMessageCreate {
+  body: string;
+  category?: MessageCategory;
+  priority?: MessagePriority;
+  related_type?: string | null;
+  related_id?: string | null;
+}
+
+export interface CareConversationSummaryOut {
+  id: string;
+  patient_id: string;
+  patient_name: string;
+  latest_message_preview: string | null;
+  latest_message_time: string | null;
+  latest_message_priority: MessagePriority | null;
+  unread_count: number;
+  has_urgent: boolean;
+}
+
+export interface UnreadCountOut {
+  unread_count: number;
+}

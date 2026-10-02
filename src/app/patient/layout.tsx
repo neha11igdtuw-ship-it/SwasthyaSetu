@@ -21,6 +21,7 @@ import {
   FileCheck,
   Building2,
   Loader2,
+  MessageSquare,
 } from "lucide-react";
 
 const patientNavItems: NavItem[] = [
@@ -28,6 +29,7 @@ const patientNavItems: NavItem[] = [
   { labelKey: "voice", defaultLabel: "Voice Assistance", href: "/patient/voice-assistant", icon: Mic },
   { labelKey: "appointments", defaultLabel: "Book Appointment", href: "/patient/appointments", icon: Calendar },
   { labelKey: "records", defaultLabel: "My Health Records", href: "/patient/records", icon: FileText },
+  { labelKey: "messages", defaultLabel: "Care Team Messages", href: "/patient/messages", icon: MessageSquare },
   { labelKey: "referrals", defaultLabel: "Care Requests", href: "/patient/referrals", icon: Share2 },
   { labelKey: "diagnostics", defaultLabel: "Lab Tests", href: "/patient/diagnostics", icon: Stethoscope },
   { labelKey: "medicines", defaultLabel: "Medicines", href: "/patient/medicines", icon: Pill },
