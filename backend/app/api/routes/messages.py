@@ -55,7 +55,9 @@ async def get_own_conversation(
 async def get_patient_conversation(
     patient_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(require_roles(Role.HEALTH_WORKER, Role.DOCTOR, Role.FACILITY_ADMIN, Role.ADMIN)),
+    user: User = Depends(
+        require_roles(Role.HEALTH_WORKER, Role.DOCTOR, Role.FACILITY_ADMIN, Role.ADMIN)
+    ),
 ):
     """Get a patient's care team conversation (staff only)."""
     service = CareMessagesService(db)

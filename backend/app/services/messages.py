@@ -6,9 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import assert_patient_access
 from app.core.errors import ForbiddenError, ValidationAppError
 from app.models.enums import Role
-from app.models.messages import CareConversation, CareMessage, MessageCategory, MessagePriority
-from app.models.patient import Patient
-from app.models.staff import HealthWorkerProfile
+from app.models.messages import CareConversation, CareMessage
 from app.models.user import User
 from app.repositories.messages import (
     CareConversationRepository,
@@ -17,7 +15,7 @@ from app.repositories.messages import (
 )
 from app.repositories.patients import PatientRepository
 from app.repositories.staff import HealthWorkerProfileRepository
-from app.schemas.messages import CareMessageCreate, CareMessageOut, CareConversationSummaryOut
+from app.schemas.messages import CareConversationSummaryOut, CareMessageCreate, CareMessageOut
 
 
 class CareMessagesService:
@@ -136,12 +134,13 @@ class CareMessagesService:
         # Get read status for all messages
         output = []
         for msg in messages:
-            is_read = any(
-                read.user_id == user_id and not read.is_deleted
-                for read in msg.reads
-            )
+            is_read = any(read.user_id == user_id and not read.is_deleted for read in msg.reads)
             read_timestamp = next(
-                (read.read_at for read in msg.reads if read.user_id == user_id and not read.is_deleted),
+                (
+                    read.read_at
+                    for read in msg.reads
+                    if read.user_id == user_id and not read.is_deleted
+                ),
                 None,
             )
 
@@ -238,9 +237,7 @@ class CareMessagesService:
             if not conversation:
                 continue
 
-            latest_message = await self.messages.get_latest_message_by_conversation(
-                conversation.id
-            )
+            latest_message = await self.messages.get_latest_message_by_conversation(conversation.id)
             urgent_count = await self.messages.get_urgent_messages_count(conversation.id)
             unread_count = await self.messages.get_unread_count_for_user(user.id, conversation.id)
 

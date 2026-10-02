@@ -22,7 +22,7 @@ class CareConversationRepository(SyncableRepository[CareConversation]):
             select(self.model).where(
                 and_(
                     self.model.patient_id == patient_id,
-                    self.model.is_deleted == False,
+                    self.model.is_deleted.is_(False),
                 )
             )
         )
@@ -40,7 +40,7 @@ class CareConversationRepository(SyncableRepository[CareConversation]):
             select(self.model).where(
                 and_(
                     self.model.patient_id == patient_id,
-                    self.model.is_deleted == False,
+                    self.model.is_deleted.is_(False),
                 )
             )
         )
@@ -88,10 +88,14 @@ class CareMessageRepository(SyncableRepository[CareMessage]):
         offset: int = 0,
     ) -> tuple[list[CareMessage], int]:
         """List messages in a conversation with pagination."""
-        stmt = select(self.model).options(selectinload(self.model.reads)).where(
-            and_(
-                self.model.conversation_id == conversation_id,
-                self.model.is_deleted == False,
+        stmt = (
+            select(self.model)
+            .options(selectinload(self.model.reads))
+            .where(
+                and_(
+                    self.model.conversation_id == conversation_id,
+                    self.model.is_deleted.is_(False),
+                )
             )
         )
 
@@ -99,15 +103,13 @@ class CareMessageRepository(SyncableRepository[CareMessage]):
             select(func.count(self.model.id)).where(
                 and_(
                     self.model.conversation_id == conversation_id,
-                    self.model.is_deleted == False,
+                    self.model.is_deleted.is_(False),
                 )
             )
         )
 
         rows = await self.session.scalars(
-            stmt.order_by(self.model.created_at.asc())
-            .limit(limit)
-            .offset(offset)
+            stmt.order_by(self.model.created_at.asc()).limit(limit).offset(offset)
         )
         return list(rows), total or 0
 
@@ -119,11 +121,11 @@ class CareMessageRepository(SyncableRepository[CareMessage]):
         """Get count of unread messages for a user."""
         stmt = select(func.count(self.model.id)).where(
             and_(
-                self.model.is_deleted == False,
+                self.model.is_deleted.is_(False),
                 ~self.model.reads.any(
                     and_(
                         CareMessageRead.user_id == user_id,
-                        CareMessageRead.is_deleted == False,
+                        CareMessageRead.is_deleted.is_(False),
                     )
                 ),
                 self.model.sender_user_id != user_id,
@@ -146,7 +148,7 @@ class CareMessageRepository(SyncableRepository[CareMessage]):
             .where(
                 and_(
                     self.model.conversation_id == conversation_id,
-                    self.model.is_deleted == False,
+                    self.model.is_deleted.is_(False),
                 )
             )
             .order_by(desc(self.model.created_at))
@@ -163,7 +165,7 @@ class CareMessageRepository(SyncableRepository[CareMessage]):
                 and_(
                     self.model.conversation_id == conversation_id,
                     self.model.priority == MessagePriority.URGENT,
-                    self.model.is_deleted == False,
+                    self.model.is_deleted.is_(False),
                 )
             )
         )
@@ -194,7 +196,7 @@ class CareMessageReadRepository(SyncableRepository[CareMessageRead]):
                 and_(
                     self.model.message_id == message_id,
                     self.model.user_id == user_id,
-                    self.model.is_deleted == False,
+                    self.model.is_deleted.is_(False),
                 )
             )
         )
@@ -223,7 +225,7 @@ class CareMessageReadRepository(SyncableRepository[CareMessageRead]):
             .where(
                 and_(
                     CareMessage.conversation_id == conversation_id,
-                    CareMessage.is_deleted == False,
+                    CareMessage.is_deleted.is_(False),
                     CareMessage.sender_user_id != user_id,
                 )
             )
@@ -231,13 +233,15 @@ class CareMessageReadRepository(SyncableRepository[CareMessageRead]):
         )
 
         count = await self.session.scalar(
-            select(func.count(CareMessage.id)).select_from(CareMessage).where(
+            select(func.count(CareMessage.id))
+            .select_from(CareMessage)
+            .where(
                 and_(
                     CareMessage.id.in_(select(subquery)),
                     ~CareMessage.reads.any(
                         and_(
                             self.model.user_id == user_id,
-                            self.model.is_deleted == False,
+                            self.model.is_deleted.is_(False),
                         )
                     ),
                 )

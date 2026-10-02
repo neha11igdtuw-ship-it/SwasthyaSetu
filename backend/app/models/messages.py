@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, UniqueConstraint, Index
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -31,12 +31,14 @@ class CareConversation(SyncableMixin, Base):
         Index("ix_care_conversations_patient_id", "patient_id"),
     )
 
-    patient_id: Mapped[uuid.UUID] = mapped_column(
-        GUID(), ForeignKey("patients.id"), nullable=False
-    )
+    patient_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("patients.id"), nullable=False)
 
-    messages = relationship("CareMessage", back_populates="conversation", cascade="all, delete-orphan")
-    message_reads = relationship("CareMessageRead", back_populates="conversation", cascade="all, delete-orphan")
+    messages = relationship(
+        "CareMessage", back_populates="conversation", cascade="all, delete-orphan"
+    )
+    message_reads = relationship(
+        "CareMessageRead", back_populates="conversation", cascade="all, delete-orphan"
+    )
 
 
 class CareMessage(SyncableMixin, Base):
@@ -92,9 +94,7 @@ class CareMessageRead(SyncableMixin, Base):
     conversation_id: Mapped[uuid.UUID] = mapped_column(
         GUID(), ForeignKey("care_conversations.id"), nullable=False
     )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        GUID(), ForeignKey("users.id"), nullable=False
-    )
+    user_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False)
     read_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     message = relationship("CareMessage", back_populates="reads")
