@@ -26,7 +26,12 @@ def upgrade() -> None:
 
     if is_postgres:
         message_category_enum = postgresql.ENUM(
-            "GENERAL", "SYMPTOM", "MEDICINE", "APPOINTMENT", "REFERRAL", "FOLLOW_UP",
+            "GENERAL",
+            "SYMPTOM",
+            "MEDICINE",
+            "APPOINTMENT",
+            "REFERRAL",
+            "FOLLOW_UP",
             name="message_category_enum",
             create_type=False,
         )
@@ -37,7 +42,12 @@ def upgrade() -> None:
         message_priority_enum.create(bind, checkfirst=True)
     else:
         message_category_enum = sa.Enum(
-            "GENERAL", "SYMPTOM", "MEDICINE", "APPOINTMENT", "REFERRAL", "FOLLOW_UP",
+            "GENERAL",
+            "SYMPTOM",
+            "MEDICINE",
+            "APPOINTMENT",
+            "REFERRAL",
+            "FOLLOW_UP",
             name="message_category_enum",
         )
         message_priority_enum = sa.Enum("NORMAL", "URGENT", name="message_priority_enum")
@@ -52,7 +62,9 @@ def upgrade() -> None:
         sa.Column("is_deleted", sa.Boolean(), nullable=False, server_default="false"),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["patient_id"], ["patients.id"], name="fk_care_conversations_patient_id"),
+        sa.ForeignKeyConstraint(
+            ["patient_id"], ["patients.id"], name="fk_care_conversations_patient_id"
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("patient_id", name="uq_care_conversations_patient_id"),
     )
@@ -106,7 +118,9 @@ def upgrade() -> None:
         sa.UniqueConstraint("message_id", "user_id", name="uq_care_message_reads_message_user"),
     )
     op.create_index("ix_care_message_reads_user_id", "care_message_reads", ["user_id"])
-    op.create_index("ix_care_message_reads_conversation_id", "care_message_reads", ["conversation_id"])
+    op.create_index(
+        "ix_care_message_reads_conversation_id", "care_message_reads", ["conversation_id"]
+    )
     op.create_index(
         "ix_care_message_reads_user_conversation",
         "care_message_reads",
