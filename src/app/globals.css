@@ -61,3 +61,16 @@
     cursor: not-allowed;
   }
 }
+
+/* Tailwind's `md:flex` utility isn't emitted by the current build, so the
+   two-pane messages layout (conversation list + thread) uses this plain CSS
+   rule to show its empty-state placeholder only at md+ widths. */
+.messages-empty-state {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .messages-empty-state {
+    display: flex;
+  }
+}

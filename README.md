@@ -124,6 +124,8 @@ npm run dev
 
 The app runs at `http://localhost:3000`, the API at `http://localhost:8000`.
 
+**Support contact (optional).** The Help & Support panel reads `NEXT_PUBLIC_SUPPORT_PHONE` (and optionally `NEXT_PUBLIC_SUPPORT_EMAIL`) — see `.env.example`. If the phone is unset, the panel shows "Support number currently unavailable." This is a user-support line, not an emergency number. These are build-time variables; rebuild after changing them.
+
 ### Demo story (seeded)
 
 | Role | Name | Login |

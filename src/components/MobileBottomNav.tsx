@@ -19,12 +19,13 @@ export function MobileBottomNav({ items }: MobileBottomNavProps) {
       {items.map((item, idx) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
-        const label = t(item.labelKey) || item.defaultLabel;
+        const label = item.label ?? (t(item.labelKey) || item.defaultLabel);
 
         return (
           <Link
             key={`${item.labelKey}-${item.href}-${idx}`}
             href={item.href}
+            data-tour={`nav:${item.labelKey}`}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-lg text-[10px] font-semibold transition-colors ${
               isActive ? "text-teal-800 dark:text-teal-400 font-extrabold" : "text-slate-500 dark:text-slate-400"
             }`}

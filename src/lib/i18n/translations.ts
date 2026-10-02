@@ -1,3 +1,5 @@
+import { tourTranslations } from "./tourTranslations";
+
 export type LanguageOption = "en" | "hi" | "mr" | "local";
 
 export interface LanguageContextType {
@@ -8,6 +10,9 @@ export interface LanguageContextType {
 
 export const translationDictionary: Record<LanguageOption, Record<string, string>> = {
   en: {
+    // Guided tour + Help & Support text (see tourTranslations.ts)
+    ...tourTranslations.en,
+
     // Brand & Application
     appName: "SwasthyaSetu",
     platformName: "SwasthyaSetu",
@@ -611,6 +616,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
   },
 
   hi: {
+    // Guided tour + Help & Support text (see tourTranslations.ts)
+    ...tourTranslations.hi,
+
     // Brand & Application
     appName: "स्वास्थ्यसेतु",
     platformName: "स्वास्थ्यसेतु",
@@ -1209,6 +1217,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
   },
 
   mr: {
+    // Guided tour + Help & Support text (see tourTranslations.ts)
+    ...tourTranslations.mr,
+
     // Brand & Application
     appName: "स्वास्थ्यसेतु",
     platformName: "स्वास्थ्यसेतु",
@@ -1680,6 +1691,9 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
   },
 
   local: {
+    // Guided tour + Help & Support text (see tourTranslations.ts)
+    ...tourTranslations.local,
+
     // Local / Hinglish mode
     appName: "SwasthyaSetu",
     platformName: "SwasthyaSetu",

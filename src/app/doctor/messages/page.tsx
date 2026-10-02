@@ -13,7 +13,7 @@ import type {
   MessageCategory,
   MessagePriority,
 } from "@/lib/api/types";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageSquare } from "lucide-react";
 
 const POLL_INTERVAL_MS = 30000; // Poll every 30 seconds
 
@@ -207,8 +207,14 @@ export default function DoctorMessagesPage() {
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center bg-slate-50 dark:bg-slate-900 text-slate-500">
-          <p>Select a patient to view their consultation</p>
+        <div className="messages-empty-state flex-1 flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
+            <MessageSquare className="h-7 w-7" />
+          </div>
+          <div className="text-center">
+            <p className="font-medium text-slate-700 dark:text-slate-300">Select a patient</p>
+            <p className="text-sm">Choose a conversation on the left to view their consultation</p>
+          </div>
         </div>
       )}
     </div>
