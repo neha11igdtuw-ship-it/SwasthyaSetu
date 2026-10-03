@@ -53,9 +53,10 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
       setPhase("idle");
       return;
     }
-    if (autoChecked.current === userId) return;
-    autoChecked.current = userId;
-    if (isTourCompleted(userId)) {
+    const checkKey = `${userId}:${tourRole}`;
+    if (autoChecked.current === checkKey) return;
+    autoChecked.current = checkKey;
+    if (isTourCompleted(userId, tourRole)) {
       setPhase("idle");
       return;
     }
@@ -92,11 +93,11 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
 
   const close = useCallback(
     (markDone: boolean) => {
-      if (markDone && userId) markTourCompleted(userId);
+      if (markDone && userId && tourRole) markTourCompleted(userId, tourRole);
       setPhase("idle");
       setSteps([]);
     },
-    [userId]
+    [userId, tourRole]
   );
 
   const handleStart = useCallback(() => {
@@ -114,7 +115,7 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
 
   const restart = useCallback(() => {
     if (!userId || !tourRole) return;
-    resetTourCompleted(userId); // only the tour flag — nothing else
+    resetTourCompleted(userId, tourRole); // only this role's tour flag — nothing else
     skipWelcomeRef.current = true;
     const dashboard = TOUR_DASHBOARD_PATH[tourRole];
     if (pathname !== dashboard) router.push(dashboard);
