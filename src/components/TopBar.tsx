@@ -27,6 +27,7 @@ import { getCurrentUserRole, isAuthenticated, clearTokens, AUTH_CHANGED_EVENT } 
 import { dashboardPathForJwtRole, resolveSearchAudience } from "@/lib/search/searchService";
 
 interface TopBarProps {
+  landing?: boolean;
   role?: RoleType;
   userName?: string;
   facilityOrLocation?: string;
@@ -42,6 +43,7 @@ const SHELL_DASHBOARD_ROUTES: Record<RoleType, string> = {
 };
 
 export function TopBar({
+  landing = false,
   role,
   userName,
   facilityOrLocation,
@@ -114,15 +116,15 @@ export function TopBar({
   }
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm border-b border-slate-200/80 dark:border-slate-700 px-3 sm:px-6 py-2.5">
+    <header data-landing-header={landing ? "true" : undefined} className={`sticky top-0 z-30 backdrop-blur-sm px-3 sm:px-6 ${landing ? "bg-white/95 text-slate-900 border-b border-slate-200/80 py-2.5 dark:bg-[#10192c] dark:text-white dark:border-white/5" : "bg-white/95 dark:bg-slate-900/95 border-b border-slate-200/80 dark:border-slate-700 py-2.5"}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-3 lg:gap-5">
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {onToggleSidebar && (
             <button
               type="button"
               onClick={onToggleSidebar}
-              aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
-              title={isSidebarOpen ? "Close sidebar menu" : "Open sidebar menu"}
+              aria-label={isSidebarOpen ? t("closeMenu") : t("openMenu")}
+              title={isSidebarOpen ? t("closeSidebarMenu") : t("openSidebarMenu")}
               className="p-2 rounded-xl bg-teal-50 dark:bg-teal-900/40 hover:bg-teal-100 dark:hover:bg-teal-900/70 text-teal-800 dark:text-teal-200 transition-all border border-teal-200/80 dark:border-teal-700/60 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center justify-center shadow-2xs"
             >
               {isSidebarOpen ? (
@@ -135,13 +137,13 @@ export function TopBar({
 
           <Link
             href="/"
-            aria-label="SwasthyaSetu Home"
+            aria-label={t("appHome")}
             className="flex items-center gap-2 group cursor-pointer"
           >
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
               <Image
                 src="/logo.jpg"
-                alt="SwasthyaSetu Logo"
+                alt={t("appLogo")}
                 width={40}
                 height={40}
                 className="w-full h-full object-contain"
@@ -161,7 +163,7 @@ export function TopBar({
           {role && <RoleBadge role={role} />}
         </div>
 
-        <div className="relative flex-1 max-w-xs md:max-w-md hidden lg:block min-w-0">
+        <div className={`relative flex-1 max-w-xs md:max-w-md hidden lg:block min-w-0 ${landing ? "invisible" : ""}`}>
           <GlobalSearch audience={searchAudience} variant="desktop" />
         </div>
 
@@ -169,7 +171,7 @@ export function TopBar({
           <button
             type="button"
             onClick={() => setIsMobileSearchVisible((open) => !open)}
-            aria-label={isMobileSearchVisible ? "Close search" : "Open search"}
+            aria-label={isMobileSearchVisible ? t("closeSearch") : t("openSearch")}
             aria-expanded={isMobileSearchVisible}
             className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
@@ -190,39 +192,39 @@ export function TopBar({
           )}
 
           <div className="hidden lg:inline-flex items-center">
-            <OfflinePill />
+            <OfflinePill className={landing ? "dark:!bg-emerald-950/70 dark:!border-teal-700 dark:!text-teal-100" : ""} />
           </div>
 
-          <HelpButton variant="header" />
-          <LanguageSelector />
+          {!landing && <HelpButton variant="header" />}
+          <LanguageSelector bilingualIcon={landing} />
           <div className="hidden sm:inline-flex">
             <ThemeToggle />
           </div>
 
-          <Link
+          {!landing && <Link
             href="/#feedback-section"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <MessageSquare className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" aria-hidden="true" />
             <span className="hidden sm:inline">{t("feedbackTitle")}</span>
-            <span className="sm:hidden">Feedback</span>
-          </Link>
+            <span className="sm:hidden">{t("feedbackTitle")}</span>
+          </Link>}
 
           {showSignedOutActions ? (
             <div className="hidden sm:flex items-center gap-2">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 ${landing ? "bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 dark:text-slate-100 dark:border-slate-600" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700"}`}
               >
                 <LogIn className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" aria-hidden="true" />
-                <span>Login</span>
+                <span>{t("signInTitle")}</span>
               </Link>
               <Link
                 href="/register"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white text-xs font-bold transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <UserPlus className="w-3.5 h-3.5 text-teal-200" aria-hidden="true" />
-                <span>Sign Up</span>
+                <span>{t("createAccountTitle")}</span>
               </Link>
             </div>
           ) : showDashboardShortcut ? (
@@ -241,6 +243,18 @@ export function TopBar({
         </div>
       </div>
 
+      {landing && (
+        <nav aria-label={t("mainNavigation")} className="-mx-3 mt-1 bg-[#0f766e] px-3 dark:bg-[#00433f] sm:-mx-6 sm:px-6">
+          <div className="mx-auto flex max-w-7xl items-center justify-end gap-8 py-3 text-sm font-semibold text-white">
+            <Link href="/" className="hover:text-teal-300">{t("home")}</Link>
+            <Link href="/#about-us" className="hover:text-teal-300">{t("aboutUsNav")}</Link>
+            <Link href="/#care-journey" className="hover:text-teal-300">{t("howItWorksNav")}</Link>
+            <Link href="/#feedback-section" className="hover:text-teal-300">{t("supportNav")}</Link>
+            <Link href="/#feedback-section" className="hover:text-teal-300">{t("feedbackNav")}</Link>
+          </div>
+        </nav>
+      )}
+
       {showSignedOutActions ? (
         <div className="sm:hidden max-w-7xl mx-auto mt-2 flex items-center gap-2">
           <Link
@@ -248,14 +262,14 @@ export function TopBar({
             className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200/80 dark:border-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <LogIn className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" aria-hidden="true" />
-            <span>Login</span>
+                <span>{t("signInTitle")}</span>
           </Link>
           <Link
             href="/register"
             className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <UserPlus className="w-3.5 h-3.5 text-teal-200" aria-hidden="true" />
-            <span>Sign Up</span>
+                <span>{t("createAccountTitle")}</span>
           </Link>
         </div>
       ) : showDashboardShortcut ? (
@@ -265,7 +279,7 @@ export function TopBar({
             className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <LayoutDashboard className="w-3.5 h-3.5 text-teal-200" aria-hidden="true" />
-            <span>Dashboard</span>
+            <span>{t("dashboard")}</span>
           </Link>
           <button
             type="button"
@@ -273,7 +287,7 @@ export function TopBar({
             className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200/80 dark:border-slate-700 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>Logout</span>
+            <span>{t("signOut")}</span>
           </button>
         </div>
       ) : null}

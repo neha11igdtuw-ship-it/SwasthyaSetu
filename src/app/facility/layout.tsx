@@ -13,11 +13,11 @@ import {
 } from "lucide-react";
 
 const facilityNavItems: NavItem[] = [
-  { labelKey: "overview", defaultLabel: "Facility Overview", href: "/facility/dashboard", icon: LayoutDashboard },
-  { labelKey: "referrals", defaultLabel: "New Care Requests", href: "/facility/care-requests", icon: Inbox },
-  { labelKey: "records", defaultLabel: "People Expected Today", href: "/facility/patients", icon: Users },
-  { labelKey: "diagnostics", defaultLabel: "Lab Results", href: "/facility/lab-results", icon: Activity },
-  { labelKey: "medicines", defaultLabel: "Medicine Stock", href: "/facility/medicines", icon: PackageCheck },
+  { labelKey: "facilityOverview", defaultLabel: "Facility Overview", href: "/facility/dashboard", icon: LayoutDashboard },
+  { labelKey: "facilityCareRequests", defaultLabel: "New Care Requests", href: "/facility/care-requests", icon: Inbox },
+  { labelKey: "facilityPatientsToday", defaultLabel: "People Expected Today", href: "/facility/patients", icon: Users },
+  { labelKey: "facilityLabResults", defaultLabel: "Lab Results", href: "/facility/lab-results", icon: Activity },
+  { labelKey: "facilityMedicineStock", defaultLabel: "Medicine Stock", href: "/facility/medicines", icon: PackageCheck },
 ];
 
 export default function FacilityLayout({

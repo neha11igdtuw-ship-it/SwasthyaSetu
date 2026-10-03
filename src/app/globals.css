@@ -74,3 +74,43 @@
     display: flex;
   }
 }
+
+/* Landing page header palette from the connected-care hero. */
+header[data-landing-header="true"] > div:first-child > div:last-child > button[aria-label="More options"] {
+  color: #475569;
+}
+
+header[data-landing-header="true"] button[aria-label="Change language"] {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+header[data-landing-header="true"] button[aria-label^="Switch to"] {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+header[data-landing-header="true"] button[aria-label="More options"]:hover,
+header[data-landing-header="true"] button[aria-label="Change language"]:hover,
+header[data-landing-header="true"] button[aria-label^="Switch to"]:hover {
+  background: #e2e8f0;
+}
+
+.dark header[data-landing-header="true"] > div:first-child > div:last-child > button[aria-label="More options"] {
+  color: #cbd5e1;
+}
+
+.dark header[data-landing-header="true"] button[aria-label="Change language"],
+.dark header[data-landing-header="true"] button[aria-label^="Switch to"] {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.dark header[data-landing-header="true"] button[aria-label="More options"]:hover,
+.dark header[data-landing-header="true"] button[aria-label="Change language"]:hover,
+.dark header[data-landing-header="true"] button[aria-label^="Switch to"]:hover {
+  background: #334155;
+}

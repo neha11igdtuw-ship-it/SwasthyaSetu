@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RequireAuth } from "@/components/RequireAuth";
+import { usePathname } from "next/navigation";
 import { NavItem } from "@/components/Sidebar";
 import { CarePathwayOnboarding } from "@/components/patient/CarePathwayOnboarding";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
@@ -29,7 +30,7 @@ const patientNavItems: NavItem[] = [
   { labelKey: "voice", defaultLabel: "Voice Assistance", href: "/patient/voice-assistant", icon: Mic },
   { labelKey: "appointments", defaultLabel: "Book Appointment", href: "/patient/appointments", icon: Calendar },
   { labelKey: "records", defaultLabel: "My Health Records", href: "/patient/records", icon: FileText },
-  { labelKey: "messages", defaultLabel: "Care Team Messages", label: "Messages", href: "/patient/messages", icon: MessageSquare },
+  { labelKey: "messages", defaultLabel: "Care Team Messages", href: "/patient/messages", icon: MessageSquare },
   { labelKey: "referrals", defaultLabel: "Care Requests", href: "/patient/referrals", icon: Share2 },
   { labelKey: "diagnostics", defaultLabel: "Lab Tests", href: "/patient/diagnostics", icon: Stethoscope },
   { labelKey: "medicines", defaultLabel: "Medicines", href: "/patient/medicines", icon: Pill },
@@ -45,6 +46,7 @@ export default function PatientLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   // Loaded from the AUTHENTICATED patient's own backend record
   // (/auth/me + /patients/me) — never from mock/seed data, and never
   // shared across accounts. `patient` starts as `null` and stays that way
@@ -74,11 +76,13 @@ export default function PatientLayout({
         .join(" • ") || "Location not set"
     : "Location not set";
 
-  // Onboarding gate: a brand-new patient record has care_pathway = null
-  // until they explicitly choose why they're here. Nothing downstream
-  // (dashboard, screening, referrals, medicines, etc.) should render for
-  // this account until that choice is saved to their real record.
-  const needsOnboarding = !loading && patient !== null && !patient.care_pathway;
+  // Keep first-time pathway setup on the patient home page only. It must not
+  // replace the content of another section (appointments, records, messages, etc.).
+  const needsOnboarding =
+    pathname === "/patient/dashboard" &&
+    !loading &&
+    patient !== null &&
+    !patient.care_pathway;
 
   return (
     <RequireAuth>

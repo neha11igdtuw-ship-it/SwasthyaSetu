@@ -50,14 +50,14 @@ export default function DoctorLayout({
   }, [user]);
 
   const doctorNavItems: NavItem[] = [
-    { labelKey: "overview", defaultLabel: "Overview", href: "/doctor/dashboard", icon: LayoutDashboard },
+    { labelKey: "doctorOverview", defaultLabel: "Overview", href: "/doctor/dashboard", icon: LayoutDashboard },
     { labelKey: "patientsToReview", defaultLabel: "Patients to Review", href: "/doctor/patients-to-review", icon: Stethoscope },
-    { labelKey: "records", defaultLabel: "People Records", label: "Patient Record", href: "/doctor/patients", icon: Users },
-    { labelKey: "messages", defaultLabel: "Patient Messages", label: "messages", href: "/doctor/messages", icon: MessageSquare },
-    { labelKey: "referrals", defaultLabel: "Care Requests", href: "/doctor/care-requests", icon: Share2 },
+    { labelKey: "doctorRecords", defaultLabel: "People Records", href: "/doctor/patients", icon: Users },
+    { labelKey: "doctorMessages", defaultLabel: "Patient Messages", href: "/doctor/messages", icon: MessageSquare },
+    { labelKey: "doctorCareRequests", defaultLabel: "Care Requests", href: "/doctor/care-requests", icon: Share2 },
     { labelKey: "todaysSchedule", defaultLabel: "Today's Schedule", href: "/doctor/schedule", icon: Clock },
     {
-      labelKey: "teleconsultations",
+      labelKey: "teleconsultationsNav",
       defaultLabel: "Teleconsultations",
       href: "/doctor/teleconsultations",
       icon: Video,

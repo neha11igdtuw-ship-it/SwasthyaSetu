@@ -82,7 +82,7 @@ export function ThreeDotMenu({ isAuthenticated = false }: { isAuthenticated?: bo
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="More options"
+        aria-label={t("moreOptions")}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"

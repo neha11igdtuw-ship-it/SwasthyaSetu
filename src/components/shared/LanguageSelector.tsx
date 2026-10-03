@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 import { LanguageOption } from "@/lib/i18n/translations";
 import { Globe, Check, ChevronDown } from "lucide-react";
 
-export function LanguageSelector() {
+export function LanguageSelector({ bilingualIcon = false }: { bilingualIcon?: boolean }) {
   const { language, setLanguage, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const selectorRef = useRef<HTMLDivElement>(null);
@@ -46,7 +46,19 @@ export function LanguageSelector() {
   }[] = [
     { id: "en", buttonLabel: "English", label: "English" },
     { id: "hi", buttonLabel: "हिंदी", label: "हिंदी", sublabel: "Hindi" },
+    { id: "kn", buttonLabel: "ಕನ್ನಡ", label: "ಕನ್ನಡ", sublabel: "Kannada" },
+    { id: "ta", buttonLabel: "தமிழ்", label: "தமிழ்", sublabel: "Tamil" },
+    { id: "ml", buttonLabel: "മലയാളം", label: "മലയാളം", sublabel: "Malayalam" },
+    { id: "te", buttonLabel: "తెలుగు", label: "తెలుగు", sublabel: "Telugu" },
     { id: "mr", buttonLabel: "मराठी", label: "मराठी", sublabel: "Marathi" },
+    { id: "gu", buttonLabel: "ગુજરાતી", label: "ગુજરાતી", sublabel: "Gujarati" },
+    { id: "as", buttonLabel: "অসমীয়া", label: "অসমীয়া", sublabel: "Assamese" },
+    { id: "or", buttonLabel: "ଓଡ଼ିଆ", label: "ଓଡ଼ିଆ", sublabel: "Odia" },
+    { id: "bn", buttonLabel: "বাংলা", label: "বাংলা", sublabel: "Bengali" },
+    { id: "pa", buttonLabel: "ਪੰਜਾਬੀ", label: "ਪੰਜਾਬੀ", sublabel: "Punjabi" },
+    { id: "ur", buttonLabel: "اردو", label: "اردو", sublabel: "Urdu" },
+    { id: "mni", buttonLabel: "মণিপুরী", label: "মণিপুরী", sublabel: "Manipuri" },
+    { id: "kok", buttonLabel: "कोंकणी", label: "कोंकणी", sublabel: "Konkani" },
     {
       id: "local",
       buttonLabel: "Multilingual",
@@ -67,13 +79,15 @@ export function LanguageSelector() {
         aria-haspopup="listbox"
         className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-semibold border border-slate-200/80 dark:border-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
       >
-        <Globe className="w-4 h-4 text-teal-700 shrink-0" />
+        {!bilingualIcon && (
+          <Globe className="w-4 h-4 text-teal-700 shrink-0" aria-hidden="true" />
+        )}
         <span className="hidden sm:inline">{currentOption.buttonLabel}</span>
         <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0 hidden sm:inline" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 sm:w-64 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl p-1.5 space-y-1 text-xs z-50">
+        <div className="absolute right-0 mt-2 max-h-[70vh] w-56 overflow-y-auto overscroll-contain rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl p-1.5 space-y-1 text-xs z-50">
           <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             {t("changeLanguage")}
           </div>

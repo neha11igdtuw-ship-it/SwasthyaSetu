@@ -13,6 +13,7 @@ import {
 import { patientsApi } from "@/lib/api/client";
 import type { PatientOut } from "@/lib/api/types";
 import { CARE_PATHWAY_OPTIONS } from "@/lib/carePathway";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "General Health Problem": Stethoscope,
@@ -38,6 +39,7 @@ interface CarePathwayOnboardingProps {
  * completely isolated to this account.
  */
 export function CarePathwayOnboarding({ patient, onSelected }: CarePathwayOnboardingProps) {
+  const { t } = useLanguage();
   const [saving, setSaving] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,11 +54,8 @@ export function CarePathwayOnboarding({ patient, onSelected }: CarePathwayOnboar
       });
       onSelected(updated);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Could not save your choice. Please check your connection and try again."
-      );
+      console.error("Could not save selected care pathway:", err);
+      setError(t("carePathwaySaveFailed"));
       setSaving(null);
     }
   };
@@ -65,11 +64,10 @@ export function CarePathwayOnboarding({ patient, onSelected }: CarePathwayOnboar
     <div className="max-w-2xl mx-auto py-6 sm:py-10 space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          What brings you to SwasthyaSetu?
+          {t("carePathwayQuestion")}
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-          Choose the option that best describes why you&apos;re here. This helps us
-          personalize your care journey — you can update this later from your profile.
+          {t("carePathwayDescription")}
         </p>
       </div>
 
@@ -106,10 +104,10 @@ export function CarePathwayOnboarding({ patient, onSelected }: CarePathwayOnboar
                 )}
               </div>
               <h3 className="font-extrabold text-slate-900 dark:text-white text-sm">
-                {opt.label}
+                {t(`carePathway.${opt.value}.title`)}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                {opt.description}
+                {t(`carePathway.${opt.value}.description`)}
               </p>
             </button>
           );
