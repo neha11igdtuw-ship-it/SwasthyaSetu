@@ -1,6 +1,6 @@
 import type { Role } from "@/lib/api/types";
 
-export type TourRole = "patient" | "hw" | "doctor";
+export type TourRole = "patient" | "hw" | "doctor" | "hospital";
 
 export interface TourStepDef {
   id: string;
@@ -19,6 +19,10 @@ export function tourRoleForUserRole(role: Role | string | null | undefined): Tou
       return "hw";
     case "DOCTOR":
       return "doctor";
+    // Hospital/facility accounts are their own role — never the doctor tour.
+    case "FACILITY_ADMIN":
+    case "FACILITY_STAFF":
+      return "hospital";
     default:
       return null;
   }
@@ -28,6 +32,7 @@ export const TOUR_DASHBOARD_PATH: Record<TourRole, string> = {
   patient: "/patient/dashboard",
   hw: "/hw/dashboard",
   doctor: "/doctor/dashboard",
+  hospital: "/facility/dashboard",
 };
 
 /** The tour only starts once this element is on screen (e.g. after patient
@@ -48,6 +53,8 @@ const PATIENT_STEPS: TourStepDef[] = [
   { id: "referrals", target: nav("referrals"), titleKey: "tour.referrals.title", descriptionKey: "tour.referrals.description" },
   { id: "medicines", target: nav("medicines"), titleKey: "tour.medicines.title", descriptionKey: "tour.medicines.description" },
   { id: "followUps", target: nav("followUps"), titleKey: "tour.followUps.title", descriptionKey: "tour.followUps.description" },
+  { id: "symptoms", target: nav("symptoms"), titleKey: "tour.symptoms.title", descriptionKey: "tour.symptoms.description" },
+  { id: "emergency", target: nav("emergencyHelp"), titleKey: "tour.emergency.title", descriptionKey: "tour.emergency.description" },
   { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
 ];
 
@@ -74,6 +81,17 @@ const DOCTOR_STEPS: TourStepDef[] = [
   { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
 ];
 
+const HOSPITAL_STEPS: TourStepDef[] = [
+  { id: "dashboard", target: "dashboard-header", titleKey: "tour.hospital.dashboard.title", descriptionKey: "tour.hospital.dashboard.description" },
+  { id: "referrals", target: nav("referrals"), titleKey: "tour.hospital.referrals.title", descriptionKey: "tour.hospital.referrals.description" },
+  { id: "patients", target: nav("records"), titleKey: "tour.hospital.patients.title", descriptionKey: "tour.hospital.patients.description" },
+  { id: "queue", target: "facility-queue", titleKey: "tour.hospital.queue.title", descriptionKey: "tour.hospital.queue.description" },
+  { id: "resources", target: "facility-resources", titleKey: "tour.hospital.resources.title", descriptionKey: "tour.hospital.resources.description" },
+  { id: "labs", target: nav("diagnostics"), titleKey: "tour.hospital.labs.title", descriptionKey: "tour.hospital.labs.description" },
+  { id: "medicines", target: nav("medicines"), titleKey: "tour.hospital.medicines.title", descriptionKey: "tour.hospital.medicines.description" },
+  { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
+];
+
 export function getTourSteps(role: TourRole): TourStepDef[] {
   switch (role) {
     case "patient":
@@ -82,5 +100,7 @@ export function getTourSteps(role: TourRole): TourStepDef[] {
       return HW_STEPS;
     case "doctor":
       return DOCTOR_STEPS;
+    case "hospital":
+      return HOSPITAL_STEPS;
   }
 }

@@ -72,7 +72,7 @@ export function FacilityQueueSection({ facilityId }: { facilityId: string }) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
+    <div data-tour="facility-queue" className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
         <div>
           <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">OPD Queue Desks</h2>
