@@ -27,7 +27,7 @@ import {
   Sprout,
   MessageCircle,
   Link2,
-  QrCode,
+
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import { TeamSection } from "@/components/TeamSection";
