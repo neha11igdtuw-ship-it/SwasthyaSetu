@@ -116,7 +116,7 @@ function FacilityResourcesSection({ facilityId }: { facilityId: string }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
+    <div data-tour="facility-resources" className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-6 space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-700 pb-3">
         <div>
           <h2 className="font-extrabold text-slate-900 dark:text-white text-lg">Facility Resources</h2>
@@ -264,11 +264,13 @@ export default function FacilityDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={facilityName}
-        subtitle={t("healthcareFacility")}
-        roleBadge={<RoleBadge role="Healthcare Facility" />}
-      />
+      <div data-tour={loading ? undefined : "dashboard-header"}>
+        <PageHeader
+          title={facilityName}
+          subtitle={t("healthcareFacility")}
+          roleBadge={<RoleBadge role="Healthcare Facility" />}
+        />
+      </div>
 
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">

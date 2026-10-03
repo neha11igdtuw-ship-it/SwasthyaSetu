@@ -94,6 +94,34 @@ const en: TourTextMap = {
   "tour.doctor.queue.description":
     "See the patients waiting in your queue and call the next one.",
 
+  "tour.symptoms.title": "Tell your symptoms",
+  "tour.symptoms.description":
+    "Describe how you are feeling and get guidance on the care you may need.",
+  "tour.emergency.title": "Emergency help",
+  "tour.emergency.description":
+    "In an emergency, open this to get urgent help quickly.",
+  "tour.hospital.dashboard.title": "Hospital dashboard",
+  "tour.hospital.dashboard.description":
+    "This is your hospital dashboard. See new care requests, patients expected and your facility's status in one place.",
+  "tour.hospital.referrals.title": "Incoming care requests",
+  "tour.hospital.referrals.description":
+    "See referrals sent to your hospital and accept or respond to them.",
+  "tour.hospital.patients.title": "Patients expected today",
+  "tour.hospital.patients.description":
+    "See the patients and referrals coming to your hospital today.",
+  "tour.hospital.queue.title": "Queue management",
+  "tour.hospital.queue.description":
+    "Manage OPD queue desks, pause or resume them, and keep waiting times under control.",
+  "tour.hospital.resources.title": "Hospital profile and resources",
+  "tour.hospital.resources.description":
+    "Keep beds, oxygen, ambulances and other essentials up to date so patients can see what is available.",
+  "tour.hospital.labs.title": "Lab results",
+  "tour.hospital.labs.description":
+    "Review and update lab results for patients at your hospital.",
+  "tour.hospital.medicines.title": "Medicine stock",
+  "tour.hospital.medicines.description":
+    "Check medicine stock and see which items are running low.",
+
   // Shared: help
   "tour.help.title": "Help and support",
   "tour.help.description":
@@ -201,6 +229,34 @@ const hi: TourTextMap = {
   "tour.doctor.queue.description":
     "अपनी कतार में प्रतीक्षा कर रहे मरीज़ देखें और अगले मरीज़ को बुलाएँ।",
 
+  "tour.symptoms.title": "अपने लक्षण बताएँ",
+  "tour.symptoms.description":
+    "बताएँ कि आप कैसा महसूस कर रहे हैं और ज़रूरी देखभाल के बारे में सलाह पाएँ।",
+  "tour.emergency.title": "आपातकालीन मदद",
+  "tour.emergency.description":
+    "आपात स्थिति में तुरंत मदद पाने के लिए इसे खोलें।",
+  "tour.hospital.dashboard.title": "अस्पताल डैशबोर्ड",
+  "tour.hospital.dashboard.description":
+    "यह आपका अस्पताल डैशबोर्ड है। नए देखभाल अनुरोध, आने वाले मरीज़ और अस्पताल की स्थिति एक जगह देखें।",
+  "tour.hospital.referrals.title": "आने वाले देखभाल अनुरोध",
+  "tour.hospital.referrals.description":
+    "आपके अस्पताल को भेजे गए रेफरल देखें और उन्हें स्वीकार करें या जवाब दें।",
+  "tour.hospital.patients.title": "आज अपेक्षित मरीज़",
+  "tour.hospital.patients.description":
+    "आज आपके अस्पताल आने वाले मरीज़ और रेफरल देखें।",
+  "tour.hospital.queue.title": "कतार प्रबंधन",
+  "tour.hospital.queue.description":
+    "ओपीडी कतार डेस्क संभालें, उन्हें रोकें या फिर शुरू करें, और प्रतीक्षा समय नियंत्रित रखें।",
+  "tour.hospital.resources.title": "अस्पताल प्रोफ़ाइल और संसाधन",
+  "tour.hospital.resources.description":
+    "बिस्तर, ऑक्सीजन, एम्बुलेंस और अन्य ज़रूरी चीज़ों की जानकारी अद्यतन रखें ताकि मरीज़ देख सकें कि क्या उपलब्ध है।",
+  "tour.hospital.labs.title": "लैब परिणाम",
+  "tour.hospital.labs.description":
+    "अपने अस्पताल के मरीज़ों के लैब परिणाम देखें और अपडेट करें।",
+  "tour.hospital.medicines.title": "दवा का स्टॉक",
+  "tour.hospital.medicines.description":
+    "दवा का स्टॉक देखें और जानें कि कौन सी दवाएँ कम हो रही हैं।",
+
   "tour.help.title": "मदद और सहायता",
   "tour.help.description":
     "स्वास्थ्यसेतु इस्तेमाल करने में मदद चाहिए तो यहाँ दबाकर हमारी सहायता टीम से संपर्क करें।",
@@ -305,6 +361,34 @@ const mr: TourTextMap = {
   "tour.doctor.queue.title": "तुमची रुग्ण रांग",
   "tour.doctor.queue.description":
     "तुमच्या रांगेत थांबलेले रुग्ण पहा आणि पुढच्या रुग्णाला बोलवा.",
+
+  "tour.symptoms.title": "तुमची लक्षणे सांगा",
+  "tour.symptoms.description":
+    "तुम्हाला कसे वाटत आहे ते सांगा आणि आवश्यक काळजीबद्दल मार्गदर्शन मिळवा.",
+  "tour.emergency.title": "आपत्कालीन मदत",
+  "tour.emergency.description":
+    "आणीबाणीत तातडीची मदत लवकर मिळवण्यासाठी हे उघडा.",
+  "tour.hospital.dashboard.title": "रुग्णालय डॅशबोर्ड",
+  "tour.hospital.dashboard.description":
+    "हा तुमचा रुग्णालय डॅशबोर्ड आहे. नवीन काळजी विनंत्या, अपेक्षित रुग्ण आणि रुग्णालयाची स्थिती एकाच ठिकाणी पहा.",
+  "tour.hospital.referrals.title": "येणाऱ्या काळजी विनंत्या",
+  "tour.hospital.referrals.description":
+    "तुमच्या रुग्णालयाला पाठवलेले रेफरल पहा आणि ते स्वीकारा किंवा प्रतिसाद द्या.",
+  "tour.hospital.patients.title": "आज अपेक्षित रुग्ण",
+  "tour.hospital.patients.description":
+    "आज तुमच्या रुग्णालयात येणारे रुग्ण आणि रेफरल पहा.",
+  "tour.hospital.queue.title": "रांग व्यवस्थापन",
+  "tour.hospital.queue.description":
+    "ओपीडी रांग डेस्क सांभाळा, ते थांबवा किंवा पुन्हा सुरू करा आणि प्रतीक्षा वेळ नियंत्रणात ठेवा.",
+  "tour.hospital.resources.title": "रुग्णालय प्रोफाइल आणि संसाधने",
+  "tour.hospital.resources.description":
+    "खाटा, ऑक्सिजन, रुग्णवाहिका आणि इतर आवश्यक गोष्टींची माहिती अद्ययावत ठेवा, म्हणजे रुग्णांना काय उपलब्ध आहे ते दिसेल.",
+  "tour.hospital.labs.title": "प्रयोगशाळा निकाल",
+  "tour.hospital.labs.description":
+    "तुमच्या रुग्णालयातील रुग्णांचे प्रयोगशाळा निकाल पहा आणि अद्ययावत करा.",
+  "tour.hospital.medicines.title": "औषध साठा",
+  "tour.hospital.medicines.description":
+    "औषधांचा साठा तपासा आणि कोणती औषधे कमी होत आहेत ते पहा.",
 
   "tour.help.title": "मदत आणि सहाय्य",
   "tour.help.description":
@@ -412,6 +496,34 @@ const local: TourTextMap = {
   "tour.doctor.queue.title": "Aapki mareez queue",
   "tour.doctor.queue.description":
     "Aapki queue me intezaar kar rahe mareez dekhein aur agle mareez ko bulayein.",
+
+  "tour.symptoms.title": "Apne lakshan batayein",
+  "tour.symptoms.description":
+    "Batayein aap kaisa mehsoos kar rahe hain aur zaroori dekhbhal ke baare me salah payein.",
+  "tour.emergency.title": "Aapatkaalin madad",
+  "tour.emergency.description":
+    "Aapat sthiti me turant madad paane ke liye ise kholein.",
+  "tour.hospital.dashboard.title": "Hospital dashboard",
+  "tour.hospital.dashboard.description":
+    "Yeh aapka hospital dashboard hai. Naye care request, aane wale mareez aur hospital ki sthiti ek jagah dekhein.",
+  "tour.hospital.referrals.title": "Aane wale care request",
+  "tour.hospital.referrals.description":
+    "Aapke hospital ko bheje gaye referral dekhein aur unhe accept karein ya jawab dein.",
+  "tour.hospital.patients.title": "Aaj ke expected mareez",
+  "tour.hospital.patients.description":
+    "Aaj aapke hospital aane wale mareez aur referral dekhein.",
+  "tour.hospital.queue.title": "Queue management",
+  "tour.hospital.queue.description":
+    "OPD queue desk sambhalein, unhe rokein ya phir shuru karein, aur intezaar ka samay kaabu me rakhein.",
+  "tour.hospital.resources.title": "Hospital profile aur sansadhan",
+  "tour.hospital.resources.description":
+    "Bed, oxygen, ambulance aur doosri zaroori cheezon ki jaankari update rakhein taaki mareez dekh sakein kya uplabdh hai.",
+  "tour.hospital.labs.title": "Lab results",
+  "tour.hospital.labs.description":
+    "Apne hospital ke mareezon ke lab results dekhein aur update karein.",
+  "tour.hospital.medicines.title": "Dawa ka stock",
+  "tour.hospital.medicines.description":
+    "Dawa ka stock dekhein aur jaanein kaun si dawaiyan kam ho rahi hain.",
 
   "tour.help.title": "Madad aur support",
   "tour.help.description":
