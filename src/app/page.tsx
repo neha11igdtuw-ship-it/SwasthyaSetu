@@ -13,6 +13,7 @@ import {
   ArrowRight,
   ChevronRight,
   Mic,
+  Play,
   Stethoscope,
   Languages,
   HeartPulse,
@@ -24,6 +25,9 @@ import {
   Hospital,
   CalendarCheck,
   Sprout,
+  MessageCircle,
+  Link2,
+  QrCode,
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import { TeamSection } from "@/components/TeamSection";
@@ -158,39 +162,101 @@ export default function LandingPage() {
       <TopBar />
 
       <main className="flex-1 space-y-12 sm:space-y-16 pb-16">
-        <section className="pt-8 sm:pt-14 px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-teal-900 via-teal-800 to-slate-900 text-white rounded-3xl p-6 sm:p-12 shadow-xl">
-            <div className="max-w-3xl space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-100 text-xs font-semibold">
-                <span className="w-2 h-2 rounded-full bg-teal-300" />
+        
+        <section className="relative h-[calc(100vh-120px)] min-h-[600px] overflow-hidden bg-[#f4fbf8] dark:bg-[#0c1c22] pt-0">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <Image
+              src="/hero-care-artwork.jpg"
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-center translate-x-[12%] translate-y-[0%] dark:opacity-45"
+            />
+            <div
+              className="absolute inset-0 dark:hidden"
+              style={{
+                background:
+                  "linear-gradient(90deg, #f4fbf8 0%, #f4fbf8 40%, rgba(244,251,248,0.88) 46%, rgba(244,251,248,0.25) 52%, transparent 58%)",
+              }}
+            />
+            <div
+              className="absolute inset-0 hidden dark:block"
+              style={{
+                background:
+                  "linear-gradient(90deg, #0c1c22 0%, #0c1c22 40%, rgba(12,28,34,0.88) 46%, rgba(12,28,34,0.25) 52%, transparent 58%)",
+              }}
+            />
+          </div>
+
+          <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 py-14 sm:px-8 sm:py-20 md:grid-cols-[minmax(0,1.05fr)_minmax(14rem,0.8fr)] md:gap-6 lg:py-24">
+            <div className="max-w-2xl space-y-5 -translate-y-40">
+             <div className="relative top-[430px] inline-flex items-center gap-2 rounded-full bg-white/85 px-3.5 py-1.5 text-xs font-semibold text-teal-800 ring-1 ring-teal-700/15 dark:bg-teal-950/60 dark:text-teal-200 dark:ring-teal-300/20">
+              <Image
+                src="/logo.jpg"
+                alt=""
+                width={35}
+                height={35}
+                className="h-6 w-6 object-contain"
+                priority
+              />
+              
                 <span>{t("corePurposeStatement")}</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white">
+              <h1 className=" relative top-6 max-w-[24ch] font-serif text-4xl font-bold leading-tight text-slate-950 dark:text-white">
+              
                 {t("heroHeadline")}
               </h1>
 
-              <p className="text-sm sm:text-base text-teal-50 font-normal leading-relaxed">
+              <ul aria-label="Connected care features" className="relative top-4 flex max-w-2xl flex-wrap gap-x-5 gap-y-4">
+                {[
+                  { label: "Offline Access", Icon: WifiOff, tone: "bg-teal-300 text-teal-800 dark:bg-teal-900/50 dark:text-teal-200" },
+                  { label: "Teleconsultation", Icon: Stethoscope, tone: "bg-sky-300 text-sky-800 dark:bg-sky-900/50 dark:text-sky-200" },
+                  { label: "Multilingual Support", Icon: Languages, tone: "bg-violet-300 text-violet-800 dark:bg-violet-900/50 dark:text-violet-200" },
+                  { label: "Two-Way Patient-Health Worker Communication", Icon: MessageCircle, tone: "bg-orange-300 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200" },
+                  { label: "Get Connected to ABHA", Icon: Link2, tone: "bg-emerald-300 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200" },
+                ].map(({ label, Icon, tone }) => (
+                  <li key={label} className="inline-flex max-w-[9.5rem] flex-col items-center gap-1.5 text-center sm:max-w-[10.5rem]">
+                    <span className={`grid h-10 w-10 place-items-center rounded-full ${tone}`}>
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="text-[11px] font-medium leading-snug text-slate-700 sm:text-[12.4px] dark:text-slate-200">
+                  
+                      {label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="relative top-5 max-w-xl text-sm font-normal leading-relaxed text-slate-700 sm:text-base dark:text-slate-200">
                 {t("heroDescription")}
               </p>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+              <p className="relative -top-0 text-sm font-semibold text-teal-800 dark:text-teal-200">
+                Because getting care shouldn&apos;t mean figuring it all out alone.
+              </p>
+
+              <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center">
                 <Link
                   href="/login"
-                  className="px-6 py-3.5 rounded-2xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-extrabold text-sm transition-colors text-center shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  className="relative top-9  flex items-center justify-center gap-2 rounded-full bg-teal-700 px-6 py-3.5 text-center text-sm font-extrabold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0c1c22]"
                 >
                   <span>{t("getStarted")}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
 
                 <a
                   href="#care-journey"
-                  className="px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm transition-colors text-center border border-white/25 cursor-pointer"
+                  className="relative top-9  flex items-center justify-center gap-2 rounded-full border border-teal-800/20 bg-white/80 px-6 py-3.5 text-center text-sm font-bold text-teal-900 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:border-teal-200/20 dark:bg-slate-900/50 dark:text-teal-100 dark:hover:bg-slate-900 dark:focus-visible:ring-offset-[#0c1c22]"
                 >
+                  <Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                   {t("seeHowItWorks")}
                 </a>
               </div>
             </div>
+
+            <div aria-hidden="true" className="hidden min-h-[24rem] md:block" />
           </div>
         </section>
 
@@ -244,7 +310,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-4 sm:px-8 max-w-7xl mx-auto">
+        
+        <section id="about-us" className="px-4 sm:px-8 max-w-7xl mx-auto scroll-mt-20">
           <div className="relative overflow-hidden rounded-[2rem] border border-teal-100/80 dark:border-teal-800/40 bg-gradient-to-b from-[#f3faf7] via-[#eef8f4] to-[#d7eee4] dark:from-[#082226] dark:via-[#0a2429] dark:to-[#071c1f] px-5 sm:px-8 lg:px-10 pt-8 sm:pt-10 pb-8 sm:pb-9">
             <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10 space-y-2 relative z-10">
               <h2 className="text-2xl sm:text-3xl font-extrabold text-[#16384a] dark:text-white tracking-tight">
@@ -380,33 +447,69 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="mt-auto bg-slate-900 text-slate-400 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center md:text-left">
-            <span className="font-extrabold text-white text-base block">{t("appName")}</span>
-            <p className="text-slate-400 text-xs">{t("tagline")}</p>
+      <section className="bg-[#eaf4f1] dark:bg-[#102126]">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 py-10 sm:px-8 sm:py-12 md:flex-row">
+          <div className="max-w-2xl space-y-3 text-center md:text-left">
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700 dark:text-teal-300">
+              Share care
+            </p>
+            <h2 className="text-2xl font-extrabold leading-tight text-slate-900 sm:text-3xl dark:text-white">
+              CARE FEELS BETTER WHEN IT&apos;S SHARED.
+            </h2>
+            <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              Know someone who could use a little help on their healthcare journey? Share SwasthyaSetu with someone you care about.
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-300">
-            <Link href="/login" className="hover:text-white transition-colors">
+          <div className="flex shrink-0 flex-col items-center gap-2">
+           <div className="rounded-xl border border-teal-700/30 bg-white p-2 dark:border-teal-300/30 dark:bg-[#0b1a1f]">
+  <Image
+    src="/swasthyasetu-qr.png"
+    alt="Scan to share SwasthyaSetu"
+    width={128}
+    height={128}
+    className="h-28 w-28 object-contain"
+  />
+</div>
+            
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              Scan to share SwasthyaSetu
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="mt-auto border-t border-teal-900/10 bg-[#f4f8f7] px-4 py-10 text-xs text-slate-600 dark:border-teal-100/10 dark:bg-[#0b1a1f] dark:text-slate-400 sm:px-8">
+      
+
+
+  
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-7 md:flex-row">
+          <div className="space-y-1 text-center md:text-left">
+            <span className="block text-base font-extrabold text-slate-900 dark:text-white">{t("appName")}</span>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t("tagline")}</p>
+          </div>
+
+          <div className="grid grid-cols-2 items-center justify-items-center gap-x-6 gap-y-3 font-semibold text-slate-700 dark:text-slate-300 sm:grid-cols-4 md:flex md:flex-wrap md:justify-end">
+            <Link href="/login" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("signInTitle")}
             </Link>
-            <Link href="/register" className="hover:text-white transition-colors">
+            <Link href="/register" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("createAccountTitle")}
             </Link>
-            <Link href="/patient/dashboard" className="hover:text-white transition-colors">
+            <Link href="/patient/dashboard" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("patient")}
             </Link>
-            <Link href="/hw/dashboard" className="hover:text-white transition-colors">
+            <Link href="/hw/dashboard" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("healthWorker")}
             </Link>
-            <Link href="/doctor/dashboard" className="hover:text-white transition-colors">
+            <Link href="/doctor/dashboard" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("doctor")}
             </Link>
-            <Link href="/facility/dashboard" className="hover:text-white transition-colors">
+            <Link href="/facility/dashboard" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("healthcareFacility")}
             </Link>
-            <Link href="/#feedback-section" className="hover:text-white transition-colors">
+            <Link href="/#feedback-section" className="transition-colors hover:text-teal-800 dark:hover:text-white">
               {t("feedbackTitle")}
             </Link>
           </div>
