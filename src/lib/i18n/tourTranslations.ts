@@ -102,7 +102,7 @@ const en: TourTextMap = {
     "In an emergency, open this to get urgent help quickly.",
   "tour.hospital.dashboard.title": "Hospital dashboard",
   "tour.hospital.dashboard.description":
-    "This is your hospital dashboard. See new care requests, patients expected and your facility"s status in one place.",
+    "This is your hospital dashboard. See new care requests, patients expected and your facility's status in one place.",
   "tour.hospital.referrals.title": "Incoming care requests",
   "tour.hospital.referrals.description":
     "See referrals sent to your hospital and accept or respond to them.",
