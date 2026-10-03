@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
@@ -45,6 +45,8 @@ function LoginForm() {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const demoRoleParam = searchParams.get("demoRole");
+  const isDemoLogin = searchParams.get("demo") === "1";
   const [selectedRole, setSelectedRole] = useState<RoleType>("hw");
   const [identifier, setIdentifier] = useState(DEMO_CREDENTIALS.hw.email);
   const [accessCode, setAccessCode] = useState(DEMO_CREDENTIALS.hw.password);
@@ -58,6 +60,15 @@ function LoginForm() {
   const [abhaOtp, setAbhaOtp] = useState("");
   const [abhaOtpSent, setAbhaOtpSent] = useState(false);
   const [abhaNote, setAbhaNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isDemoLogin) return;
+    if (demoRoleParam === "patient" || demoRoleParam === "hw" || demoRoleParam === "doctor" || demoRoleParam === "facility") {
+      setSelectedRole(demoRoleParam);
+      setIdentifier(DEMO_CREDENTIALS[demoRoleParam].email);
+      setAccessCode(DEMO_CREDENTIALS[demoRoleParam].password);
+    }
+  }, [demoRoleParam, isDemoLogin]);
 
   const roles = [
     {
@@ -139,6 +150,9 @@ function LoginForm() {
     try {
       await authApi.login({ email: identifier, password: accessCode });
       const me = await authApi.me();
+      if (isDemoLogin) {
+        window.sessionStorage.setItem("ss_demo_mode", "1");
+      }
       const fallback = ROLE_TO_ROUTE[me.role] || "/patient/dashboard";
       const next = searchParams.get("next");
       const roleHome = fallback;

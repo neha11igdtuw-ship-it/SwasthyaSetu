@@ -8,6 +8,8 @@ export interface TourStepDef {
   target: string;
   titleKey: string;
   descriptionKey: string;
+  /** Optional real application route to open before highlighting the step. */
+  path?: string;
 }
 
 /** Only roles with a dedicated dashboard get a tour. */
@@ -39,56 +41,59 @@ export const TOUR_DASHBOARD_PATH: Record<TourRole, string> = {
  * onboarding is done and the dashboard has finished loading). */
 export const TOUR_READY_TARGET = "dashboard-header";
 
-const nav = (labelKey: string) => `nav:${labelKey}`;
-
-// Targets are the REAL elements in the app. Steps whose element is not on
-// screen for this user (hidden feature, closed menu, different pathway) are
-// dropped when the tour starts, so nothing points at a missing element.
+// Targets are the REAL elements in the app. Route steps navigate to the
+// corresponding existing section before highlighting its page content.
 const PATIENT_STEPS: TourStepDef[] = [
-  { id: "dashboard", target: "dashboard-header", titleKey: "tour.dashboard.title", descriptionKey: "tour.dashboard.description" },
-  { id: "journey", target: "care-journey", titleKey: "tour.journey.title", descriptionKey: "tour.journey.description" },
-  { id: "appointments", target: nav("appointments"), titleKey: "tour.appointments.title", descriptionKey: "tour.appointments.description" },
-  { id: "teleconsultation", target: nav("appointments"), titleKey: "tour.teleconsultation.title", descriptionKey: "tour.teleconsultation.description" },
-  { id: "records", target: nav("records"), titleKey: "tour.records.title", descriptionKey: "tour.records.description" },
-  { id: "referrals", target: nav("referrals"), titleKey: "tour.referrals.title", descriptionKey: "tour.referrals.description" },
-  { id: "medicines", target: nav("medicines"), titleKey: "tour.medicines.title", descriptionKey: "tour.medicines.description" },
-  { id: "followUps", target: nav("followUps"), titleKey: "tour.followUps.title", descriptionKey: "tour.followUps.description" },
-  { id: "symptoms", target: nav("symptoms"), titleKey: "tour.symptoms.title", descriptionKey: "tour.symptoms.description" },
-  { id: "emergency", target: nav("emergencyHelp"), titleKey: "tour.emergency.title", descriptionKey: "tour.emergency.description" },
+  { id: "dashboard", target: "dashboard-header", path: "/patient/dashboard", titleKey: "tour.dashboard.title", descriptionKey: "tour.dashboard.description" },
+  { id: "journey", target: "care-journey", path: "/patient/dashboard", titleKey: "tour.journey.title", descriptionKey: "tour.journey.description" },
+  { id: "voice", target: "page-content", path: "/patient/voice-assistant", titleKey: "voice", descriptionKey: "demoTourPatientFlow" },
+  { id: "appointments", target: "page-content", path: "/patient/appointments", titleKey: "appointments", descriptionKey: "tour.appointments.description" },
+  { id: "records", target: "page-content", path: "/patient/records", titleKey: "records", descriptionKey: "tour.records.description" },
+  { id: "messages", target: "page-content", path: "/patient/messages", titleKey: "messages", descriptionKey: "demoTourPatientFlow" },
+  { id: "referrals", target: "page-content", path: "/patient/referrals", titleKey: "referrals", descriptionKey: "tour.referrals.description" },
+  { id: "diagnostics", target: "page-content", path: "/patient/diagnostics", titleKey: "diagnostics", descriptionKey: "demoTourPatientFlow" },
+  { id: "medicines", target: "page-content", path: "/patient/medicines", titleKey: "medicines", descriptionKey: "tour.medicines.description" },
+  { id: "followUps", target: "page-content", path: "/patient/follow-ups", titleKey: "followUps", descriptionKey: "tour.followUps.description" },
+  { id: "emergency", target: "page-content", path: "/patient/emergency-help", titleKey: "emergencyHelp", descriptionKey: "tour.emergency.description" },
+  { id: "symptoms", target: "page-content", path: "/patient/symptoms", titleKey: "symptoms", descriptionKey: "demoTourPatientFlow" },
+  { id: "documents", target: "page-content", path: "/patient/documents", titleKey: "uploadReport", descriptionKey: "demoTourPatientFlow" },
+  { id: "facilities", target: "page-content", path: "/patient/facilities", titleKey: "nearbyFacilities", descriptionKey: "demoTourPatientFlow" },
   { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
 ];
 
 const HW_STEPS: TourStepDef[] = [
-  { id: "dashboard", target: "dashboard-header", titleKey: "tour.hw.dashboard.title", descriptionKey: "tour.hw.dashboard.description" },
-  { id: "register", target: nav("hwRegister"), titleKey: "tour.hw.register.title", descriptionKey: "tour.hw.register.description" },
-  { id: "patients", target: nav("hwPatients"), titleKey: "tour.hw.patients.title", descriptionKey: "tour.hw.patients.description" },
-  { id: "triage", target: nav("hwScreening"), titleKey: "tour.hw.triage.title", descriptionKey: "tour.hw.triage.description" },
-  { id: "highRisk", target: nav("hwHighRisk"), titleKey: "tour.hw.highRisk.title", descriptionKey: "tour.hw.highRisk.description" },
-  { id: "referrals", target: nav("hwReferrals"), titleKey: "tour.hw.referrals.title", descriptionKey: "tour.hw.referrals.description" },
-  { id: "followUps", target: nav("hwFollowUps"), titleKey: "tour.hw.followUps.title", descriptionKey: "tour.hw.followUps.description" },
-  { id: "queue", target: "hw-queue", titleKey: "tour.hw.queue.title", descriptionKey: "tour.hw.queue.description" },
+  { id: "dashboard", target: "dashboard-header", path: "/hw/dashboard", titleKey: "tour.hw.dashboard.title", descriptionKey: "tour.hw.dashboard.description" },
+  { id: "patients", target: "page-content", path: "/hw/patients", titleKey: "hwPatients", descriptionKey: "demoTourWorkerFlow" },
+  { id: "register", target: "page-content", path: "/hw/patients/register", titleKey: "hwRegister", descriptionKey: "tour.hw.register.description" },
+  { id: "messages", target: "page-content", path: "/hw/messages", titleKey: "hwMessages", descriptionKey: "demoTourWorkerFlow" },
+  { id: "highRisk", target: "page-content", path: "/hw/high-risk", titleKey: "hwHighRisk", descriptionKey: "tour.hw.highRisk.description" },
+  { id: "referrals", target: "page-content", path: "/hw/referrals", titleKey: "hwReferrals", descriptionKey: "tour.hw.referrals.description" },
+  { id: "followUps", target: "page-content", path: "/hw/follow-ups", titleKey: "hwFollowUps", descriptionKey: "tour.hw.followUps.description" },
+  { id: "sync", target: "page-content", path: "/hw/sync", titleKey: "hwUpdateInfo", descriptionKey: "demoTourWorkerFlow" },
+  { id: "queue", target: "hw-queue", path: "/hw/dashboard", titleKey: "tour.hw.queue.title", descriptionKey: "tour.hw.queue.description" },
   { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
 ];
 
 const DOCTOR_STEPS: TourStepDef[] = [
-  { id: "dashboard", target: "dashboard-header", titleKey: "tour.doctor.dashboard.title", descriptionKey: "tour.doctor.dashboard.description" },
-  { id: "review", target: nav("patientsToReview"), titleKey: "tour.doctor.review.title", descriptionKey: "tour.doctor.review.description" },
-  { id: "schedule", target: nav("todaysSchedule"), titleKey: "tour.doctor.schedule.title", descriptionKey: "tour.doctor.schedule.description" },
-  { id: "records", target: nav("records"), titleKey: "tour.doctor.records.title", descriptionKey: "tour.doctor.records.description" },
-  { id: "consult", target: nav("teleconsultations"), titleKey: "tour.doctor.consult.title", descriptionKey: "tour.doctor.consult.description" },
-  { id: "referrals", target: nav("referrals"), titleKey: "tour.doctor.referrals.title", descriptionKey: "tour.doctor.referrals.description" },
-  { id: "queue", target: "doctor-queue", titleKey: "tour.doctor.queue.title", descriptionKey: "tour.doctor.queue.description" },
+  { id: "dashboard", target: "dashboard-header", path: "/doctor/dashboard", titleKey: "tour.doctor.dashboard.title", descriptionKey: "tour.doctor.dashboard.description" },
+  { id: "review", target: "page-content", path: "/doctor/patients-to-review", titleKey: "patientsToReview", descriptionKey: "tour.doctor.review.description" },
+  { id: "records", target: "page-content", path: "/doctor/patients", titleKey: "doctorRecords", descriptionKey: "tour.doctor.records.description" },
+  { id: "messages", target: "page-content", path: "/doctor/messages", titleKey: "doctorMessages", descriptionKey: "demoTourDoctorFlow" },
+  { id: "referrals", target: "page-content", path: "/doctor/care-requests", titleKey: "doctorCareRequests", descriptionKey: "tour.doctor.referrals.description" },
+  { id: "schedule", target: "page-content", path: "/doctor/schedule", titleKey: "todaysSchedule", descriptionKey: "tour.doctor.schedule.description" },
+  { id: "consult", target: "page-content", path: "/doctor/teleconsultations", titleKey: "teleconsultationsNav", descriptionKey: "tour.doctor.consult.description" },
+  { id: "queue", target: "doctor-queue", path: "/doctor/dashboard", titleKey: "tour.doctor.queue.title", descriptionKey: "tour.doctor.queue.description" },
   { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
 ];
 
 const HOSPITAL_STEPS: TourStepDef[] = [
-  { id: "dashboard", target: "dashboard-header", titleKey: "tour.hospital.dashboard.title", descriptionKey: "tour.hospital.dashboard.description" },
-  { id: "referrals", target: nav("referrals"), titleKey: "tour.hospital.referrals.title", descriptionKey: "tour.hospital.referrals.description" },
-  { id: "patients", target: nav("records"), titleKey: "tour.hospital.patients.title", descriptionKey: "tour.hospital.patients.description" },
-  { id: "queue", target: "facility-queue", titleKey: "tour.hospital.queue.title", descriptionKey: "tour.hospital.queue.description" },
-  { id: "resources", target: "facility-resources", titleKey: "tour.hospital.resources.title", descriptionKey: "tour.hospital.resources.description" },
-  { id: "labs", target: nav("diagnostics"), titleKey: "tour.hospital.labs.title", descriptionKey: "tour.hospital.labs.description" },
-  { id: "medicines", target: nav("medicines"), titleKey: "tour.hospital.medicines.title", descriptionKey: "tour.hospital.medicines.description" },
+  { id: "dashboard", target: "dashboard-header", path: "/facility/dashboard", titleKey: "tour.hospital.dashboard.title", descriptionKey: "tour.hospital.dashboard.description" },
+  { id: "referrals", target: "page-content", path: "/facility/care-requests", titleKey: "facilityCareRequests", descriptionKey: "tour.hospital.referrals.description" },
+  { id: "patients", target: "page-content", path: "/facility/patients", titleKey: "facilityPatientsToday", descriptionKey: "tour.hospital.patients.description" },
+  { id: "labs", target: "page-content", path: "/facility/lab-results", titleKey: "facilityLabResults", descriptionKey: "tour.hospital.labs.description" },
+  { id: "medicines", target: "page-content", path: "/facility/medicines", titleKey: "facilityMedicineStock", descriptionKey: "tour.hospital.medicines.description" },
+  { id: "queue", target: "facility-queue", path: "/facility/dashboard", titleKey: "tour.hospital.queue.title", descriptionKey: "tour.hospital.queue.description" },
+  { id: "resources", target: "facility-resources", path: "/facility/dashboard", titleKey: "tour.hospital.resources.title", descriptionKey: "tour.hospital.resources.description" },
   { id: "help", target: "help", titleKey: "tour.help.title", descriptionKey: "tour.help.description" },
 ];
 

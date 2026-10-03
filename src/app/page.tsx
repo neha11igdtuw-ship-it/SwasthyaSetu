@@ -27,6 +27,7 @@ import {
   Sprout,
   MessageCircle,
   Link2,
+  LayoutDashboard,
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import { TeamSection } from "@/components/TeamSection";
@@ -238,6 +239,15 @@ export default function LandingPage() {
                   <Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                   {t("seeHowItWorks")}
                 </a>
+
+                <Link
+                  href="/demo"
+                  className="flex items-center justify-center gap-2 rounded-full border border-teal-700/25 bg-teal-50/90 px-5 py-3.5 text-center text-sm font-bold text-teal-900 transition-colors hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:border-teal-300/25 dark:bg-teal-950/60 dark:text-teal-100 dark:hover:bg-teal-900/70"
+                >
+                  <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                  <span>{t("demoTryDemo")}</span>
+                  <span className="text-xs font-medium opacity-75">· {t("demoNoSignup")}</span>
+                </Link>
               </div>
             </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { ensureTargetInView, findTourTarget, toTourRect, type TourRect } from "@/lib/tour/tourDom";
 import type { TourStepDef } from "@/lib/tour/tourSteps";
@@ -19,6 +20,8 @@ interface GuidedTourProps {
 
 export function GuidedTour({ steps, onFinish, onSkip, onAbort }: GuidedTourProps) {
   const { t } = useLanguage();
+  const router = useRouter();
+  const pathname = usePathname();
   const [index, setIndex] = useState(0);
   const [rect, setRect] = useState<TourRect | null>(null);
   const directionRef = useRef<1 | -1>(1);
@@ -27,17 +30,37 @@ export function GuidedTour({ steps, onFinish, onSkip, onAbort }: GuidedTourProps
   // Locate + scroll to the target whenever the step changes. A target that
   // has disappeared since the tour started is skipped, never pointed at.
   useEffect(() => {
-    const el = findTourTarget(step.target);
-    if (!el) {
-      const next = index + directionRef.current;
-      if (next >= 0 && next < steps.length) setIndex(next);
-      else if (directionRef.current === 1) onFinish();
-      else onAbort();
+    if (step.path && pathname !== step.path) {
+      setRect(null);
+      router.push(step.path);
       return;
     }
-    ensureTargetInView(el);
-    setRect(toTourRect(el.getBoundingClientRect()));
-  }, [index, step.target, steps.length, onFinish, onAbort]);
+
+    let attempts = 0;
+    const locate = () => {
+      const el = findTourTarget(step.target);
+      if (el) {
+        ensureTargetInView(el);
+        setRect(toTourRect(el.getBoundingClientRect()));
+        return true;
+      }
+      return false;
+    };
+    if (locate()) return;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      if (locate()) {
+        window.clearInterval(timer);
+      } else if (attempts >= 15) {
+        window.clearInterval(timer);
+        const next = index + directionRef.current;
+        if (next >= 0 && next < steps.length) setIndex(next);
+        else if (directionRef.current === 1) onFinish();
+        else onAbort();
+      }
+    }, 300);
+    return () => window.clearInterval(timer);
+  }, [index, pathname, router, step.path, step.target, steps.length, onFinish, onAbort]);
 
   // Keep the spotlight on the element through resize, scroll and layout changes.
   useEffect(() => {
