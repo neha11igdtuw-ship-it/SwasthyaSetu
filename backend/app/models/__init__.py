@@ -26,6 +26,7 @@ from app.models.queue import (  # noqa: F401
 )
 from app.models.referral import Referral  # noqa: F401
 from app.models.staff import DoctorAvailability, HealthWorkerProfile  # noqa: F401
+from app.models.support_request import SupportRequest  # noqa: F401
 from app.models.sync import SyncedChange  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.verification import EmailVerificationToken  # noqa: F401

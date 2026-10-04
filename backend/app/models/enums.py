@@ -151,3 +151,19 @@ class NotificationStatus(enum.StrEnum):
     SENT = "SENT"
     FAILED = "FAILED"
     READ = "READ"
+
+
+class SupportRequestReason(enum.StrEnum):
+    HEALTH_CONCERN = "HEALTH_CONCERN"
+    UNDERSTANDING_HELP = "UNDERSTANDING_HELP"
+    CANNOT_TRAVEL = "CANNOT_TRAVEL"
+    CALLBACK = "CALLBACK"
+    OTHER = "OTHER"
+
+
+class SupportRequestStatus(enum.StrEnum):
+    SUBMITTED = "SUBMITTED"
+    ASSIGNED = "ASSIGNED"
+    CALLBACK_PENDING = "CALLBACK_PENDING"
+    CONTACTED = "CONTACTED"
+    RESOLVED = "RESOLVED"

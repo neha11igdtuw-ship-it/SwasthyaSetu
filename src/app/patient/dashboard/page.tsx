@@ -19,6 +19,7 @@ import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
 import { QuickActionCard } from "@/components/patient/QuickActionCard";
 import { EmergencyHelpCard, GeneralEmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
 import { QueueCard } from "@/components/patient/QueueCard";
+import { PregnancyTimelineCard } from "@/components/patient/PregnancyTimelineCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
 import { Loader2 } from "lucide-react";
@@ -127,6 +128,10 @@ export default function PatientDashboardPage() {
           <LastSyncedBadge lastSyncedText="Live from server" />
         </div>
       </div>
+
+      {isMaternalCarePathway(patient?.care_pathway) && patient?.pregnancy_week ? (
+        <PregnancyTimelineCard />
+      ) : null}
 
       <div data-tour="care-journey" className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border-2 border-teal-500/80 shadow-md space-y-6 ring-1 ring-teal-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">

@@ -14,6 +14,7 @@ import {
   Clock,
   Video,
   MessageSquare,
+  LifeBuoy,
 } from "lucide-react";
 
 const PENDING_POLL_MS = 30000;
@@ -54,11 +55,13 @@ export default function DoctorLayout({
     { labelKey: "patientsToReview", defaultLabel: "Patients to Review", href: "/doctor/patients-to-review", icon: Stethoscope },
     { labelKey: "records", defaultLabel: "People Records", label: "Patient Record", href: "/doctor/patients", icon: Users },
     { labelKey: "messages", defaultLabel: "Patient Messages", label: "messages", href: "/doctor/messages", icon: MessageSquare },
+    { labelKey: "supportRequests", defaultLabel: "Support Requests", label: "Support Requests", href: "/doctor/support-requests", icon: LifeBuoy },
     { labelKey: "referrals", defaultLabel: "Care Requests", href: "/doctor/care-requests", icon: Share2 },
     { labelKey: "todaysSchedule", defaultLabel: "Today's Schedule", href: "/doctor/schedule", icon: Clock },
     {
       labelKey: "teleconsultations",
       defaultLabel: "Teleconsultations",
+      label: "Teleconsultations",
       href: "/doctor/teleconsultations",
       icon: Video,
       badge: pendingCount,
