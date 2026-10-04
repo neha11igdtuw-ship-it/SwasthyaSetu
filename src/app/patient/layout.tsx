@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { NavItem } from "@/components/Sidebar";
 import { CarePathwayOnboarding } from "@/components/patient/CarePathwayOnboarding";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { isDemoMode } from "@/lib/api/client";
 import { isMaternalCarePathway } from "@/lib/carePathway";
 import type { PatientOut } from "@/lib/api/types";
 import {
@@ -81,6 +82,7 @@ export default function PatientLayout({
   // Keep first-time pathway setup on the patient home page only. It must not
   // replace the content of another section (appointments, records, messages, etc.).
   const needsOnboarding =
+    !isDemoMode() &&
     pathname === "/patient/dashboard" &&
     !loading &&
     patient !== null &&

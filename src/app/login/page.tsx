@@ -7,6 +7,7 @@ import { TopBar } from "@/components/TopBar";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { authApi, ApiError } from "@/lib/api/client";
 import type { Role } from "@/lib/api/types";
+import { DEMO_ACCOUNTS } from "@/lib/demo/demoAccounts";
 import {
   User,
   HeartPulse,
@@ -33,13 +34,8 @@ const ROLE_TO_ROUTE: Record<Role, string> = {
   ADMIN: "/facility/dashboard",
 };
 
-// Demo credentials seeded by backend/seed/seed_data.py — used to prefill the form per role.
-const DEMO_CREDENTIALS: Record<RoleType, { email: string; password: string }> = {
-  hw: { email: "worker@swasthyasetu.dev", password: "ChangeMe123!" },
-  doctor: { email: "doctor@swasthyasetu.dev", password: "ChangeMe123!" },
-  facility: { email: "admin@swasthyasetu.dev", password: "ChangeMe123!" },
-  patient: { email: "patient@swasthyasetu.dev", password: "Patient@123" },
-};
+// Seeded preview accounts are used here to prefill the form per role.
+const DEMO_CREDENTIALS = DEMO_ACCOUNTS;
 
 function LoginForm() {
   const { t } = useLanguage();
