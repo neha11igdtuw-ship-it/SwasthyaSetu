@@ -12,6 +12,8 @@ from app.core.validators import (
 from app.models.enums import Role
 from app.schemas.common import ORMBase
 
+FACILITY_REQUIRED_ROLES: frozenset[Role] = frozenset({Role.HEALTH_WORKER, Role.DOCTOR})
+
 
 class AddressIn(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -89,6 +91,12 @@ class PublicUserRegister(UserRegister):
         self.email = assert_email_allowed(self.email, self.role)
         return self
 
+    @model_validator(mode="after")
+    def _facility_required(self) -> "PublicUserRegister":
+        if self.role in FACILITY_REQUIRED_ROLES and self.facility_id is None:
+            raise ValueError("facility_id is required for this role")
+        return self
+
 
 class AdminCreateUser(BaseModel):
     email: EmailStr
@@ -109,6 +117,12 @@ class AdminCreateUser(BaseModel):
         if value is None:
             return None
         return normalize_indian_phone(value)
+
+    @model_validator(mode="after")
+    def _facility_required(self) -> "AdminCreateUser":
+        if self.role in FACILITY_REQUIRED_ROLES and self.facility_id is None:
+            raise ValueError("facility_id is required for this role")
+        return self
 
 
 class UserLogin(BaseModel):
