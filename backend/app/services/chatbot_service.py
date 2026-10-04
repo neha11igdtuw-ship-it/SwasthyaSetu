@@ -110,8 +110,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "path": "/patient/facilities",
         "en": "Nearby facilities can be found through the Nearby Facilities section of "
         "SwasthyaSetu.",
-        "hi": "पास के अस्पताल और स्वास्थ्य केंद्र स्वास्थ्यसेतु के नज़दीकी अस्पताल सेक्शन में "
-        "मिल जाएँगे।",
+        "hi": "पास के अस्पताल और स्वास्थ्य केंद्र स्वास्थ्यसेतु के नज़दीकी अस्पताल सेक्शन में " "मिल जाएँगे।",
     },
     "referrals": {
         "label": "Care Requests",
@@ -126,8 +125,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "path": "/patient/medicines",
         "en": "Medicine details and availability are shown in the Medicines section of "
         "SwasthyaSetu. Please check that section.",
-        "hi": "दवाओं की जानकारी और उपलब्धता स्वास्थ्यसेतु के दवाइयाँ सेक्शन में दिखती है। "
-        "कृपया वही सेक्शन देखें।",
+        "hi": "दवाओं की जानकारी और उपलब्धता स्वास्थ्यसेतु के दवाइयाँ सेक्शन में दिखती है। " "कृपया वही सेक्शन देखें।",
     },
     "emergency": {
         "label": "Emergency Help",
