@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { groupSearchResults, searchNavigation } from "@/lib/search/searchService";
 import type { SearchAudience } from "@/lib/search/searchTypes";
+import { useLanguage } from "@/lib/i18n/languageContext";
 
 interface GlobalSearchProps {
   audience: SearchAudience;
@@ -18,6 +19,7 @@ export function GlobalSearch({
   onCloseMobile,
 }: GlobalSearchProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -32,6 +34,42 @@ export function GlobalSearch({
   );
   const groups = useMemo(() => groupSearchResults(results), [results]);
   const showDropdown = isOpen && query.trim().length > 0;
+  const resultTitleKeys: Record<string, string> = {
+    "feedback-form": "feedbackTitle",
+    "patient-facilities": "nearbyFacilities",
+    "patient-symptoms": "symptoms",
+    "patient-voice": "voice",
+    "patient-emergency": "emergencyHelp",
+    "patient-appointments": "appointments",
+    "patient-records": "records",
+    "patient-referrals": "referrals",
+    "patient-diagnostics": "diagnostics",
+    "patient-medicines": "medicines",
+    "patient-messages": "messages",
+    "hw-dashboard": "hwDashboard",
+    "hw-patients": "hwPatients",
+    "hw-register": "hwRegister",
+    "hw-high-risk": "hwHighRisk",
+    "hw-referrals": "hwReferrals",
+    "hw-follow-ups": "hwFollowUps",
+    "hw-sync": "hwUpdateInfo",
+    "doctor-dashboard": "doctorOverview",
+    "doctor-patients": "doctorRecords",
+    "doctor-care-requests": "doctorCareRequests",
+    "doctor-schedule": "todaysSchedule",
+    "facility-dashboard": "facilityOverview",
+    "facility-care-requests": "facilityCareRequests",
+    "facility-patients": "facilityPatientsToday",
+    "facility-lab": "facilityLabResults",
+    "facility-medicines": "facilityMedicineStock",
+  };
+  const searchGroupKeys: Record<string, string> = {
+    Support: "searchGroupSupport",
+    Facilities: "searchGroupFacilities",
+    Pages: "searchGroupPages",
+    Records: "searchGroupRecords",
+    Medicines: "searchGroupMedicines",
+  };
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -93,7 +131,7 @@ export function GlobalSearch({
           id={variant === "desktop" ? "header-search" : "header-search-mobile"}
           type="text"
           role="combobox"
-          aria-label="Search SwasthyaSetu"
+          aria-label={t("searchSwasthyaSetu")}
           aria-expanded={showDropdown}
           aria-controls={listId}
           aria-autocomplete="list"
@@ -108,7 +146,7 @@ export function GlobalSearch({
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search SwasthyaSetu..."
+          placeholder={t("searchSwasthyaSetuPlaceholder")}
           className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
         />
         {query ? (
@@ -119,7 +157,7 @@ export function GlobalSearch({
               setIsOpen(false);
               inputRef.current?.focus();
             }}
-            aria-label="Clear search"
+            aria-label={t("clearSearch")}
             className="absolute right-2.5 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             <X className="w-3.5 h-3.5" />
@@ -131,7 +169,7 @@ export function GlobalSearch({
         <div
           id={listId}
           role="listbox"
-          aria-label="Search results"
+          aria-label={t("searchResults")}
           className={`${
             variant === "desktop"
               ? "absolute top-full left-0 right-0 mt-1.5 z-50"
@@ -146,7 +184,7 @@ export function GlobalSearch({
               return (
                 <div key={group.category}>
                   <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    {group.category}
+                    {t(searchGroupKeys[group.category] || group.category)}
                   </div>
                   {group.items.map((item, groupIndex) => {
                     const index = start + groupIndex;
@@ -178,7 +216,9 @@ export function GlobalSearch({
                           >
                             <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                           </div>
-                          <span className="truncate font-semibold">{item.title}</span>
+                          <span className="truncate font-semibold">
+                            {t(resultTitleKeys[item.id] || item.title)}
+                          </span>
                         </div>
                       </button>
                     );
@@ -188,7 +228,7 @@ export function GlobalSearch({
             })
           ) : (
             <div role="status" className="p-4 text-center text-slate-500 dark:text-slate-400 font-medium">
-              No results found
+              {t("noSearchResults")}
             </div>
           )}
         </div>

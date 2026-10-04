@@ -81,6 +81,7 @@ export const API_BASE_URL = `${API_ROOT}/api/v1`;
 
 const ACCESS_TOKEN_KEY = "ss_access_token";
 const REFRESH_TOKEN_KEY = "ss_refresh_token";
+export const DEMO_MODE_KEY = "ss_demo_mode";
 
 export class ApiError extends Error {
   status: number;
@@ -128,7 +129,12 @@ export function clearTokens() {
   if (!isBrowser()) return;
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
   window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  window.sessionStorage.removeItem(DEMO_MODE_KEY);
   notifyAuthChanged();
+}
+
+export function isDemoMode(): boolean {
+  return isBrowser() && window.sessionStorage.getItem(DEMO_MODE_KEY) === "1";
 }
 
 export function isAuthenticated(): boolean {
@@ -189,6 +195,10 @@ async function refreshAccessToken(): Promise<boolean> {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, auth = true, retry = true } = options;
+
+  if (isDemoMode() && !["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase())) {
+    throw new ApiError(403, "Demo mode is read-only.", "DEMO_READ_ONLY");
+  }
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (auth) {

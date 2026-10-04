@@ -41,11 +41,11 @@ function normalizePhone(raw: string): string | null {
 
 function passwordIssues(pw: string): string[] {
   const issues: string[] = [];
-  if (pw.length < 8) issues.push("at least 8 characters");
-  if (!/[A-Z]/.test(pw)) issues.push("an uppercase letter");
-  if (!/[a-z]/.test(pw)) issues.push("a lowercase letter");
-  if (!/[0-9]/.test(pw)) issues.push("a number");
-  if (!/[!@#$%^&*()\-_=+[\]{};:,.<>?/|~`'"\\]/.test(pw)) issues.push("a special character");
+  if (pw.length < 8) issues.push("passwordAtLeast8");
+  if (!/[A-Z]/.test(pw)) issues.push("passwordUppercase");
+  if (!/[a-z]/.test(pw)) issues.push("passwordLowercase");
+  if (!/[0-9]/.test(pw)) issues.push("passwordNumber");
+  if (!/[!@#$%^&*()\-_=+[\]{};:,.<>?/|~`'"\\]/.test(pw)) issues.push("passwordSpecial");
   return issues;
 }
 
@@ -78,17 +78,17 @@ export default function RegisterPage() {
 
   const validate = (): FieldErrors => {
     const errs: FieldErrors = {};
-    if (!fullName.trim()) errs.full_name = "Full name is required";
-    if (!email.trim()) errs.email = "Email is required";
+    if (!fullName.trim()) errs.full_name = t("fullNameRequired");
+    if (!email.trim()) errs.email = t("emailRequired");
     const pwIssues = passwordIssues(password);
-    if (pwIssues.length) errs.password = "Password must contain " + pwIssues.join(", ");
-    if (password !== confirmPassword) errs.confirm_password = "Passwords do not match";
-    if (!normalizePhone(mobile)) errs.phone = "Enter a valid 10-digit Indian mobile number.";
-    if (!addressLine.trim()) errs.address_line = "House/street is required";
-    if (!villageArea.trim()) errs.village_area = "Village/area is required";
-    if (!cityDistrict.trim()) errs.city_district = "City/district is required";
-    if (!stateField.trim()) errs.state = "State is required";
-    if (!PINCODE_RE.test(pincode.trim())) errs.pincode = "Enter a valid 6-digit PIN code.";
+    if (pwIssues.length) errs.password = `${t("passwordMustContain")} ${pwIssues.map((key) => t(key)).join(", ")}`;
+    if (password !== confirmPassword) errs.confirm_password = t("passwordsDoNotMatch");
+    if (!normalizePhone(mobile)) errs.phone = t("validMobileRequired");
+    if (!addressLine.trim()) errs.address_line = t("streetRequired");
+    if (!villageArea.trim()) errs.village_area = t("villageRequired");
+    if (!cityDistrict.trim()) errs.city_district = t("cityRequired");
+    if (!stateField.trim()) errs.state = t("stateRequired");
+    if (!PINCODE_RE.test(pincode.trim())) errs.pincode = t("validPincodeRequired");
     return errs;
   };
 
@@ -138,7 +138,7 @@ export default function RegisterPage() {
         }
         setError(err.message);
       } else {
-        setError("Could not create account. Try a different email.");
+        setError(t("accountCreateFailed"));
       }
     } finally {
       setLoading(false);
@@ -210,8 +210,7 @@ export default function RegisterPage() {
                 })}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Doctor and admin accounts are created by an administrator — contact your facility
-                admin to get access.
+                {t("adminAccountNote")}
               </p>
             </div>
 
@@ -226,7 +225,7 @@ export default function RegisterPage() {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Priya Sharma"
+                  placeholder={t("fullNameExample")}
                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                 />
                 {fieldErrors.full_name && (
@@ -236,7 +235,7 @@ export default function RegisterPage() {
 
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Email
+                  {t("emailLabel")}
                 </label>
                 <input
                   type="email"
@@ -252,14 +251,14 @@ export default function RegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Password
+                  {t("passwordLabel")}
                   </label>
                   <input
                     type="password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 8 characters"
+                    placeholder={t("passwordAtLeast8")}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                   />
                   {fieldErrors.password && (
@@ -268,14 +267,14 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    Confirm Password
+                    {t("confirmPasswordLabel")}
                   </label>
                   <input
                     type="password"
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Re-enter password"
+                    placeholder={t("reenterPassword")}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                   />
                   {fieldErrors.confirm_password && (
@@ -286,7 +285,7 @@ export default function RegisterPage() {
 
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Mobile Number
+                  {t("mobileNumberLabel")}
                 </label>
                 <input
                   type="text"
@@ -301,7 +300,7 @@ export default function RegisterPage() {
 
               <div className="pt-2 space-y-3">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
-                  Address
+                  {t("addressLabel")}
                 </label>
                 <div>
                   <input
@@ -309,7 +308,7 @@ export default function RegisterPage() {
                     required
                     value={addressLine}
                     onChange={(e) => setAddressLine(e.target.value)}
-                    placeholder="House/flat number and street"
+                    placeholder={t("streetPlaceholder")}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                   />
                   {fieldErrors.address_line && (
@@ -323,7 +322,7 @@ export default function RegisterPage() {
                       required
                       value={villageArea}
                       onChange={(e) => setVillageArea(e.target.value)}
-                      placeholder="Village/area"
+                      placeholder={t("villagePlaceholder")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                     />
                     {fieldErrors.village_area && (
@@ -336,7 +335,7 @@ export default function RegisterPage() {
                       required
                       value={cityDistrict}
                       onChange={(e) => setCityDistrict(e.target.value)}
-                      placeholder="City/district"
+                      placeholder={t("cityPlaceholder")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                     />
                     {fieldErrors.city_district && (
@@ -351,7 +350,7 @@ export default function RegisterPage() {
                       required
                       value={stateField}
                       onChange={(e) => setStateField(e.target.value)}
-                      placeholder="State"
+                      placeholder={t("stateLabel")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                     />
                     {fieldErrors.state && <p className="text-rose-600 mt-1">{fieldErrors.state}</p>}
@@ -363,7 +362,7 @@ export default function RegisterPage() {
                       inputMode="numeric"
                       value={pincode}
                       onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      placeholder="PIN code"
+                      placeholder={t("pincodeLabel")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                     />
                     {fieldErrors.pincode && (
@@ -375,7 +374,7 @@ export default function RegisterPage() {
                   type="text"
                   value={landmark}
                   onChange={(e) => setLandmark(e.target.value)}
-                  placeholder="Landmark (optional)"
+                  placeholder={t("landmarkOptional")}
                   className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                 />
               </div>
@@ -391,7 +390,19 @@ export default function RegisterPage() {
                 >
                   <option value="English">English</option>
                   <option value="Hindi">हिंदी (Hindi)</option>
+                  <option value="Kannada">ಕನ್ನಡ (Kannada)</option>
+                  <option value="Tamil">தமிழ் (Tamil)</option>
+                  <option value="Malayalam">മലയാളം (Malayalam)</option>
+                  <option value="Telugu">తెలుగు (Telugu)</option>
                   <option value="Marathi">मराठी (Marathi)</option>
+                  <option value="Gujarati">ગુજરાતી (Gujarati)</option>
+                  <option value="Assamese">অসমীয়া (Assamese)</option>
+                  <option value="Odia">ଓଡ଼ିଆ (Odia)</option>
+                  <option value="Bengali">বাংলা (Bengali)</option>
+                  <option value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                  <option value="Urdu">اردو (Urdu)</option>
+                  <option value="Manipuri">মেইতেই/মণিপুরি (Manipuri)</option>
+                  <option value="Konkani">कोंकणी (Konkani)</option>
                   <option value="Local">Multilingual / Local Language</option>
                 </select>
               </div>

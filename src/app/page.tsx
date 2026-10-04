@@ -27,7 +27,7 @@ import {
   Sprout,
   MessageCircle,
   Link2,
-
+  LayoutDashboard,
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import { TeamSection } from "@/components/TeamSection";
@@ -159,11 +159,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f6fafa] dark:bg-[#0b1a1f]">
-      <TopBar />
+      <TopBar landing />
 
       <main className="flex-1 space-y-12 sm:space-y-16 pb-16">
         
-        <section className="relative h-[calc(100vh-120px)] min-h-[600px] overflow-hidden bg-[#f4fbf8] dark:bg-[#0c1c22] pt-0">
+        <section className="relative min-h-[520px] h-[calc(100vh-112px)] overflow-hidden bg-[#f4fbf8] dark:bg-[#0b1b20] pt-0">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <Image
               src="/hero-care-artwork.jpg"
@@ -171,57 +171,38 @@ export default function LandingPage() {
               fill
               priority
               sizes="100vw"
-              className="object-cover object-center translate-x-[12%] translate-y-[0%] dark:opacity-45"
+              className="object-cover object-center opacity-100 dark:opacity-55"
             />
-            <div
-              className="absolute inset-0 dark:hidden"
-              style={{
-                background:
-                  "linear-gradient(90deg, #f4fbf8 0%, #f4fbf8 40%, rgba(244,251,248,0.88) 46%, rgba(244,251,248,0.25) 52%, transparent 58%)",
-              }}
-            />
-            <div
-              className="absolute inset-0 hidden dark:block"
-              style={{
-                background:
-                  "linear-gradient(90deg, #0c1c22 0%, #0c1c22 40%, rgba(12,28,34,0.88) 46%, rgba(12,28,34,0.25) 52%, transparent 58%)",
-              }}
-            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#f4fbf8] via-[#f4fbf8]/85 via-[42%] to-[#f4fbf8]/15 dark:from-[#0b1b20] dark:via-[#0b1b20]/85 dark:to-[#0b1b20]/15" />
           </div>
 
-          <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 px-4 py-14 sm:px-8 sm:py-20 md:grid-cols-[minmax(0,1.05fr)_minmax(14rem,0.8fr)] md:gap-6 lg:py-24">
-            <div className="max-w-2xl space-y-5 -translate-y-40">
-             <div className="relative top-[430px] inline-flex items-center gap-2 rounded-full bg-white/85 px-3.5 py-1.5 text-xs font-semibold text-teal-800 ring-1 ring-teal-700/15 dark:bg-teal-950/60 dark:text-teal-200 dark:ring-teal-300/20">
-              <Image
-                src="/logo.jpg"
-                alt=""
-                width={35}
-                height={35}
-                className="h-6 w-6 object-contain"
-                priority
-              />
-              
-                <span>{t("corePurposeStatement")}</span>
-              </div>
-
-              <h1 className=" relative top-6 max-w-[24ch] font-serif text-4xl font-bold leading-tight text-slate-950 dark:text-white">
-              
+          <div className="relative z-10 mx-auto grid h-full max-w-7xl grid-cols-1 items-start gap-8 px-4 pt-4 sm:px-8 sm:pt-4 md:grid-cols-[minmax(0,1.05fr)_minmax(14rem,0.8fr)] md:gap-6">
+            <div className="max-w-2xl space-y-4">
+              <h1 className="max-w-[26ch] font-serif text-4xl font-bold leading-[1.12] text-slate-950 dark:text-white sm:text-[2.35rem]">
                 {t("heroHeadline")}
               </h1>
 
-              <ul aria-label="Connected care features" className="relative top-4 flex max-w-2xl flex-wrap gap-x-5 gap-y-4">
+              <ul aria-label={t("connectedCareFeatures")} className="flex max-w-2xl flex-wrap gap-x-5 gap-y-3">
                 {[
-                  { label: "Offline Access", Icon: WifiOff, tone: "bg-teal-300 text-teal-800 dark:bg-teal-900/50 dark:text-teal-200" },
-                  { label: "Teleconsultation", Icon: Stethoscope, tone: "bg-sky-300 text-sky-800 dark:bg-sky-900/50 dark:text-sky-200" },
-                  { label: "Multilingual Support", Icon: Languages, tone: "bg-violet-300 text-violet-800 dark:bg-violet-900/50 dark:text-violet-200" },
-                  { label: "Two-Way Patient-Health Worker Communication", Icon: MessageCircle, tone: "bg-orange-300 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200" },
-                  { label: "Get Connected to ABHA", Icon: Link2, tone: "bg-emerald-300 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200" },
-                ].map(({ label, Icon, tone }) => (
+                  { label: t("featureOfflineAccess"), Icon: WifiOff, tone: "bg-[#07564f] text-[#a4e6d9]" },
+                  { label: t("featureTeleconsultation"), Icon: Stethoscope, tone: "bg-[#063e54] text-[#9bdcf1]" },
+                  { label: t("featureMultilingualSupport"), Icon: Languages, tone: "bg-[#40216f] text-[#d7b9ff]", bilingual: true },
+                  { label: t("featureTwoWayCommunication"), Icon: MessageCircle, tone: "bg-[#60361d] text-[#f4c89b]" },
+                  { label: t("featureAbhaConnection"), Icon: Link2, tone: "bg-[#07564f] text-[#a4e6d9]" },
+                ].map(({ label, Icon, tone, bilingual }) => (
                   <li key={label} className="inline-flex max-w-[9.5rem] flex-col items-center gap-1.5 text-center sm:max-w-[10.5rem]">
                     <span className={`grid h-10 w-10 place-items-center rounded-full ${tone}`}>
-                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      {bilingual ? (
+                        <span aria-hidden="true" className="inline-flex items-center gap-1.5 text-[13px] font-bold leading-none text-[#e9d5ff]">
+                          <span className="font-sans">अ</span>
+                          <span className="h-4 w-px bg-[#c4b5fd]/80" />
+                          <span className="font-sans">A</span>
+                        </span>
+                      ) : (
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                      )}
                     </span>
-                    <span className="text-[11px] font-medium leading-snug text-slate-700 sm:text-[12.4px] dark:text-slate-200">
+                    <span className="text-[11px] font-medium leading-snug text-slate-700 dark:text-white sm:text-[12.4px]">
                   
                       {label}
                     </span>
@@ -229,18 +210,23 @@ export default function LandingPage() {
                 ))}
               </ul>
 
-              <p className="relative top-5 max-w-xl text-sm font-normal leading-relaxed text-slate-700 sm:text-base dark:text-slate-200">
+              <p className="max-w-xl text-sm font-normal leading-relaxed text-slate-700 dark:text-slate-100 sm:text-base">
                 {t("heroDescription")}
               </p>
 
-              <p className="relative -top-0 text-sm font-semibold text-teal-800 dark:text-teal-200">
-                Because getting care shouldn&apos;t mean figuring it all out alone.
+              <p className="text-sm font-semibold text-teal-800 dark:text-teal-300">
+                {t("careShouldNotFeelAlone")}
               </p>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-teal-700/15 bg-white/85 px-3.5 py-1.5 text-xs font-semibold text-teal-800 dark:border-teal-400/20 dark:bg-[#062a2b]/80 dark:text-teal-200">
+                <Image src="/logo.jpg" alt="" width={35} height={35} className="h-6 w-6 object-contain" priority />
+                <span>{t("corePurposeStatement")}</span>
+              </div>
 
               <div className="flex flex-col items-stretch gap-3 pt-2 sm:flex-row sm:items-center">
                 <Link
                   href="/login"
-                  className="relative top-9  flex items-center justify-center gap-2 rounded-full bg-teal-700 px-6 py-3.5 text-center text-sm font-extrabold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0c1c22]"
+                  className="flex items-center justify-center gap-2 rounded-full bg-teal-700 px-6 py-3.5 text-center text-sm font-extrabold text-white transition-colors hover:bg-teal-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
                 >
                   <span>{t("getStarted")}</span>
                   <ArrowRight className="h-4 w-4" />
@@ -248,11 +234,20 @@ export default function LandingPage() {
 
                 <a
                   href="#care-journey"
-                  className="relative top-9  flex items-center justify-center gap-2 rounded-full border border-teal-800/20 bg-white/80 px-6 py-3.5 text-center text-sm font-bold text-teal-900 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:border-teal-200/20 dark:bg-slate-900/50 dark:text-teal-100 dark:hover:bg-slate-900 dark:focus-visible:ring-offset-[#0c1c22]"
+                  className="flex items-center justify-center gap-2 rounded-full border border-teal-800/20 bg-white/80 px-6 py-3.5 text-center text-sm font-bold text-teal-900 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:border-slate-500/40 dark:bg-slate-900/45 dark:text-slate-100 dark:hover:bg-slate-900/70"
                 >
                   <Play className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                   {t("seeHowItWorks")}
                 </a>
+
+                <Link
+                  href="/demo"
+                  className="flex items-center justify-center gap-2 rounded-full border border-teal-700/25 bg-teal-50/90 px-5 py-3.5 text-center text-sm font-bold text-teal-900 transition-colors hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:border-teal-300/25 dark:bg-teal-950/60 dark:text-teal-100 dark:hover:bg-teal-900/70"
+                >
+                  <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+                  <span>{t("demoTryDemo")}</span>
+                  <span className="text-xs font-medium opacity-75">· {t("demoNoSignup")}</span>
+                </Link>
               </div>
             </div>
 
@@ -451,13 +446,13 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-8 px-4 py-10 sm:px-8 sm:py-12 md:flex-row">
           <div className="max-w-2xl space-y-3 text-center md:text-left">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-teal-700 dark:text-teal-300">
-              Share care
+              {t("shareCareEyebrow")}
             </p>
             <h2 className="text-2xl font-extrabold leading-tight text-slate-900 sm:text-3xl dark:text-white">
-              CARE FEELS BETTER WHEN IT&apos;S SHARED.
+              {t("shareCareHeadline")}
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-              Know someone who could use a little help on their healthcare journey? Share SwasthyaSetu with someone you care about.
+              {t("shareCareDescription")}
             </p>
           </div>
 
@@ -465,7 +460,7 @@ export default function LandingPage() {
            <div className="rounded-xl border border-teal-700/30 bg-white p-2 dark:border-teal-300/30 dark:bg-[#0b1a1f]">
   <Image
     src="/swasthyasetu-qr.png"
-    alt="Scan to share SwasthyaSetu"
+    alt={t("shareCareQrAlt")}
     width={128}
     height={128}
     className="h-28 w-28 object-contain"
@@ -473,7 +468,7 @@ export default function LandingPage() {
 </div>
             
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-              Scan to share SwasthyaSetu
+              {t("shareCareQrCaption")}
             </p>
           </div>
         </div>

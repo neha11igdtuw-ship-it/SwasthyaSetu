@@ -39,7 +39,7 @@ export function Sidebar({
 
   return (
     <aside
-      aria-label="Sidebar Navigation"
+      aria-label={t("sidebarNavigation")}
       className="flex flex-col w-64 sm:w-72 border-r border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-900 min-h-[calc(100vh-61px)] p-4 shrink-0 transition-all duration-300"
     >
       {/* Top Header Row of Sidebar */}
@@ -52,7 +52,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={onToggle}
-            aria-label="Close menu"
+            aria-label={t("closeMenu")}
             className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />

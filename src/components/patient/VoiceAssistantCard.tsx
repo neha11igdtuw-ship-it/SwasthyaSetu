@@ -8,12 +8,12 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 export function VoiceAssistantCard() {
   const { language, t } = useLanguage();
 
-  const activeLangName =
-    language === "hi"
-      ? t("languageHindi")
-      : language === "mr"
-      ? t("languageMarathi")
-      : t("languageEnglish");
+  const activeLangName = {
+    en: t("languageEnglish"), hi: t("languageHindi"), kn: "ಕನ್ನಡ", ta: "தமிழ்",
+    ml: "മലയാളം", te: "తెలుగు", mr: t("languageMarathi"), gu: "ગુજરાતી",
+    as: "অসমীয়া", or: "ଓଡ଼ିଆ", bn: "বাংলা", pa: "ਪੰਜਾਬੀ", ur: "اردو",
+    mni: "মণিপুরী", kok: "कोंकणी", local: "Multilingual",
+  }[language];
 
   return (
     <div className="bg-gradient-to-br from-teal-900 to-teal-950 text-white rounded-2xl p-6 shadow-md space-y-4 border border-teal-800">

@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 
 const facilityNavItems: NavItem[] = [
-  { labelKey: "overview", defaultLabel: "Facility Overview", label: "Facility Overview", href: "/facility/dashboard", icon: LayoutDashboard },
-  { labelKey: "referrals", defaultLabel: "New Care Requests", label: "New Care Requests", href: "/facility/care-requests", icon: Inbox },
-  { labelKey: "records", defaultLabel: "People Expected Today", label: "People Expected Today", href: "/facility/patients", icon: Users },
-  { labelKey: "diagnostics", defaultLabel: "Lab Results", label: "Lab Results", href: "/facility/lab-results", icon: Activity },
-  { labelKey: "medicines", defaultLabel: "Medicine Stock", label: "Medicine Stock", href: "/facility/medicines", icon: PackageCheck },
-  { labelKey: "supportRequests", defaultLabel: "Support Requests", label: "Support Requests", href: "/facility/support-requests", icon: LifeBuoy },
+  { labelKey: "facilityOverview", defaultLabel: "Facility Overview", href: "/facility/dashboard", icon: LayoutDashboard },
+  { labelKey: "facilityCareRequests", defaultLabel: "New Care Requests", href: "/facility/care-requests", icon: Inbox },
+  { labelKey: "facilityPatientsToday", defaultLabel: "People Expected Today", href: "/facility/patients", icon: Users },
+  { labelKey: "facilityLabResults", defaultLabel: "Lab Results", href: "/facility/lab-results", icon: Activity },
+  { labelKey: "facilityMedicineStock", defaultLabel: "Medicine Stock", href: "/facility/medicines", icon: PackageCheck },
+  { labelKey: "supportRequests", defaultLabel: "Support Requests", href: "/facility/support-requests", icon: LifeBuoy },
 ];
 
 export default function FacilityLayout({

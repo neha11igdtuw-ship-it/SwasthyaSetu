@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TopBar } from "@/components/TopBar";
@@ -45,6 +45,8 @@ function LoginForm() {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const demoRoleParam = searchParams.get("demoRole");
+  const isDemoLogin = searchParams.get("demo") === "1";
   const [selectedRole, setSelectedRole] = useState<RoleType>("hw");
   const [identifier, setIdentifier] = useState(DEMO_CREDENTIALS.hw.email);
   const [accessCode, setAccessCode] = useState(DEMO_CREDENTIALS.hw.password);
@@ -58,6 +60,15 @@ function LoginForm() {
   const [abhaOtp, setAbhaOtp] = useState("");
   const [abhaOtpSent, setAbhaOtpSent] = useState(false);
   const [abhaNote, setAbhaNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isDemoLogin) return;
+    if (demoRoleParam === "patient" || demoRoleParam === "hw" || demoRoleParam === "doctor" || demoRoleParam === "facility") {
+      setSelectedRole(demoRoleParam);
+      setIdentifier(DEMO_CREDENTIALS[demoRoleParam].email);
+      setAccessCode(DEMO_CREDENTIALS[demoRoleParam].password);
+    }
+  }, [demoRoleParam, isDemoLogin]);
 
   const roles = [
     {
@@ -139,6 +150,9 @@ function LoginForm() {
     try {
       await authApi.login({ email: identifier, password: accessCode });
       const me = await authApi.me();
+      if (isDemoLogin) {
+        window.sessionStorage.setItem("ss_demo_mode", "1");
+      }
       const fallback = ROLE_TO_ROUTE[me.role] || "/patient/dashboard";
       const next = searchParams.get("next");
       const roleHome = fallback;
@@ -162,7 +176,11 @@ function LoginForm() {
         );
       } else {
         const message =
-          err instanceof ApiError ? err.message : "Unable to reach the server. Please try again.";
+          err instanceof ApiError
+            ? err.status === 0
+              ? t("networkUnavailable")
+              : err.message
+            : t("networkUnavailable");
         setError(message);
       }
     } finally {
@@ -199,7 +217,7 @@ function LoginForm() {
             {/* Role Selection Cards Grid */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
-                {t("chooseYourSpace")}
+              {t("chooseYourSpace")}
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -258,7 +276,7 @@ function LoginForm() {
                 }`}
               >
                 <Mail className="w-3.5 h-3.5" />
-                Email &amp; Password
+                {t("emailAndPassword")}
               </button>
               <button
                 type="button"
@@ -270,7 +288,7 @@ function LoginForm() {
                 }`}
               >
                 <KeyRound className="w-3.5 h-3.5" />
-                Login with ABHA ID
+                {t("loginWithAbhaId")}
               </button>
             </div>
 
@@ -280,28 +298,28 @@ function LoginForm() {
                 <div className="space-y-4 text-xs">
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Email
+                      {t("emailLabel")}
                     </label>
                     <input
                       type="email"
                       required
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="e.g. worker@swasthyasetu.dev"
+                      placeholder={t("emailExamplePlaceholder")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                     />
                   </div>
 
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Password
+                      {t("passwordLabel")}
                     </label>
                     <input
                       type="password"
                       required
                       value={accessCode}
                       onChange={(e) => setAccessCode(e.target.value)}
-                      placeholder="Password"
+                      placeholder={t("passwordLabel")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                     />
                   </div>
@@ -347,7 +365,7 @@ function LoginForm() {
               <div className="space-y-4 text-xs">
                 <div>
                   <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                    ABHA Number / ABHA Address
+                      {t("abhaNumberOrAddress")}
                   </label>
                   <input
                     type="text"
@@ -358,7 +376,7 @@ function LoginForm() {
                       setAbhaOtpSent(false);
                       setAbhaNote(null);
                     }}
-                    placeholder="14-2345-6789-0123 or name@abdm"
+                      placeholder={t("abhaNumberPlaceholder")}
                     className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white"
                   />
                 </div>
@@ -366,7 +384,7 @@ function LoginForm() {
                 {abhaOtpSent && (
                   <div>
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      OTP
+                      {t("otpLabel")}
                     </label>
                     <input
                       type="text"
@@ -374,7 +392,7 @@ function LoginForm() {
                       maxLength={6}
                       value={abhaOtp}
                       onChange={(e) => setAbhaOtp(e.target.value.replace(/\D/g, ""))}
-                      placeholder="6-digit OTP"
+                      placeholder={t("otpPlaceholder")}
                       className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-slate-900 dark:text-white tracking-widest"
                     />
                   </div>
@@ -393,19 +411,19 @@ function LoginForm() {
                 >
                   {abhaOtpSent ? (
                     <>
-                      <span>Verify &amp; Continue</span>
+                      <span>{t("verifyAndContinue")}</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      <span>Send OTP</span>
+                      <span>{t("sendOtp")}</span>
                     </>
                   )}
                 </button>
 
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
-                  ABHA (Ayushman Bharat Health Account) lets you sign in using your national health ID.
+                  {t("abhaSignInExplanation")}
                 </p>
               </div>
             )}

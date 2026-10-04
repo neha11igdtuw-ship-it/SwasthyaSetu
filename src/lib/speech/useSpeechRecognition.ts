@@ -53,8 +53,20 @@ function initialSpeechLang(appLanguage: string): string {
       return "en-IN";
     case "hi":
       return "hi-IN";
+    case "kn": return "kn-IN";
+    case "ta": return "ta-IN";
+    case "ml": return "ml-IN";
+    case "te": return "te-IN";
     case "mr":
       return "mr-IN";
+    case "gu": return "gu-IN";
+    case "as": return "as-IN";
+    case "or": return "or-IN";
+    case "bn": return "bn-IN";
+    case "pa": return "pa-IN";
+    case "ur": return "ur-IN";
+    case "mni": return "mni-IN";
+    case "kok": return "kok-IN";
     case "local":
       return "hi-IN";
     default:
@@ -72,6 +84,15 @@ function detectSpokenLang(text: string): string | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
   switch (true) {
+    case /[\u0C80-\u0CFF]/.test(trimmed): return "kn-IN";
+    case /[\u0B80-\u0BFF]/.test(trimmed): return "ta-IN";
+    case /[\u0D00-\u0D7F]/.test(trimmed): return "ml-IN";
+    case /[\u0C00-\u0C7F]/.test(trimmed): return "te-IN";
+    case /[\u0A80-\u0AFF]/.test(trimmed): return "gu-IN";
+    case /[\u0980-\u09FF]/.test(trimmed): return "bn-IN";
+    case /[\u0A00-\u0A7F]/.test(trimmed): return "pa-IN";
+    case /[\u0B00-\u0B7F]/.test(trimmed): return "or-IN";
+    case /[\u0600-\u06FF]/.test(trimmed): return "ur-IN";
     case /[ऀ-ॿ]/.test(trimmed):
       // Devanagari script covers both Hindi and Marathi; hi-IN recognizes
       // it reliably for either.

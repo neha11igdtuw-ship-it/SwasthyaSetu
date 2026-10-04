@@ -14,6 +14,7 @@ import {
 } from "@/lib/tour/tourSteps";
 import { GuidedTour } from "./GuidedTour";
 import { TourWelcome } from "./TourWelcome";
+import { isDemoMode } from "@/lib/api/client";
 
 type Phase = "idle" | "waiting" | "welcome" | "steps";
 
@@ -56,7 +57,7 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
     const checkKey = `${userId}:${tourRole}`;
     if (autoChecked.current === checkKey) return;
     autoChecked.current = checkKey;
-    if (isTourCompleted(userId, tourRole)) {
+    if (isTourCompleted(userId, tourRole) && !isDemoMode()) {
       setPhase("idle");
       return;
     }
@@ -73,7 +74,7 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
       if (findTourTarget(TOUR_READY_TARGET)) {
         window.clearInterval(timer);
         if (skipWelcomeRef.current) {
-          const available = getTourSteps(tourRole).filter((s) => findTourTarget(s.target));
+          const available = getTourSteps(tourRole).filter((s) => s.path || findTourTarget(s.target));
           if (available.length > 0) {
             setSteps(available);
             setPhase("steps");
@@ -93,7 +94,7 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
 
   const close = useCallback(
     (markDone: boolean) => {
-      if (markDone && userId && tourRole) markTourCompleted(userId, tourRole);
+      if (markDone && userId && tourRole && !isDemoMode()) markTourCompleted(userId, tourRole);
       setPhase("idle");
       setSteps([]);
     },
@@ -103,7 +104,7 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
   const handleStart = useCallback(() => {
     if (!tourRole) return close(false);
     // Only steps whose element exists on screen for THIS user are included.
-    const available = getTourSteps(tourRole).filter((s) => findTourTarget(s.target));
+    const available = getTourSteps(tourRole).filter((s) => s.path || findTourTarget(s.target));
     if (available.length === 0) return close(true);
     setSteps(available);
     setPhase("steps");
@@ -115,7 +116,7 @@ export function TourProvider({ user, children }: { user: UserOut | null; childre
 
   const restart = useCallback(() => {
     if (!userId || !tourRole) return;
-    resetTourCompleted(userId, tourRole); // only this role's tour flag — nothing else
+    if (!isDemoMode()) resetTourCompleted(userId, tourRole); // demo visits never change tour preferences
     skipWelcomeRef.current = true;
     const dashboard = TOUR_DASHBOARD_PATH[tourRole];
     if (pathname !== dashboard) router.push(dashboard);

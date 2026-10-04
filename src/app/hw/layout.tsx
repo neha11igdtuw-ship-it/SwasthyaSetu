@@ -22,7 +22,7 @@ const hwNavItems: NavItem[] = [
   { labelKey: "hwPatients", defaultLabel: "My patients", href: "/hw/patients", icon: Users },
   { labelKey: "hwRegister", defaultLabel: "Register patient", href: "/hw/patients/register", icon: UserPlus },
   { labelKey: "hwScreening", defaultLabel: "Health check", href: "/hw/patients", icon: Stethoscope },
-  { labelKey: "hwMessages", defaultLabel: "Patient Messages", label: "Messages", href: "/hw/messages", icon: MessageSquare },
+  { labelKey: "hwMessages", defaultLabel: "Patient Messages", href: "/hw/messages", icon: MessageSquare },
   { labelKey: "hwSupportRequests", defaultLabel: "Support Requests", label: "Support Requests", href: "/hw/support-requests", icon: LifeBuoy },
   { labelKey: "hwHighRisk", defaultLabel: "Patients needing urgent attention", href: "/hw/high-risk", icon: AlertTriangle },
   { labelKey: "hwReferrals", defaultLabel: "New care requests", href: "/hw/referrals", icon: Share2 },
