@@ -163,7 +163,7 @@ export default function LandingPage() {
 
       <main className="flex-1 space-y-12 sm:space-y-16 pb-16">
         
-        <section className="relative min-h-[520px] h-[calc(100vh-112px)] overflow-hidden bg-[#f4fbf8] dark:bg-[#0b1b20] pt-0">
+        <section className="relative min-h-[max(520px,calc(100vh-112px))] overflow-hidden bg-[#f4fbf8] dark:bg-[#0b1b20] pt-0">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0">
             <Image
               src="/hero-care-artwork.jpg"
@@ -176,7 +176,7 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-gradient-to-r from-[#f4fbf8] via-[#f4fbf8]/85 via-[42%] to-[#f4fbf8]/15 dark:from-[#0b1b20] dark:via-[#0b1b20]/85 dark:to-[#0b1b20]/15" />
           </div>
 
-          <div className="relative z-10 mx-auto grid h-full max-w-7xl grid-cols-1 items-start gap-8 px-4 pt-4 sm:px-8 sm:pt-4 md:grid-cols-[minmax(0,1.05fr)_minmax(14rem,0.8fr)] md:gap-6">
+          <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-start gap-8 px-4 py-6 sm:px-8 sm:py-8 md:grid-cols-[minmax(0,1.05fr)_minmax(14rem,0.8fr)] md:gap-6">
             <div className="max-w-2xl space-y-4">
               <h1 className="max-w-[26ch] font-serif text-4xl font-bold leading-[1.12] text-slate-950 dark:text-white sm:text-[2.35rem]">
                 {t("heroHeadline")}
