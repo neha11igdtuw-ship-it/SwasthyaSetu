@@ -8,8 +8,10 @@ import type { FollowUpItem } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import { careGapsApi } from "@/lib/api/client";
-import type { CareGapOut } from "@/lib/api/types";
-import { HelpCircle, Loader2, CalendarCheck } from "lucide-react";
+import type { CareGapOut, SupportRequestOut } from "@/lib/api/types";
+import { HelpCircle, Loader2, CalendarCheck, CheckCircle2 } from "lucide-react";
+import { SupportRequestModal } from "@/components/support/SupportRequestModal";
+import { SupportRequestStatusBadge } from "@/components/support/SupportRequestStatusBadge";
 
 // Map a real backend CareGapOut (the actual "next visit / follow-up due"
 // record for THIS patient) onto the shape FollowUpCard already knows how
@@ -36,7 +38,8 @@ export default function PatientFollowUpsPage() {
   const { t } = useLanguage();
   const [followUps, setFollowUps] = useState<FollowUpItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [needHelp, setNeedHelp] = useState(false);
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [submittedRequest, setSubmittedRequest] = useState<SupportRequestOut | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -79,18 +82,31 @@ export default function PatientFollowUpsPage() {
         roleBadge={<RoleBadge role="Patient" />}
       />
 
-      {needHelp && (
-        <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-900/30 border border-teal-200 text-teal-900 text-xs font-semibold flex items-center justify-between">
-          <span>{t("referralUpdateSent")}</span>
+      {submittedRequest && (
+        <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-900/30 border border-teal-200 text-teal-900 text-xs font-semibold flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-teal-700 shrink-0" />
+            Your support request was sent to your care team.
+            <SupportRequestStatusBadge status={submittedRequest.status} />
+          </span>
           <button
             type="button"
-            onClick={() => setNeedHelp(false)}
-            className="text-[10px] underline font-bold cursor-pointer"
+            onClick={() => setSubmittedRequest(null)}
+            className="text-[10px] underline font-bold cursor-pointer shrink-0"
           >
             Dismiss
           </button>
         </div>
       )}
+
+      <SupportRequestModal
+        open={supportModalOpen}
+        onClose={() => setSupportModalOpen(false)}
+        onSubmitted={(req) => {
+          setSubmittedRequest(req);
+          setSupportModalOpen(false);
+        }}
+      />
 
       {/* Follow-ups List */}
       <div className="space-y-4">
@@ -100,7 +116,7 @@ export default function PatientFollowUpsPage() {
           </h3>
           <button
             type="button"
-            onClick={() => setNeedHelp(true)}
+            onClick={() => setSupportModalOpen(true)}
             className="px-3.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors inline-flex items-center gap-1 border border-amber-300 cursor-pointer"
           >
             <HelpCircle className="w-4 h-4 text-amber-700" />

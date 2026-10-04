@@ -68,6 +68,10 @@ import type {
   CareMessageCreate,
   CareConversationSummaryOut,
   UnreadCountOut,
+  PregnancyTimelineOut,
+  SupportRequestOut,
+  SupportRequestCreate,
+  SupportRequestStatus,
 } from "./types";
 
 const API_ROOT =
@@ -396,6 +400,21 @@ export const prescriptionsApi = {
 export const pregnanciesApi = {
   listForPatient: (patientId: string) =>
     request<PregnancyOut[]>(`/pregnancies?patient_id=${patientId}`),
+  myTimeline: () => request<PregnancyTimelineOut>("/pregnancies/me/timeline"),
+};
+
+// ---- Support requests ----
+
+export const supportRequestsApi = {
+  create: (data: SupportRequestCreate) =>
+    request<SupportRequestOut>("/support-requests", { method: "POST", body: data }),
+  listMine: () => request<SupportRequestOut[]>("/support-requests/me"),
+  listForFacility: () => request<SupportRequestOut[]>("/support-requests"),
+  updateStatus: (id: string, baseVersion: number, status: SupportRequestStatus) =>
+    request<SupportRequestOut>(`/support-requests/${id}/status`, {
+      method: "PATCH",
+      body: { base_version: baseVersion, status },
+    }),
 };
 
 // ---- Inventory ----

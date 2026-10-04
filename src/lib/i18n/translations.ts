@@ -87,6 +87,7 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
     peopleTechCommunities: "People · Technology · Healthier Communities",
     tellSymptomsTileDesc: "Speak in your language. A note is prepared for the health worker.",
     safetyNoticeTitle: "Important Safety Notice",
+    importantSafetyNotice: "Important Safety Notice",
     aiPreliminaryNotice:
       "AI provides preliminary assistance only. Final clinical decisions remain with qualified health workers and doctors.",
 
@@ -473,7 +474,6 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
     infoWaitingToSend: "Information waiting to send",
     savedItemsWaitingHeader: "Saved items waiting to send",
     sentToday: "Sent today",
-    importantSafetyNotice: "Important safety notice",
     connectedCareFeatures: "Connected care features",
     featureOfflineAccess: "Offline Access",
     featureTeleconsultation: "Teleconsultation",
