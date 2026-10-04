@@ -228,6 +228,9 @@ class CareMessagesService:
         if user.role not in (Role.HEALTH_WORKER, Role.DOCTOR, Role.FACILITY_ADMIN):
             raise ForbiddenError("Only staff can access this")
 
+        if user.facility_id is None:
+            return []
+
         # Get all patients at this facility
         facility_patients = await self.patients.list_active(facility_id=user.facility_id)
 

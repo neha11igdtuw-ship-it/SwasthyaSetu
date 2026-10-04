@@ -1,6 +1,7 @@
 import {
   AlertOctagon,
   AlertTriangle,
+  Bot,
   Building2,
   Calendar,
   Clock,
@@ -62,6 +63,15 @@ export const SEARCHABLE_ROUTES: SearchableItem[] = [
     keywords: ["voice", "speak", "tell symptoms", "audio", "mic", "assistant"],
     icon: Mic,
     audiences: ["public", "patient"],
+  },
+  {
+    id: "patient-ai-assistant",
+    title: "AI Health Assistant",
+    category: "Pages",
+    href: "/patient/ai-assistant",
+    keywords: ["ai", "chatbot", "chat", "health questions", "health education", "assistant", "myth"],
+    icon: Bot,
+    audiences: ["patient"],
   },
   {
     id: "patient-emergency",

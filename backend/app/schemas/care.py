@@ -8,6 +8,7 @@ from app.models.enums import (
     AppointmentStatus,
     DiagnosticOrderStatus,
     PrescriptionStatus,
+    TeleconsultFallback,
 )
 from app.schemas.common import ORMBase
 
@@ -22,6 +23,12 @@ class AppointmentCreate(BaseModel):
     scheduled_at: datetime
     reason: str | None = None
     notes: str | None = None
+    fallback_option: TeleconsultFallback | None = None
+
+
+class AppointmentFallbackUpdate(BaseModel):
+    base_version: int
+    fallback_option: TeleconsultFallback
 
 
 class AppointmentUpdate(BaseModel):
@@ -50,6 +57,7 @@ class AppointmentOut(ORMBase):
     reason: str | None
     version: int
     is_deleted: bool
+    fallback_option: TeleconsultFallback | None = None
     patient_name: str | None = None
     doctor_name: str | None = None
 

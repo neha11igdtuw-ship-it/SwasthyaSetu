@@ -204,12 +204,20 @@ class NotificationRepository:
     async def list_for_patient(self, patient_id: uuid.UUID, limit: int = 50) -> list[Notification]:
         stmt = (
             select(Notification)
-            .where(Notification.patient_id == patient_id)
+            .where(
+                Notification.patient_id == patient_id,
+                # Staff-targeted alerts (e.g. referral-outcome follow-ups)
+                # carry the patient id for context but are not the patient's.
+                Notification.recipient_user_id.is_(None),
+            )
             .order_by(Notification.created_at.desc())
             .limit(limit)
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+
+    async def get(self, notification_id: uuid.UUID) -> Notification | None:
+        return await self.db.get(Notification, notification_id)
 
     async def list_for_user(
         self, recipient_user_id: uuid.UUID, limit: int = 50

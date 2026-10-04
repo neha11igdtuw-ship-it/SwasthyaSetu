@@ -23,11 +23,13 @@ import {
   Building2,
   Loader2,
   MessageSquare,
+  Bot,
 } from "lucide-react";
 
 const patientNavItems: NavItem[] = [
   { labelKey: "home", defaultLabel: "Home", href: "/patient/dashboard", icon: LayoutDashboard },
   { labelKey: "voice", defaultLabel: "Voice Assistance", href: "/patient/voice-assistant", icon: Mic },
+  { labelKey: "aiHealthAssistant", defaultLabel: "AI Health Assistant", href: "/patient/ai-assistant", icon: Bot },
   { labelKey: "appointments", defaultLabel: "Book Appointment", href: "/patient/appointments", icon: Calendar },
   { labelKey: "records", defaultLabel: "My Health Records", href: "/patient/records", icon: FileText },
   { labelKey: "messages", defaultLabel: "Care Team Messages", href: "/patient/messages", icon: MessageSquare },

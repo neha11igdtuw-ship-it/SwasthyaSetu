@@ -21,7 +21,7 @@ async def _mark_verified(db_session, email: str) -> None:
     await db_session.commit()
 
 
-async def test_register_and_login(client, db_session):
+async def test_register_and_login(client, db_session, facility):
     resp = await client.post(
         "/api/v1/auth/register",
         json={
@@ -30,6 +30,7 @@ async def test_register_and_login(client, db_session):
             "full_name": "Alice",
             "role": "HEALTH_WORKER",
             "phone": "9876543210",
+            "facility_id": str(facility.id),
             "address": ADDRESS,
         },
     )
@@ -108,7 +109,7 @@ async def test_me_requires_token(client):
     assert resp.status_code == 401
 
 
-async def test_refresh_token(client, db_session):
+async def test_refresh_token(client, db_session, facility):
     await client.post(
         "/api/v1/auth/register",
         json={
@@ -117,6 +118,7 @@ async def test_refresh_token(client, db_session):
             "full_name": "Carl",
             "role": "HEALTH_WORKER",
             "phone": "9876543210",
+            "facility_id": str(facility.id),
             "address": ADDRESS,
         },
     )

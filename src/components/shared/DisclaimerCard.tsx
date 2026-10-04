@@ -5,11 +5,14 @@ import { useLanguage } from "@/lib/i18n/languageContext";
 interface DisclaimerCardProps {
   text?: string;
   variant?: "info" | "amber" | "rose";
+  /** Hide the shared safety-basics line when `text` already covers it. */
+  compact?: boolean;
 }
 
 export function DisclaimerCard({
   text,
   variant = "amber",
+  compact = false,
 }: DisclaimerCardProps) {
   const { t } = useLanguage();
 
@@ -34,6 +37,9 @@ export function DisclaimerCard({
           {t("importantSafetyNotice")}
         </span>
         <p className="leading-relaxed font-medium">{displayText}</p>
+        {!compact && (
+          <p className="leading-relaxed font-medium">{t("medicalSafetyBasics")}</p>
+        )}
       </div>
     </div>
   );

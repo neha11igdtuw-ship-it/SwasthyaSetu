@@ -331,7 +331,7 @@ function PatientSymptomsContent() {
                 onChange={() => handleCheckboxChange("bleeding")}
                 className="w-4 h-4 accent-teal-700"
               />
-              <span className="font-semibold text-rose-700">{t("vaginalBleedingDischarge")}</span>
+              <span className="font-semibold text-rose-700">{isMaternal ? t("vaginalBleedingDischarge") : "Bleeding"}</span>
             </label>
 
             {/* Fetal movement is a pregnancy-specific danger sign — only

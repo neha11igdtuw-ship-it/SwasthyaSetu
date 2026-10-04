@@ -7,7 +7,7 @@ from app.api.deps import assert_patient_access, get_current_user, get_own_patien
 from app.core.errors import ForbiddenError, ValidationAppError
 from app.db.session import get_db
 from app.models.care import Appointment
-from app.models.enums import AppointmentMode, AppointmentStatus, Role
+from app.models.enums import AppointmentMode, AppointmentStatus, Role, TeleconsultFallback
 from app.models.patient import Patient
 from app.models.user import User
 from app.repositories.care import AppointmentRepository
@@ -16,6 +16,7 @@ from app.repositories.staff import DoctorAvailabilityRepository
 from app.repositories.users import UserRepository
 from app.schemas.care import (
     AppointmentCreate,
+    AppointmentFallbackUpdate,
     AppointmentOut,
     AppointmentStatusUpdate,
     AppointmentUpdate,
@@ -132,6 +133,8 @@ async def create_appointment(
             raise ForbiddenError("Patients can only book for themselves")
     else:
         assert_patient_access(user, patient)
+    if data.fallback_option is not None and data.mode != AppointmentMode.TELECONSULT:
+        raise ValidationAppError("A fallback option can only be set on a teleconsultation")
     payload = data.model_dump(exclude={"notes"})
     if data.notes:
         extra = data.notes.strip()
@@ -159,6 +162,11 @@ async def create_appointment(
         and payload.get("doctor_id")
     ):
         payload["status"] = AppointmentStatus.REQUESTED
+
+    # Teleconsultations always carry a fallback; default to the video call
+    # the patient is booking when none was chosen explicitly.
+    if payload.get("mode") == AppointmentMode.TELECONSULT and not payload.get("fallback_option"):
+        payload["fallback_option"] = TeleconsultFallback.VIDEO_CONSULTATION
 
     repo = AppointmentRepository(db)
     appointment = await repo.create(**payload)
@@ -197,6 +205,31 @@ async def update_appointment_status(
     appointment = await repo.apply_update(appointment_id, data.base_version, changes)
     if was_requested and appointment.status == AppointmentStatus.SCHEDULED:
         await NotificationService(db).notify_teleconsult_confirmed(patient)
+    await db.commit()
+    return (await _enrich(db, [appointment]))[0]
+
+
+@router.patch("/{appointment_id}/fallback-option", response_model=AppointmentOut)
+async def update_appointment_fallback_option(
+    appointment_id: uuid.UUID,
+    data: AppointmentFallbackUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Change the teleconsultation fallback option on an existing appointment.
+    Only the owning patient (or staff with access) may change it, only while
+    the appointment is still open, and only on TELECONSULT appointments."""
+    repo = AppointmentRepository(db)
+    appointment = await repo.get_or_404(appointment_id)
+    patient = await PatientRepository(db).get_or_404(appointment.patient_id)
+    _assert_appointment_access(user, appointment, patient)
+    if appointment.mode != AppointmentMode.TELECONSULT:
+        raise ValidationAppError("Fallback options only apply to teleconsultations")
+    if appointment.status in CLOSED_STATUSES:
+        raise ValidationAppError("This appointment is closed; its fallback option can't change")
+    appointment = await repo.apply_update(
+        appointment_id, data.base_version, {"fallback_option": data.fallback_option}
+    )
     await db.commit()
     return (await _enrich(db, [appointment]))[0]
 

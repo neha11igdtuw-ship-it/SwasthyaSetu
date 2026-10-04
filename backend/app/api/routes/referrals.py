@@ -21,6 +21,7 @@ from app.schemas.referral import (
     MatchCandidate,
     ReferralCreate,
     ReferralOut,
+    ReferralOutcomeCreate,
     ReferralStatusUpdate,
 )
 from app.services.referral_matching import ReferralMatchingService
@@ -151,6 +152,9 @@ async def list_referrals(
                 "notes": referral.notes,
                 "version": referral.version,
                 "is_deleted": referral.is_deleted,
+                "outcome": referral.outcome,
+                "outcome_notes": referral.outcome_notes,
+                "outcome_reported_at": referral.outcome_reported_at,
             }
         )
 
@@ -188,6 +192,25 @@ async def get_referral(
     else:
         assert_referral_access(user, referral)
     return referral
+
+
+@router.post("/{referral_id}/outcome", response_model=ReferralOut)
+async def report_referral_outcome(
+    referral_id: uuid.UUID,
+    data: ReferralOutcomeCreate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Patient reports what happened after a referral. Only the authenticated
+    patient who owns the referral may submit it (403 otherwise — including for
+    ADMIN/staff, who cannot report on a patient's behalf)."""
+    if user.role != Role.PATIENT:
+        raise ForbiddenError("Only the referred patient can report a referral outcome")
+    own = await get_own_patient(db, user)
+    referral = await ReferralRepository(db).get_or_404(referral_id)
+    if referral.patient_id != own.id:
+        raise ForbiddenError("You do not have access to this referral")
+    return await ReferralService(db).report_outcome(referral, own, data.outcome, data.notes)
 
 
 async def _transition_referral(

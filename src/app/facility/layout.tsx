@@ -10,7 +10,6 @@ import {
   Users,
   Activity,
   PackageCheck,
-  LifeBuoy,
 } from "lucide-react";
 
 const facilityNavItems: NavItem[] = [
@@ -19,7 +18,6 @@ const facilityNavItems: NavItem[] = [
   { labelKey: "facilityPatientsToday", defaultLabel: "People Expected Today", href: "/facility/patients", icon: Users },
   { labelKey: "facilityLabResults", defaultLabel: "Lab Results", href: "/facility/lab-results", icon: Activity },
   { labelKey: "facilityMedicineStock", defaultLabel: "Medicine Stock", href: "/facility/medicines", icon: PackageCheck },
-  { labelKey: "supportRequests", defaultLabel: "Support Requests", href: "/facility/support-requests", icon: LifeBuoy },
 ];
 
 export default function FacilityLayout({

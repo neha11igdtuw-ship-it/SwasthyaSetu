@@ -19,7 +19,6 @@ import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
 import { QuickActionCard } from "@/components/patient/QuickActionCard";
 import { EmergencyHelpCard, GeneralEmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
 import { QueueCard } from "@/components/patient/QueueCard";
-import { PregnancyTimelineCard } from "@/components/patient/PregnancyTimelineCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
 import { Loader2 } from "lucide-react";
@@ -33,12 +32,8 @@ import {
   AlertOctagon,
   Share2 as ShareIcon,
   Sparkles,
+  Bot,
 } from "lucide-react";
-
-// Generic community ASHA/health-worker support line shown only on the
-// maternal-care pathway when this patient hasn't set a personal emergency
-// contact — never used to label or represent a non-maternal patient.
-const FALLBACK_ASHA_PHONE = "9876500111";
 
 export default function PatientDashboardPage() {
   const { t } = useLanguage();
@@ -122,16 +117,17 @@ export default function PatientDashboardPage() {
           name={patient?.full_name || "Your account"}
           location={patient?.village || "Location not set"}
           language={patient?.preferred_language || "—"}
-          pregnancyWeek={patient?.pregnancy_week ?? undefined}
+          // Pregnancy info only for patients whose persisted care pathway is maternal.
+          pregnancyWeek={
+            isMaternalCarePathway(patient?.care_pathway)
+              ? (patient?.pregnancy_week ?? undefined)
+              : undefined
+          }
         />
         <div className="flex justify-end">
           <LastSyncedBadge lastSyncedText="Live from server" />
         </div>
       </div>
-
-      {isMaternalCarePathway(patient?.care_pathway) && patient?.pregnancy_week ? (
-        <PregnancyTimelineCard />
-      ) : null}
 
       <div data-tour="care-journey" className="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border-2 border-teal-500/80 shadow-md space-y-6 ring-1 ring-teal-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
@@ -244,6 +240,7 @@ export default function PatientDashboardPage() {
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           <QuickActionCard title={t("voiceAssistance")} subtitle={t("askVoiceAssistant")} href="/patient/voice-assistant" icon={Mic} badgeText="Voice" accentColor="amber" />
+          <QuickActionCard title={t("aiHealthAssistant")} subtitle={t("aiHealthAssistantTile")} href="/patient/ai-assistant" icon={Bot} badgeText="AI" accentColor="indigo" />
           <QuickActionCard title={t("bookAppointment")} subtitle={t("scheduleDoctorVisit")} href="/patient/appointments" icon={Calendar} accentColor="teal" />
           <QuickActionCard title={t("uploadReport")} subtitle={t("scanLabTestsOrAncCard")} href="/patient/documents" icon={Upload} accentColor="indigo" />
           <QuickActionCard title={t("viewCareRequest")} subtitle={t("checkHospitalProgress")} href="/patient/referrals" icon={Share2} accentColor="teal" />
@@ -254,7 +251,7 @@ export default function PatientDashboardPage() {
       </div>
 
       {isMaternalCarePathway(patient?.care_pathway) ? (
-        <EmergencyHelpCard ashaPhone={patient?.emergency_contact || FALLBACK_ASHA_PHONE} />
+        <EmergencyHelpCard emergencyContact={patient?.emergency_contact || null} />
       ) : (
         <GeneralEmergencyHelpCard emergencyContact={patient?.emergency_contact || null} />
       )}

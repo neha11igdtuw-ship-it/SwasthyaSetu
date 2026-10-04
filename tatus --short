@@ -1,0 +1,338 @@
+warning: in the working copy of '.dockerignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.env.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.github/workflows/ci.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Dockerfile', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'LICENSE', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'SRS.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/.env.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/Dockerfile', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/IMPLEMENTATION_REPORT.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic.ini', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/env.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/script.py.mako', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/06fec59710b4_initial_schema.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/8a1a1bdb2387_rbac_roles_and_patient_user_link.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/a1b2c3d4e5f6_add_facility_resources_table.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/a9b8c7d6e5f4_queue_entry_facility_and_doctor.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/b1c2d3e4f5a6_patient_latitude_longitude.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/bd726bc84191_add_maternal_care_entities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/c1d2e3f4a5b6_auth_verification_and_address.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/c1d2e3f4a5b7_add_care_messaging_tables.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/c4e8f1a90b12_patient_care_pathway_fields.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/d7b2c3e41f09_patient_emergency_contact.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/e1a2b3c4d5f6_add_queue_management_entities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/f3c4d5e6f7a8_add_doctor_availability_note.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/alembic/versions/f9a1c2d3e4b5_teleconsultation_requests.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/deps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/appointments.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/auth.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/care_gaps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/diagnostics.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/doctor_availability.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/encounters.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/facilities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/fhir.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/health_worker_profiles.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/inventory.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/messages.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/notifications.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/patients.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/pregnancies.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/prescriptions.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/queue.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/referrals.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/symptoms.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/api/routes/sync.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/core/config.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/core/errors.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/core/ratelimit.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/core/security.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/core/validators.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/db/session.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/__init__.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/care.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/care_gap.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/enums.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/facility.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/facility_resource.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/inventory.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/maternal.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/messages.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/mixins.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/patient.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/queue.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/referral.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/staff.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/sync.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/types.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/user.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/verification.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/base.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/care.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/care_gaps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/facilities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/facility_resources.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/inventory.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/maternal.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/messages.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/patients.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/queue.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/referrals.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/staff.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/sync_changes.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/users.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/repositories/verification.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/auth.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/care.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/care_gap.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/common.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/facility_resource.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/inventory.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/maternal.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/messages.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/patient.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/queue.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/referral.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/staff.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/symptom_summary.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/sync.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/auth.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/care_gaps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/doctor_availability.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/duration_extract.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/email.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/facility_resources.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/fhir_export.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/inventory.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/maternal.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/messages.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/notifications.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/osm_facilities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/prescriptions.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/queue.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/referral_matching.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/referrals.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/symptom_summary.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/sync.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/verification.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/data/mock_doctor_availability.csv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/data/mock_doctors.csv', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/docker-compose.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/pyproject.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/railway.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/scripts/import_facilities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/scripts/import_mock_doctors.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/seed/seed_data.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/conftest.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_appointment_slots.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_auth.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_auth_ratelimit.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_auth_validation.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_care.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_care_gaps.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_duration_extract.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_email_verification.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_emergency_alert.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_facility_resources.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_fhir_export.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_inventory.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_maternal.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_patient_self_service.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_patients.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_queue.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_rbac.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_rbac_new_entities.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_referrals.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_staff.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_symptom_summary.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_sync.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_teleconsultation.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'database/DATABASE_DESIGN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docker-compose.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'eslint.config.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'next-env.d.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'next.config.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package-lock.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'postcss.config.mjs', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'public/.gitkeep', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/demo/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/care-requests/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/consult/[appointmentId]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/dashboard/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/messages/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/patients-to-review/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/patients/[id]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/patients/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/schedule/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/doctor/teleconsultations/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/facility/care-requests/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/facility/dashboard/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/facility/lab-results/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/facility/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/facility/medicines/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/facility/patients/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/globals.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/dashboard/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/follow-ups/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/high-risk/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/messages/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/patients/[id]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/patients/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/patients/register/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/referrals/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/screening/[patientId]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/hw/sync/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/login/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/not-found.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/appointments/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/consult/[appointmentId]/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/dashboard/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/diagnostics/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/documents/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/emergency-help/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/facilities/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/feedback/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/follow-ups/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/medicines/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/messages/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/queue/join/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/records/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/referrals/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/screening/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/symptoms/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/patient/voice-assistant/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/register/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/verify-email/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/.gitkeep', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/AppShell.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/DashboardCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/EmptyState.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/FeedbackFormSection.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/MobileBottomNav.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/PageHeader.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/RequireAuth.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/RoleBadge.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/Sidebar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/StatusBadge.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/TeamSection.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ThemeToggle.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/ThreeDotMenu.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/TopBar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/UserProfileAvatarMenu.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/CareStatusCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/DoctorQueuePanel.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/FacilityQueueSection.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/FollowUpCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/HealthWorkerQueueSection.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/LabReportForm.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/NextActionCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/ReferralStatusStepper.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/care/TeleconsultRoom.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/messages/ConversationList.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/messages/MessageCategorySelector.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/messages/MessageComposer.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/messages/MessageThread.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/messages/UnreadBadge.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/CarePathwayOnboarding.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/EmergencyHelpCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/FacilityCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/LastSyncedBadge.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/PatientBottomNav.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/PatientHeader.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/QueueCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/QuickActionCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/patient/VoiceAssistantCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/search/GlobalSearch.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/shared/DisclaimerCard.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/shared/FloatingMicButton.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/shared/LanguageSelector.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/shared/OfflinePill.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/support/HelpButton.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/support/HelpSupportPanel.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/support/SupportProvider.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/tour/GuidedTour.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/tour/TourOverlay.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/tour/TourProvider.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/tour/TourStep.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/components/tour/TourWelcome.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/.gitkeep', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/api/adapters.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/api/client.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/api/ownPatient.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/api/types.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/auth/useCurrentUser.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/careGaps.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/carePathway.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/geo.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/i18n/languageContext.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/i18n/tourTranslations.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/i18n/translations.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/mockData.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/offline/db.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/pdf/simpleTextPdf.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/referral/stepper.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/referralMatching.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/search/searchService.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/search/searchTypes.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/search/searchableRoutes.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/speech/useSpeechRecognition.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/store/AppStateProvider.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/support/supportConfig.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/symptoms/assessRisk.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/symptoms/duration.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/theme/ThemeProvider.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/tour/tourDom.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/tour/tourSteps.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/lib/tour/tourStorage.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/types/.gitkeep', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tsconfig.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'vercel.json', LF will be replaced by CRLF the next time Git touches it
+ backend/.env.example                         |   3 [32m+[m[31m-[m
+ backend/app/api/routes/appointments.py       |  35 [32m+++[m[31m-[m
+ backend/app/api/routes/notifications.py      |  29 [32m++[m[31m-[m
+ backend/app/api/routes/pregnancies.py        |  41 [32m+[m[31m---[m
+ backend/app/api/routes/referrals.py          |  23 [32m+++[m
+ backend/app/main.py                          |   4 [32m+[m[31m-[m
+ backend/app/models/__init__.py               |   1 [31m-[m
+ backend/app/models/care.py                   |   6 [32m+[m
+ backend/app/models/enums.py                  |  58 [32m++++[m[31m--[m
+ backend/app/models/queue.py                  |   4 [32m+[m
+ backend/app/models/referral.py               |  14 [32m+[m[31m-[m
+ backend/app/repositories/queue.py            |  10 [32m+[m[31m-[m
+ backend/app/schemas/care.py                  |   8 [32m+[m
+ backend/app/schemas/queue.py                 |   1 [32m+[m
+ backend/app/schemas/referral.py              |  24 [32m++[m[31m-[m
+ backend/app/services/notifications.py        |  48 [32m++++[m[31m-[m
+ backend/app/services/referrals.py            | 102 [32m+++++++++[m[31m-[m
+ backend/seed/seed_data.py                    |  91 [32m++++++++[m[31m-[m
+ package-lock.json                            | 279 [32m+[m[31m--------------------------[m
+ package.json                                 |   2 [31m-[m
+ src/app/doctor/layout.tsx                    |   5 [32m+[m[31m-[m
+ src/app/facility/layout.tsx                  |   2 [31m-[m
+ src/app/hw/dashboard/page.tsx                |   3 [32m+[m
+ src/app/hw/layout.tsx                        |   2 [31m-[m
+ src/app/patient/appointments/page.tsx        |  66 [32m++++++[m[31m-[m
+ src/app/patient/dashboard/page.tsx           |  21 [32m+[m[31m-[m
+ src/app/patient/emergency-help/page.tsx      |  75 [32m+[m[31m------[m
+ src/app/patient/facilities/page.tsx          |  50 [32m++[m[31m---[m
+ src/app/patient/follow-ups/page.tsx          |  34 [32m+[m[31m---[m
+ src/app/patient/layout.tsx                   |   2 [32m+[m
+ src/app/patient/referrals/page.tsx           |  15 [32m++[m
+ src/app/patient/screening/page.tsx           |  54 [32m+++++[m[31m-[m
+ src/app/patient/symptoms/page.tsx            |   2 [32m+[m[31m-[m
+ src/components/patient/EmergencyHelpCard.tsx | 169 [32m++++++++[m[31m--------[m
+ src/components/shared/DisclaimerCard.tsx     |   6 [32m+[m
+ src/lib/api/client.ts                        |  40 [32m++[m[31m--[m
+ src/lib/api/types.ts                         | 106 [32m+++++[m[31m-----[m
+ src/lib/i18n/translations.ts                 |  12 [32m+[m[31m-[m
+ src/lib/search/searchableRoutes.ts           |  10 [32m+[m
+ 39 files changed, 804 insertions(+), 653 deletions(-)

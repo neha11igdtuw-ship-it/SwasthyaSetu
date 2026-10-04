@@ -87,9 +87,10 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
     peopleTechCommunities: "People · Technology · Healthier Communities",
     tellSymptomsTileDesc: "Speak in your language. A note is prepared for the health worker.",
     safetyNoticeTitle: "Important Safety Notice",
-    importantSafetyNotice: "Important Safety Notice",
     aiPreliminaryNotice:
       "AI provides preliminary assistance only. Final clinical decisions remain with qualified health workers and doctors.",
+    medicalSafetyBasics:
+      "SwasthyaSetu does not replace professional medical care. For emergency symptoms, call 108 or go to the nearest facility immediately. Screening and AI suggestions are information only, not a final diagnosis.",
 
     // Account & Three-Dot Discovery Menu
     accountSection: "Account",
@@ -474,6 +475,7 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
     infoWaitingToSend: "Information waiting to send",
     savedItemsWaitingHeader: "Saved items waiting to send",
     sentToday: "Sent today",
+    importantSafetyNotice: "Important safety notice",
     connectedCareFeatures: "Connected care features",
     featureOfflineAccess: "Offline Access",
     featureTeleconsultation: "Teleconsultation",
@@ -529,6 +531,9 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
 
     // Voice Assistance Card
     voiceAssistance: "Voice assistance",
+    aiHealthAssistant: "AI Health Assistant",
+    aiHealthAssistantSubtitle: "General health information and education",
+    aiHealthAssistantTile: "Ask general health questions",
     speakInYourLanguage: "Speak In Your Language",
     askVoiceAssistant: "Tell your symptoms",
     voiceGuidanceRequiresReview: "Voice guidance requires doctor review",
@@ -856,6 +861,8 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
     safetyNoticeTitle: "महत्वपूर्ण स्वास्थ्य सुरक्षा सूचना",
     aiPreliminaryNotice:
       "एआई केवल प्रारंभिक सहायता प्रदान करता है। अंतिम निर्णय योग्य स्वास्थ्यकर्मी या डॉक्टर ही लेंगे।",
+    medicalSafetyBasics:
+      "स्वास्थ्यसेतु पेशेवर चिकित्सा देखभाल का विकल्प नहीं है। आपातकालीन लक्षणों में तुरंत 108 पर कॉल करें या नज़दीकी स्वास्थ्य केंद्र जाएँ। जाँच और AI सुझाव केवल जानकारी हैं, अंतिम निदान नहीं।",
 
     // Account & Three-Dot Discovery Menu
     accountSection: "खाता",
@@ -1146,6 +1153,9 @@ export const translationDictionary: Partial<Record<LanguageOption, Record<string
 
     // Voice Assistance Card
     voiceAssistance: "आवाज़ से सहायता",
+    aiHealthAssistant: "एआई स्वास्थ्य सहायक",
+    aiHealthAssistantSubtitle: "सामान्य स्वास्थ्य जानकारी और शिक्षा",
+    aiHealthAssistantTile: "सामान्य स्वास्थ्य सवाल पूछें",
     speakInYourLanguage: "अपनी भाषा में बोलें",
     askVoiceAssistant: "अपने लक्षण बताएं",
     voiceGuidanceRequiresReview: "आवाज़ से मिली जानकारी की डॉक्टर द्वारा समीक्षा आवश्यक है",

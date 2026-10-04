@@ -15,25 +15,39 @@ from app.db.session import AsyncSessionLocal
 from app.models.care import Appointment, DiagnosticOrder, DiagnosticReport, Prescription
 from app.models.care_gap import CareGap
 from app.models.enums import (
+    AppointmentMode,
     AppointmentStatus,
     CareGapStatus,
     DiagnosticOrderStatus,
     HealthWorkerCadre,
+    NotificationChannel,
+    NotificationStatus,
     PregnancyStatus,
+    ReferralOutcome,
     ReferralStatus,
     RiskLevel,
     Role,
+    TeleconsultFallback,
 )
 from app.models.facility import Facility
 from app.models.inventory import InventoryItem
 from app.models.maternal import Encounter, Pregnancy, Screening, Symptom, Vital
 from app.models.patient import Patient
-from app.models.queue import QueueDesk
+from app.models.queue import Notification, QueueDesk
 from app.models.referral import Referral
 from app.models.staff import DoctorAvailability, HealthWorkerProfile
 from app.models.user import User
+from app.services.notifications import (
+    REFERRAL_OUTCOME_NOTIFICATION_TITLE,
+    NotificationService,
+)
 
 PHC_NAMES = ("Sub-Centre Rampur", "Rampur PHC")
+# Demo-only ANM contact. It is attached to ANM Sunita Devi and to the demo
+# patient Priya Sharma ONLY — it is never a global/default emergency number,
+# and the app never falls back to it for any other patient.
+DEMO_ANM_PHONE = "9876500111"
+
 HOSPITAL_NAMES = (
     "District Civil Hospital & Maternal Care Centre",
     "District Hospital Lucknow",
@@ -90,6 +104,7 @@ async def seed() -> None:
                 hashed_password=hash_password("ChangeMe123!"),
                 full_name="ANM Sunita Devi",
                 role=Role.HEALTH_WORKER,
+                phone=DEMO_ANM_PHONE,
                 facility_id=phc.id,
                 is_verified=True,
             )
@@ -97,6 +112,7 @@ async def seed() -> None:
             await db.flush()
         else:
             worker.full_name = "ANM Sunita Devi"
+            worker.phone = DEMO_ANM_PHONE
             worker.facility_id = phc.id
             worker.is_verified = True
 
@@ -173,6 +189,7 @@ async def seed() -> None:
                 care_pathway="Maternal Care",
                 pregnancy_week=28,
                 preferred_language="Hindi",
+                emergency_contact=DEMO_ANM_PHONE,
                 facility_id=phc.id,
                 registered_by_id=worker.id,
                 user_id=patient_user.id,
@@ -189,6 +206,8 @@ async def seed() -> None:
             patient.preferred_language = patient.preferred_language or "Hindi"
             patient.facility_id = phc.id
             patient.user_id = patient_user.id
+            patient.registered_by_id = patient.registered_by_id or worker.id
+            patient.emergency_contact = DEMO_ANM_PHONE
             await db.flush()
 
         result = await db.execute(
@@ -459,6 +478,76 @@ async def seed() -> None:
             if extra.id != preferred.id:
                 extra.is_deleted = True
                 extra.status = ReferralStatus.CANCELLED
+
+        # Referral outcome demo: Priya reported that the doctor was unavailable.
+        # Unsuccessful outcome -> in-app follow-up alert for ANM Sunita Devi.
+        outcome_notes = "Patient reached the facility but the assigned doctor was unavailable."
+        preferred.outcome = ReferralOutcome.DOCTOR_UNAVAILABLE
+        preferred.outcome_notes = outcome_notes
+        preferred.outcome_reported_at = preferred.outcome_reported_at or datetime.utcnow()
+        await db.flush()
+
+        outcome_body = NotificationService.referral_outcome_body(
+            patient_name=patient.full_name,
+            outcome=ReferralOutcome.DOCTOR_UNAVAILABLE,
+            notes=outcome_notes,
+            from_facility=phc.name,
+            to_facility=hospital.name,
+        )
+        result = await db.execute(
+            select(Notification).where(
+                Notification.referral_id == preferred.id,
+                Notification.recipient_user_id == worker.id,
+                Notification.title == REFERRAL_OUTCOME_NOTIFICATION_TITLE,
+            )
+        )
+        outcome_note = result.scalars().first()
+        if outcome_note is None:
+            db.add(
+                Notification(
+                    patient_id=patient.id,
+                    recipient_user_id=worker.id,
+                    referral_id=preferred.id,
+                    channel=NotificationChannel.IN_APP,
+                    title=REFERRAL_OUTCOME_NOTIFICATION_TITLE,
+                    body=outcome_body,
+                    status=NotificationStatus.SENT,
+                    sent_at=preferred.outcome_reported_at,
+                )
+            )
+        else:
+            outcome_note.body = outcome_body
+
+        # Teleconsultation demo: one TELECONSULT appointment with the video
+        # fallback selected (patients can switch to AUDIO_ONLY, PHONE_CALLBACK
+        # or PHYSICAL_FACILITY_REFERRAL from the appointments page).
+        tele_reason = "Teleconsultation follow-up with Dr. Meera Singh"
+        result = await db.execute(
+            select(Appointment).where(
+                Appointment.patient_id == patient.id,
+                Appointment.mode == AppointmentMode.TELECONSULT,
+                Appointment.reason == tele_reason,
+            )
+        )
+        tele = result.scalars().first()
+        if tele is None:
+            db.add(
+                Appointment(
+                    patient_id=patient.id,
+                    facility_id=hospital.id,
+                    doctor_id=doctor.id,
+                    scheduled_at=datetime.utcnow().replace(
+                        hour=11, minute=0, second=0, microsecond=0
+                    )
+                    + timedelta(days=2),
+                    status=AppointmentStatus.SCHEDULED,
+                    mode=AppointmentMode.TELECONSULT,
+                    reason=tele_reason,
+                    fallback_option=TeleconsultFallback.VIDEO_CONSULTATION,
+                )
+            )
+        elif tele.fallback_option is None:
+            tele.fallback_option = TeleconsultFallback.VIDEO_CONSULTATION
 
         # District-hospital OPD desk for Dr. Meera Singh. Health workers join
         # this desk on Priya's behalf via her open obstetrics referral.

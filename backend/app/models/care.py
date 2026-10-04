@@ -10,6 +10,7 @@ from app.models.enums import (
     AppointmentStatus,
     DiagnosticOrderStatus,
     PrescriptionStatus,
+    TeleconsultFallback,
 )
 from app.models.mixins import SyncableMixin
 from app.models.types import GUID
@@ -45,6 +46,11 @@ class Appointment(SyncableMixin, Base):
         default=AppointmentMode.IN_PERSON,
     )
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    fallback_option: Mapped[TeleconsultFallback | None] = mapped_column(
+        Enum(TeleconsultFallback, name="teleconsult_fallback_enum"),
+        nullable=True,
+        doc="Patient-selected teleconsultation fallback; only used when mode=TELECONSULT.",
+    )
 
     patient = relationship("Patient")
     doctor = relationship("User")

@@ -173,6 +173,7 @@ class NotificationOut(ORMBase):
     patient_id: uuid.UUID | None
     recipient_user_id: uuid.UUID | None
     queue_entry_id: uuid.UUID | None
+    referral_id: uuid.UUID | None = None
     channel: NotificationChannel
     title: str
     body: str
