@@ -77,9 +77,7 @@ async def create_support_request(
         body += f" — {data.message}"
 
     priority = (
-        MessagePriority.URGENT
-        if data.reason.value == "HEALTH_CONCERN"
-        else MessagePriority.NORMAL
+        MessagePriority.URGENT if data.reason.value == "HEALTH_CONCERN" else MessagePriority.NORMAL
     )
 
     messages_service = CareMessagesService(db)

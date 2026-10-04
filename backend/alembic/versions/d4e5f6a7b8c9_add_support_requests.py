@@ -26,12 +26,20 @@ def upgrade() -> None:
 
     if is_postgres:
         reason_enum = postgresql.ENUM(
-            "HEALTH_CONCERN", "UNDERSTANDING_HELP", "CANNOT_TRAVEL", "CALLBACK", "OTHER",
+            "HEALTH_CONCERN",
+            "UNDERSTANDING_HELP",
+            "CANNOT_TRAVEL",
+            "CALLBACK",
+            "OTHER",
             name="support_request_reason_enum",
             create_type=False,
         )
         status_enum = postgresql.ENUM(
-            "SUBMITTED", "ASSIGNED", "CALLBACK_PENDING", "CONTACTED", "RESOLVED",
+            "SUBMITTED",
+            "ASSIGNED",
+            "CALLBACK_PENDING",
+            "CONTACTED",
+            "RESOLVED",
             name="support_request_status_enum",
             create_type=False,
         )
@@ -39,11 +47,19 @@ def upgrade() -> None:
         status_enum.create(bind, checkfirst=True)
     else:
         reason_enum = sa.Enum(
-            "HEALTH_CONCERN", "UNDERSTANDING_HELP", "CANNOT_TRAVEL", "CALLBACK", "OTHER",
+            "HEALTH_CONCERN",
+            "UNDERSTANDING_HELP",
+            "CANNOT_TRAVEL",
+            "CALLBACK",
+            "OTHER",
             name="support_request_reason_enum",
         )
         status_enum = sa.Enum(
-            "SUBMITTED", "ASSIGNED", "CALLBACK_PENDING", "CONTACTED", "RESOLVED",
+            "SUBMITTED",
+            "ASSIGNED",
+            "CALLBACK_PENDING",
+            "CONTACTED",
+            "RESOLVED",
             name="support_request_status_enum",
         )
         reason_enum.create(bind, checkfirst=True)
