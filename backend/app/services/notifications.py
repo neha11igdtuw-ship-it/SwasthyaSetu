@@ -27,7 +27,6 @@ from app.models.patient import Patient
 from app.models.queue import Notification
 from app.repositories.queue import NotificationRepository
 
-
 REFERRAL_OUTCOME_NOTIFICATION_TITLE = "Referral outcome reported"
 
 
