@@ -30,7 +30,7 @@ async def test_register_and_login(client, db_session, facility):
             "full_name": "Alice",
             "role": "HEALTH_WORKER",
             "phone": "9876543210",
- "facility_id": str(facility.id),
+            "facility_id": str(facility.id),
             "address": ADDRESS,
         },
     )
@@ -118,7 +118,7 @@ async def test_refresh_token(client, db_session, facility):
             "full_name": "Carl",
             "role": "HEALTH_WORKER",
             "phone": "9876543210",
-"facility_id": str(facility.id),
+            "facility_id": str(facility.id),
             "address": ADDRESS,
         },
     )
