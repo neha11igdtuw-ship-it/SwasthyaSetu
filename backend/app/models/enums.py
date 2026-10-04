@@ -61,6 +61,39 @@ REFERRAL_TRANSITIONS: dict[ReferralStatus, set[ReferralStatus]] = {
 }
 
 
+class ReferralOutcome(enum.StrEnum):
+    """What happened after the patient received a referral (patient-reported)."""
+
+    REACHED_FACILITY = "REACHED_FACILITY"
+    COULD_NOT_TRAVEL = "COULD_NOT_TRAVEL"
+    FACILITY_CLOSED = "FACILITY_CLOSED"
+    DOCTOR_UNAVAILABLE = "DOCTOR_UNAVAILABLE"
+    TEST_NOT_COMPLETED = "TEST_NOT_COMPLETED"
+    MEDICINE_NOT_RECEIVED = "MEDICINE_NOT_RECEIVED"
+
+
+# Short labels used in health-worker notifications ("<patient> reported: <label>.").
+REFERRAL_OUTCOME_LABELS: dict[ReferralOutcome, str] = {
+    ReferralOutcome.REACHED_FACILITY: "Reached the facility",
+    ReferralOutcome.COULD_NOT_TRAVEL: "Could not travel",
+    ReferralOutcome.FACILITY_CLOSED: "Facility closed",
+    ReferralOutcome.DOCTOR_UNAVAILABLE: "Doctor unavailable",
+    ReferralOutcome.TEST_NOT_COMPLETED: "Test not completed",
+    ReferralOutcome.MEDICINE_NOT_RECEIVED: "Medicine not received",
+}
+
+# Every outcome except REACHED_FACILITY needs health-worker follow-up.
+UNSUCCESSFUL_REFERRAL_OUTCOMES: set[ReferralOutcome] = {
+    o for o in ReferralOutcome if o != ReferralOutcome.REACHED_FACILITY
+}
+
+# Referral statuses for which a patient may no longer report an outcome.
+REFERRAL_OUTCOME_CLOSED_STATUSES: set[ReferralStatus] = {
+    ReferralStatus.REJECTED,
+    ReferralStatus.CANCELLED,
+}
+
+
 class CareGapStatus(enum.StrEnum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
@@ -101,6 +134,15 @@ class AppointmentStatus(enum.StrEnum):
 class AppointmentMode(enum.StrEnum):
     IN_PERSON = "IN_PERSON"
     TELECONSULT = "TELECONSULT"
+
+
+class TeleconsultFallback(enum.StrEnum):
+    """Patient-selected way to proceed if a teleconsultation cannot run as video."""
+
+    VIDEO_CONSULTATION = "VIDEO_CONSULTATION"
+    AUDIO_ONLY = "AUDIO_ONLY"
+    PHONE_CALLBACK = "PHONE_CALLBACK"
+    PHYSICAL_FACILITY_REFERRAL = "PHYSICAL_FACILITY_REFERRAL"
 
 
 class DiagnosticOrderStatus(enum.StrEnum):
@@ -151,19 +193,3 @@ class NotificationStatus(enum.StrEnum):
     SENT = "SENT"
     FAILED = "FAILED"
     READ = "READ"
-
-
-class SupportRequestReason(enum.StrEnum):
-    HEALTH_CONCERN = "HEALTH_CONCERN"
-    UNDERSTANDING_HELP = "UNDERSTANDING_HELP"
-    CANNOT_TRAVEL = "CANNOT_TRAVEL"
-    CALLBACK = "CALLBACK"
-    OTHER = "OTHER"
-
-
-class SupportRequestStatus(enum.StrEnum):
-    SUBMITTED = "SUBMITTED"
-    ASSIGNED = "ASSIGNED"
-    CALLBACK_PENDING = "CALLBACK_PENDING"
-    CONTACTED = "CONTACTED"
-    RESOLVED = "RESOLVED"

@@ -26,6 +26,8 @@ import type {
   CareRequestCreate,
   ReferralOut,
   ReferralStatusUpdate,
+  ReferralOutcomeCreate,
+  AppointmentFallbackUpdate,
   ScreeningCreate,
   ScreeningOut,
   SymptomCreate,
@@ -68,10 +70,8 @@ import type {
   CareMessageCreate,
   CareConversationSummaryOut,
   UnreadCountOut,
-  PregnancyTimelineOut,
-  SupportRequestOut,
-  SupportRequestCreate,
-  SupportRequestStatus,
+  ChatRequest,
+  ChatResponse,
 } from "./types";
 
 const API_ROOT =
@@ -302,6 +302,9 @@ export const referralsApi = {
     request<ReferralOut>(`/referrals/${id}/transition`, { method: "POST", body: data }),
   updateStatus: (id: string, data: ReferralStatusUpdate) =>
     request<ReferralOut>(`/referrals/${id}/status`, { method: "PATCH", body: data }),
+  /** Patient-only: report what happened after the referral. */
+  reportOutcome: (id: string, data: ReferralOutcomeCreate) =>
+    request<ReferralOut>(`/referrals/${id}/outcome`, { method: "POST", body: data }),
   matchCandidates: (params: { from_facility_id?: string; specialty_needed?: string; limit?: number }) => {
     const qs = new URLSearchParams();
     if (params.from_facility_id) qs.set("from_facility_id", params.from_facility_id);
@@ -400,21 +403,6 @@ export const prescriptionsApi = {
 export const pregnanciesApi = {
   listForPatient: (patientId: string) =>
     request<PregnancyOut[]>(`/pregnancies?patient_id=${patientId}`),
-  myTimeline: () => request<PregnancyTimelineOut>("/pregnancies/me/timeline"),
-};
-
-// ---- Support requests ----
-
-export const supportRequestsApi = {
-  create: (data: SupportRequestCreate) =>
-    request<SupportRequestOut>("/support-requests", { method: "POST", body: data }),
-  listMine: () => request<SupportRequestOut[]>("/support-requests/me"),
-  listForFacility: () => request<SupportRequestOut[]>("/support-requests"),
-  updateStatus: (id: string, baseVersion: number, status: SupportRequestStatus) =>
-    request<SupportRequestOut>(`/support-requests/${id}/status`, {
-      method: "PATCH",
-      body: { base_version: baseVersion, status },
-    }),
 };
 
 // ---- Inventory ----
@@ -445,10 +433,17 @@ export const appointmentsApi = {
     request<AppointmentOut>("/appointments", { method: "POST", body: data }),
   updateStatus: (id: string, data: AppointmentStatusUpdate) =>
     request<AppointmentOut>(`/appointments/${id}/status`, { method: "PATCH", body: data }),
+  updateFallbackOption: (id: string, data: AppointmentFallbackUpdate) =>
+    request<AppointmentOut>(`/appointments/${id}/fallback-option`, {
+      method: "PATCH",
+      body: data,
+    }),
 };
 
 export const notificationsApi = {
   me: () => request<NotificationOut[]>("/notifications/me"),
+  markRead: (id: string) =>
+    request<NotificationOut>(`/notifications/${id}/read`, { method: "POST" }),
 };
 
 
@@ -574,3 +569,10 @@ export const messagesApi = {
 };
 
 export { request as apiRequest };
+
+// ---- AI Health Assistant ----
+// Server-side Gemini via the backend; the browser never sees an AI key.
+export const chatbotApi = {
+  chat: (data: ChatRequest) =>
+    request<ChatResponse>("/chatbot/chat", { method: "POST", body: data }),
+};

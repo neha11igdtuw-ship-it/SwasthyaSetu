@@ -1,10 +1,12 @@
 import uuid
 
-from sqlalchemy import Enum, ForeignKey, String, Text
+from datetime import datetime
+
+from sqlalchemy import DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
-from app.models.enums import ReferralStatus
+from app.models.enums import ReferralOutcome, ReferralStatus
 from app.models.mixins import SyncableMixin
 from app.models.types import GUID
 
@@ -37,5 +39,13 @@ class Referral(SyncableMixin, Base):
         nullable=True,
         doc="Screening that triggered this referral, if any.",
     )
+
+    outcome: Mapped[ReferralOutcome | None] = mapped_column(
+        Enum(ReferralOutcome, name="referral_outcome_enum"),
+        nullable=True,
+        doc="Patient-reported result of this referral; null until reported.",
+    )
+    outcome_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    outcome_reported_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     patient = relationship("Patient", back_populates="referrals")

@@ -1,8 +1,9 @@
 import uuid
+from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
-from app.models.enums import ReferralStatus
+from app.models.enums import ReferralOutcome, ReferralStatus
 from app.schemas.common import ORMBase
 
 
@@ -30,6 +31,22 @@ class ReferralStatusUpdate(BaseModel):
     notes: str | None = None
 
 
+class ReferralOutcomeCreate(BaseModel):
+    """Patient-reported outcome of a referral. `outcome` is validated against
+    the ReferralOutcome enum, so unknown values are rejected with 422."""
+
+    outcome: ReferralOutcome
+    notes: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("notes")
+    @classmethod
+    def _blank_notes_to_none(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
+
 class ReferralOut(ORMBase):
     id: uuid.UUID
     patient_id: uuid.UUID
@@ -43,6 +60,9 @@ class ReferralOut(ORMBase):
     notes: str | None
     version: int
     is_deleted: bool
+    outcome: ReferralOutcome | None = None
+    outcome_notes: str | None = None
+    outcome_reported_at: datetime | None = None
 
 
 class MatchCandidate(BaseModel):

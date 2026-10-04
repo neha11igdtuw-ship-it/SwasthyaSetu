@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
+import { ReferralOutcomeCard } from "@/components/care/ReferralOutcomeCard";
+import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { facilitiesApi, referralsApi, ApiError } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
@@ -71,6 +73,16 @@ export default function PatientReferralsPage() {
     };
   }, [load]);
 
+  const handleOutcomeUpdated = useCallback((updated: ReferralOut) => {
+    setReferrals((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    setError(null);
+    setSuccess(
+      updated.outcome === "REACHED_FACILITY"
+        ? "Thank you. Your update was saved."
+        : "Your update was saved and your health worker has been told."
+    );
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -113,6 +125,8 @@ export default function PatientReferralsPage() {
           </button>
         }
       />
+
+      <DisclaimerCard variant="rose" />
 
       {loading && (
         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-slate-600 text-xs font-semibold flex items-center gap-2">
@@ -197,6 +211,7 @@ export default function PatientReferralsPage() {
             </div>
           </div>
           <p className="text-[11px] text-slate-500">{nextActor(referral.status)}</p>
+          <ReferralOutcomeCard referral={referral} onUpdated={handleOutcomeUpdated} />
           <button
             type="button"
             onClick={load}

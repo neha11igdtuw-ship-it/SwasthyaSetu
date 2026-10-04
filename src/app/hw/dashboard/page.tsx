@@ -14,6 +14,7 @@ import { patientOutToHealthWorkerPatient, referralOutToHWReferral } from "@/lib/
 import type { HealthWorkerPatient, HWReferral } from "@/lib/mockData";
 import { OfflinePill } from "@/components/shared/OfflinePill";
 import { HealthWorkerQueueSection } from "@/components/care/HealthWorkerQueueSection";
+import { ReferralFollowUpAlerts } from "@/components/care/ReferralFollowUpAlerts";
 import {
   Users,
   AlertTriangle,
@@ -193,6 +194,8 @@ export default function HealthWorkerDashboardPage() {
           icon={RefreshCw}
         />
       </div>
+
+      <ReferralFollowUpAlerts />
 
       <HealthWorkerQueueSection
         patients={patients.map((p) => ({ id: p.id, full_name: p.name, riskLevel: p.riskLevel }))}

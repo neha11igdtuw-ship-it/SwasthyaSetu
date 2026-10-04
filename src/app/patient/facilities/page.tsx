@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { FacilityCard } from "@/components/patient/FacilityCard";
-import { priyaPatientMock, NearbyFacility } from "@/lib/mockData";
+import type { NearbyFacility } from "@/lib/mockData";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { facilitiesApi } from "@/lib/api/client";
 import type { FacilityOut, OsmFacilityOut } from "@/lib/api/types";
@@ -30,9 +30,9 @@ type LocationMode = "gps" | "village" | "detecting" | "denied";
 export default function PatientFacilitiesPage() {
   const { t } = useLanguage();
 
-  const [facilities, setFacilities] = useState<NearbyFacility[]>(
-    priyaPatientMock.nearbyFacilities
-  );
+  // Starts empty: never seeded with demo facilities.
+  const [facilities, setFacilities] = useState<NearbyFacility[]>([]);
+  const [lookupDone, setLookupDone] = useState(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>({
     lat: DEFAULT_VILLAGE_LOCATION.latitude,
     lng: DEFAULT_VILLAGE_LOCATION.longitude,
@@ -89,9 +89,9 @@ export default function PatientFacilitiesPage() {
       .list()
       .then((apiFacs: FacilityOut[]) => {
         if (liveFacilitiesLoadedRef.current) return;
+        setLookupDone(true);
         if (apiFacs && apiFacs.length > 0) {
-          const mapped: NearbyFacility[] = apiFacs.map((f, idx) => {
-            const matchMock = priyaPatientMock.nearbyFacilities[idx];
+          const mapped: NearbyFacility[] = apiFacs.map((f) => {
             const onDutyDoctors = (f.doctors || []).filter((d) => d.on_duty_now);
             const doctorAvailability =
               onDutyDoctors.length > 0
@@ -100,26 +100,21 @@ export default function PatientFacilitiesPage() {
                     .join("; ")
                 : f.doctors && f.doctors.length > 0
                 ? `No doctor on duty right now. Next available: ${f.doctors[0].name} (${f.doctors[0].specialization}), ${f.doctors[0].hours}`
-                : matchMock?.doctorAvailability || "";
+                : "";
 
             return {
               id: f.id,
               name: f.name,
               type: (f.facility_type as NearbyFacility["type"]) || "Primary Health Centre",
-              distance: matchMock ? matchMock.distance : "3.5 km",
-              latitude: f.latitude ?? matchMock?.latitude ?? (26.98 - idx * 0.05),
-              longitude: f.longitude ?? matchMock?.longitude ?? (81.20 - idx * 0.05),
-              availableServices:
-                f.services_available && f.services_available.length > 0
-                  ? f.services_available
-                  : matchMock
-                  ? matchMock.availableServices
-                  : ["Medical Officer", "Emergency Care", "Diagnostics"],
+              distance: "",
+              latitude: f.latitude ?? undefined,
+              longitude: f.longitude ?? undefined,
+              availableServices: f.services_available ?? [],
               doctorAvailability,
               status: f.doctor_status === "Available" ? "Available" : "Unavailable",
               lastUpdated: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-              contactPhone: "+91 512 234 5678",
-              address: matchMock ? matchMock.address : `${f.name}, Kanpur Dehat, UP`,
+              contactPhone: typeof f.phone === "string" ? f.phone : "",
+              address: f.village ?? "",
             };
           });
           setFacilities(mapped);
@@ -127,7 +122,8 @@ export default function PatientFacilitiesPage() {
         }
       })
       .catch((err) => {
-        console.warn("Could not fetch remote facilities, fallback to mock data:", err);
+        console.warn("Could not fetch registered facilities:", err);
+        setLookupDone(true);
       });
   }, []);
 
@@ -144,14 +140,14 @@ export default function PatientFacilitiesPage() {
           setFacilities(liveFacilities);
           setUsingFallbackData(false);
         } else {
-          setFacilities(priyaPatientMock.nearbyFacilities);
+          setFacilities([]);
           setUsingFallbackData(true);
           loadBackendFacilities();
         }
       })
       .catch((err) => {
-        console.warn("OSM nearby-facilities request failed, falling back to mock data:", err);
-        setFacilities(priyaPatientMock.nearbyFacilities);
+        console.warn("OSM nearby-facilities request failed, using registered facilities:", err);
+        setFacilities([]);
         setUsingFallbackData(true);
         loadBackendFacilities();
       });
@@ -337,7 +333,15 @@ export default function PatientFacilitiesPage() {
 
         {usingFallbackData && (
           <p className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">
-            Showing sample data — live facility lookup unavailable.
+            Live facility lookup unavailable — showing facilities registered with SwasthyaSetu.
+          </p>
+        )}
+
+        {facilitiesWithDistance.length === 0 && (
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            {lookupDone || locationMode !== "detecting"
+              ? "No nearby facilities available."
+              : "Looking for nearby facilities…"}
           </p>
         )}
 

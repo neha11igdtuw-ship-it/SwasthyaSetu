@@ -8,7 +8,15 @@ import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { appointmentsApi, facilitiesApi, doctorAvailabilityApi, ApiError } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
-import type { AppointmentOut, AvailableSlotOut, FacilityOut, PatientOut } from "@/lib/api/types";
+import type {
+  AppointmentOut,
+  AvailableSlotOut,
+  FacilityOut,
+  PatientOut,
+  TeleconsultFallback,
+} from "@/lib/api/types";
+import { TeleconsultFallbackSelector } from "@/components/care/TeleconsultFallbackSelector";
+import { teleconsultFallbackLabel } from "@/lib/teleconsult/fallback";
 import { calculateHaversineDistance } from "@/lib/geo";
 import {
   Calendar,
@@ -120,6 +128,8 @@ export default function PatientAppointmentsPage() {
 
   const [facilityId, setFacilityId] = useState("");
   const [mode, setMode] = useState<"IN_PERSON" | "TELECONSULT">("IN_PERSON");
+  const [fallbackOption, setFallbackOption] = useState<TeleconsultFallback>("VIDEO_CONSULTATION");
+  const [fallbackSavingId, setFallbackSavingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [date, setDate] = useState("");
@@ -212,6 +222,7 @@ export default function PatientAppointmentsPage() {
   const resetWizard = () => {
     setStep(0);
     setMode("IN_PERSON");
+    setFallbackOption("VIDEO_CONSULTATION");
     setReason("");
     setCustomReason("");
     setDate("");
@@ -292,6 +303,7 @@ export default function PatientAppointmentsPage() {
         scheduled_at: selectedSlot.start_time,
         reason: finalReason || "Clinic visit",
         notes: notes.trim() || null,
+        fallback_option: mode === "TELECONSULT" ? fallbackOption : null,
       });
       closeForm();
       setSuccess(
@@ -304,6 +316,25 @@ export default function PatientAppointmentsPage() {
       setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not book appointment.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const changeFallback = async (app: AppointmentOut, next: TeleconsultFallback) => {
+    if (fallbackSavingId || next === app.fallback_option) return;
+    setFallbackSavingId(app.id);
+    setError(null);
+    try {
+      const updated = await appointmentsApi.updateFallbackOption(app.id, {
+        base_version: app.version,
+        fallback_option: next,
+      });
+      setAppointments((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+      setSuccess(`Consultation preference saved: ${teleconsultFallbackLabel(next)}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save your consultation preference.");
+      await load().catch(() => undefined);
+    } finally {
+      setFallbackSavingId(null);
     }
   };
 
@@ -413,6 +444,26 @@ export default function PatientAppointmentsPage() {
               </div>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">{nextActor(app.status)}</p>
+            {app.mode === "TELECONSULT" && (
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700">
+                {app.status === "REQUESTED" || app.status === "SCHEDULED" ? (
+                  <TeleconsultFallbackSelector
+                    name={`fallback-${app.id}`}
+                    value={app.fallback_option ?? "VIDEO_CONSULTATION"}
+                    onChange={(next) => changeFallback(app, next)}
+                    disabled={fallbackSavingId === app.id}
+                  />
+                ) : (
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Consultation type:{" "}
+                    <strong>{teleconsultFallbackLabel(app.fallback_option) || "Video consultation"}</strong>
+                  </p>
+                )}
+                {fallbackSavingId === app.id && (
+                  <p className="text-[11px] text-slate-500 mt-1">Saving…</p>
+                )}
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-4">
               {app.status === "SCHEDULED" && app.mode === "TELECONSULT" && (
                 <Link
@@ -510,9 +561,16 @@ export default function PatientAppointmentsPage() {
                       </button>
                     </div>
                     {mode === "TELECONSULT" && (
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                        The doctor for your chosen time slot will be notified and must accept before you can join the video call.
-                      </p>
+                      <>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                          The doctor for your chosen time slot will be notified and must accept before you can join the video call.
+                        </p>
+                        <TeleconsultFallbackSelector
+                          name="booking-fallback"
+                          value={fallbackOption}
+                          onChange={setFallbackOption}
+                        />
+                      </>
                     )}
                   </div>
                   <p className="font-bold text-slate-700 dark:text-slate-300">Choose a facility</p>

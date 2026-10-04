@@ -6,6 +6,7 @@ from app.api.routes import (
     appointments,
     auth,
     care_gaps,
+    chatbot,
     diagnostics,
     doctor_availability,
     encounters,
@@ -20,7 +21,6 @@ from app.api.routes import (
     prescriptions,
     queue,
     referrals,
-    support_requests,
     symptoms,
     sync,
 )
@@ -60,8 +60,8 @@ app.include_router(symptoms.router, prefix="/api/v1")
 app.include_router(queue.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(messages.router, prefix="/api/v1")
-app.include_router(support_requests.router, prefix="/api/v1")
 app.include_router(fhir.router, prefix="/api/v1")
+app.include_router(chatbot.router, prefix="/api/v1")
 
 
 @app.get("/", include_in_schema=False)

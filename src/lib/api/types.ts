@@ -151,6 +151,19 @@ export type ReferralStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+export type ReferralOutcome =
+  | "REACHED_FACILITY"
+  | "COULD_NOT_TRAVEL"
+  | "FACILITY_CLOSED"
+  | "DOCTOR_UNAVAILABLE"
+  | "TEST_NOT_COMPLETED"
+  | "MEDICINE_NOT_RECEIVED";
+
+export interface ReferralOutcomeCreate {
+  outcome: ReferralOutcome;
+  notes?: string | null;
+}
+
 export interface ReferralOut {
   id: string;
   patient_id: string;
@@ -164,6 +177,9 @@ export interface ReferralOut {
   notes: string | null;
   version: number;
   is_deleted: boolean;
+  outcome?: ReferralOutcome | null;
+  outcome_notes?: string | null;
+  outcome_reported_at?: string | null;
 }
 
 export interface ReferralCreate {
@@ -200,6 +216,17 @@ export interface MatchCandidate {
 
 export type AppointmentMode = "IN_PERSON" | "TELECONSULT";
 
+export type TeleconsultFallback =
+  | "VIDEO_CONSULTATION"
+  | "AUDIO_ONLY"
+  | "PHONE_CALLBACK"
+  | "PHYSICAL_FACILITY_REFERRAL";
+
+export interface AppointmentFallbackUpdate {
+  base_version: number;
+  fallback_option: TeleconsultFallback;
+}
+
 export interface AppointmentOut {
   id: string;
   patient_id: string;
@@ -213,6 +240,7 @@ export interface AppointmentOut {
   reason: string | null;
   version: number;
   is_deleted: boolean;
+  fallback_option?: TeleconsultFallback | null;
   patient_name?: string | null;
   doctor_name?: string | null;
 }
@@ -227,6 +255,7 @@ export interface AppointmentCreate {
   scheduled_at: string;
   reason?: string | null;
   notes?: string | null;
+  fallback_option?: TeleconsultFallback | null;
 }
 
 export interface AppointmentStatusUpdate {
@@ -240,6 +269,7 @@ export interface NotificationOut {
   patient_id: string | null;
   recipient_user_id: string | null;
   queue_entry_id: string | null;
+  referral_id?: string | null;
   channel: "IN_APP" | "SMS";
   title: string;
   body: string;
@@ -864,60 +894,28 @@ export interface UnreadCountOut {
   unread_count: number;
 }
 
-// backend/app/services/pregnancy_timeline.py + routes/pregnancies.py:get_my_pregnancy_timeline
-export interface PregnancyActionOut {
-  id: string;
-  gap_type: string;
-  description: string | null;
-  due_date: string | null;
-  status: string;
+
+// ---- AI Health Assistant (general health education chat) ----
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
 }
 
-export interface PregnancyTimelineOut {
-  current_week: number;
-  total_weeks: number;
-  trimester: number;
-  weeks_remaining: number;
-  next_anc_visit: string;
-  checkups: string[];
-  medicines: string[];
-  vaccinations: string[];
-  warning_signs: string[];
-  pending_actions: PregnancyActionOut[];
-  completed_actions: PregnancyActionOut[];
+export interface ChatRequest {
+  message: string;
+  conversation_id?: string | null;
+  history?: ChatTurn[];
+  ui_language?: string | null;
 }
 
-// backend/app/schemas/support_request.py
-export type SupportRequestReason =
-  | "HEALTH_CONCERN"
-  | "UNDERSTANDING_HELP"
-  | "CANNOT_TRAVEL"
-  | "CALLBACK"
-  | "OTHER";
-
-export type SupportRequestStatus =
-  | "SUBMITTED"
-  | "ASSIGNED"
-  | "CALLBACK_PENDING"
-  | "CONTACTED"
-  | "RESOLVED";
-
-export interface SupportRequestOut {
-  id: string;
-  patient_id: string;
-  facility_id: string | null;
-  reason: SupportRequestReason;
-  message: string | null;
-  status: SupportRequestStatus;
-  assigned_to_id: string | null;
-  related_message_id: string | null;
-  resolved_at: string | null;
-  created_at: string;
-  version: number;
-  patient_name: string | null;
+export interface ChatRedirect {
+  label: string;
+  path: string;
 }
 
-export interface SupportRequestCreate {
-  reason: SupportRequestReason;
-  message?: string | null;
+export interface ChatResponse {
+  response: string;
+  conversation_id: string;
+  redirect: ChatRedirect | null;
 }

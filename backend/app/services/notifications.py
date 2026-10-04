@@ -17,10 +17,18 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.enums import NotificationChannel, NotificationStatus
+from app.models.enums import (
+    REFERRAL_OUTCOME_LABELS,
+    NotificationChannel,
+    NotificationStatus,
+    ReferralOutcome,
+)
 from app.models.patient import Patient
 from app.models.queue import Notification
 from app.repositories.queue import NotificationRepository
+
+
+REFERRAL_OUTCOME_NOTIFICATION_TITLE = "Referral outcome reported"
 
 
 class NotificationChannelAdapter(abc.ABC):
@@ -120,6 +128,7 @@ class NotificationService:
         title: str,
         body: str,
         patient_id: uuid.UUID | None = None,
+        referral_id: uuid.UUID | None = None,
     ) -> Notification:
         """In-app-only notification for a staff recipient (e.g. a doctor
         being told about an incoming teleconsultation request). There is no
@@ -130,6 +139,7 @@ class NotificationService:
         notification = await self.repo.create(
             patient_id=patient_id,
             recipient_user_id=recipient_user_id,
+            referral_id=referral_id,
             channel=NotificationChannel.IN_APP,
             title=title,
             body=body,
@@ -146,6 +156,42 @@ class NotificationService:
             patient_id=patient.id,
             title="New teleconsultation request",
             body=f"{patient.full_name} has requested a teleconsultation with you.",
+        )
+
+    @staticmethod
+    def referral_outcome_body(
+        *,
+        patient_name: str,
+        outcome: ReferralOutcome,
+        notes: str | None,
+        from_facility: str | None,
+        to_facility: str | None,
+    ) -> str:
+        """Body for the health-worker follow-up alert. Deliberately limited to
+        the patient's name, the reported outcome/notes and facility names — it
+        never includes diagnosis, symptoms or the referral's clinical reason."""
+        label = REFERRAL_OUTCOME_LABELS[outcome]
+        body = f"{patient_name} reported: {label}."
+        if notes:
+            body += f" Notes: {notes}"
+        if from_facility or to_facility:
+            body += f" Referral: {from_facility or 'Unknown facility'} to {to_facility or 'Unknown facility'}."
+        return body
+
+    async def notify_referral_outcome(
+        self,
+        *,
+        recipient_user_id: uuid.UUID,
+        patient: Patient,
+        referral_id: uuid.UUID,
+        body: str,
+    ) -> Notification:
+        return await self.notify_staff(
+            recipient_user_id=recipient_user_id,
+            patient_id=patient.id,
+            referral_id=referral_id,
+            title=REFERRAL_OUTCOME_NOTIFICATION_TITLE,
+            body=body,
         )
 
     async def notify_teleconsult_confirmed(self, patient: Patient) -> None:

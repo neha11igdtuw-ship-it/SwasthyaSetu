@@ -142,16 +142,22 @@ function ScreeningContent() {
     ? `${t("bloodPressureReading")}: ${bp} mmHg (${t("pregnancyWeek")} ${week})`
     : `${t("bloodPressureReading")}: ${bp} mmHg`;
 
+  // Detected danger signs from this check. Pregnancy-specific wording and
+  // symptoms are only used on the persisted maternal-care pathway.
+  const flagReasons = [
+    thisCheck.highBp ? t("highBpDetected") : null,
+    thisCheck.flags.headache ? t("persistentHeadache") : null,
+    thisCheck.flags.blurredVision ? t("blurredVision") : null,
+    thisCheck.flags.swelling ? t("swellingFaceHandsFeet") : null,
+    thisCheck.flags.bleeding ? (isMaternal ? t("vaginalBleedingDischarge") : "Bleeding") : null,
+    thisCheck.flags.abdominalPain ? t("severeAbdominalPain") : null,
+    isMaternal && thisCheck.flags.reducedFetalMovement ? t("reducedFetalMovement") : null,
+  ].filter((item): item is string => Boolean(item));
+
   const reasons = fromThisCheck
     ? [
         `${bpWithWeek}${thisCheck.highBp ? "" : ` — ${t("bpWithinNormalRange")}`}`,
-        thisCheck.highBp ? t("highBpDetected") : null,
-        thisCheck.flags.headache ? t("persistentHeadache") : null,
-        thisCheck.flags.blurredVision ? t("blurredVision") : null,
-        thisCheck.flags.swelling ? t("swellingFaceHandsFeet") : null,
-        thisCheck.flags.bleeding ? t("vaginalBleedingDischarge") : null,
-        thisCheck.flags.abdominalPain ? t("severeAbdominalPain") : null,
-        isMaternal && thisCheck.flags.reducedFetalMovement ? t("reducedFetalMovement") : null,
+        ...flagReasons,
         queryDuration && !isUnspecifiedDuration(queryDuration)
           ? `${t("durationLabel")}: ${queryDuration}`
           : null,
@@ -162,6 +168,11 @@ function ScreeningContent() {
       : screeningResult
         ? [bpWithWeek, ...screeningResult.symptoms]
         : [];
+
+  // High-risk symptoms shown prominently: from this check's flags, or from the
+  // recorded screening's findings.
+  const dangerSigns: string[] =
+    risk === "High Risk" ? (fromThisCheck ? flagReasons : reasons) : [];
 
   if (fromThisCheck && risk === "Low Risk") {
     reasons.push(t("noSevereDangerSigns"));
@@ -218,6 +229,35 @@ function ScreeningContent() {
           </div>
           <StatusBadge status={risk} className="text-sm px-3 py-1" />
         </div>
+
+        {dangerSigns.length > 0 && (
+          <div
+            role="alert"
+            className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border-2 border-rose-400 text-rose-950 dark:text-rose-100 space-y-3"
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-rose-700 shrink-0" />
+              <h3 className="font-extrabold text-sm">
+                High-risk signs detected. Get medical help now.
+              </h3>
+            </div>
+            <ul className="space-y-1.5 text-xs font-bold">
+              {dangerSigns.map((sign, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="mt-1 w-1.5 h-1.5 rounded-full bg-rose-600 shrink-0" />
+                  <span>{sign}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href="tel:108"
+              className="min-h-11 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold"
+            >
+              <PhoneCall className="w-4 h-4" />
+              Call 108 (Ambulance)
+            </a>
+          </div>
+        )}
 
         <div className="space-y-2">
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">

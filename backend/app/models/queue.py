@@ -141,6 +141,10 @@ class Notification(Base):
     queue_entry_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("queue_entries.id"), nullable=True
     )
+    # Set for referral-outcome follow-up alerts so staff UIs can link back.
+    referral_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID(), ForeignKey("referrals.id"), nullable=True, index=True
+    )
     channel: Mapped[NotificationChannel] = mapped_column(
         Enum(NotificationChannel, name="notification_channel_enum"),
         nullable=False,
