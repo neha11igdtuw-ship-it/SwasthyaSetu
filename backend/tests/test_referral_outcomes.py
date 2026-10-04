@@ -156,9 +156,7 @@ async def test_staff_cannot_report_outcome_for_patient(
         assert resp.status_code == 403
 
 
-async def test_unrelated_health_worker_is_not_notified(
-    client, db_session, facility, auth_headers
-):
+async def test_unrelated_health_worker_is_not_notified(client, db_session, facility, auth_headers):
     from app.models.facility import Facility
 
     other_fac = Facility(name="Elsewhere PHC", facility_type="PHC")
@@ -176,7 +174,9 @@ async def test_unrelated_health_worker_is_not_notified(
     )
     other_worker = await _login(client, "other-worker@example.com")
 
-    headers, patient_id = await _patient(client, db_session, facility, "pp@example.com", "Private P")
+    headers, patient_id = await _patient(
+        client, db_session, facility, "pp@example.com", "Private P"
+    )
     referral_id = await _referral(client, auth_headers, patient_id)
     resp = await client.post(
         f"/api/v1/referrals/{referral_id}/outcome",
@@ -250,9 +250,7 @@ async def test_teleconsult_fallback_persists(client, db_session, facility, optio
     assert mine.json()[0]["fallback_option"] == option
 
 
-async def test_fallback_rejected_for_in_person_and_other_patients(
-    client, db_session, facility
-):
+async def test_fallback_rejected_for_in_person_and_other_patients(client, db_session, facility):
     headers, patient_id = await _patient(client, db_session, facility, "ip@example.com", "In Pers")
     other_headers, _ = await _patient(client, db_session, facility, "ot@example.com", "Other One")
 

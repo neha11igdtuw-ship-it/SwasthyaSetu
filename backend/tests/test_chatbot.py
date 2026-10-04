@@ -60,9 +60,7 @@ async def test_invalid_conversation_id_rejected(client, auth_headers):
     assert resp.status_code == 422
 
 
-async def test_chat_returns_model_reply_and_conversation_id(
-    client, db_session, facility
-):
+async def test_chat_returns_model_reply_and_conversation_id(client, db_session, facility):
     headers = await _patient_headers(client, db_session, facility)
     with patch(GEN, return_value="Hypertension means high blood pressure.") as gen:
         resp = await client.post(
@@ -124,9 +122,7 @@ async def test_model_only_receives_chat_text_not_patient_data(client, db_session
         ("show my vitals", "/patient/records"),
     ],
 )
-async def test_workflow_requests_redirect_without_calling_ai(
-    client, auth_headers, message, path
-):
+async def test_workflow_requests_redirect_without_calling_ai(client, auth_headers, message, path):
     with patch(GEN) as gen:
         resp = await client.post(URL, json={"message": message}, headers=auth_headers)
     assert resp.status_code == 200
@@ -182,7 +178,9 @@ async def test_user_rate_limited(client, auth_headers, monkeypatch):
     monkeypatch.setattr(chatbot_route, "_chat_limiter", RateLimiter(2, 60, "test"))
     with patch(GEN, return_value="ok"):
         codes = [
-            (await client.post(URL, json={"message": "What is ECG?"}, headers=auth_headers)).status_code
+            (
+                await client.post(URL, json={"message": "What is ECG?"}, headers=auth_headers)
+            ).status_code
             for _ in range(3)
         ]
     assert codes == [200, 200, 429]

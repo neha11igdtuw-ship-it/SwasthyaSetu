@@ -123,7 +123,9 @@ class ReferralService:
         if outcome in UNSUCCESSFUL_REFERRAL_OUTCOMES:
             facilities = FacilityRepository(self.db)
             from_fac = (
-                await facilities.get(referral.from_facility_id) if referral.from_facility_id else None
+                await facilities.get(referral.from_facility_id)
+                if referral.from_facility_id
+                else None
             )
             to_fac = (
                 await facilities.get(referral.to_facility_id) if referral.to_facility_id else None

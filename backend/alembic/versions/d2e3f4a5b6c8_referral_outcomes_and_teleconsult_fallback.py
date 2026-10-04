@@ -70,7 +70,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint("fk_notifications_referral_id_referrals", "notifications", type_="foreignkey")
+    op.drop_constraint(
+        "fk_notifications_referral_id_referrals", "notifications", type_="foreignkey"
+    )
     op.drop_index(op.f("ix_notifications_referral_id"), table_name="notifications")
     op.drop_column("notifications", "referral_id")
 
