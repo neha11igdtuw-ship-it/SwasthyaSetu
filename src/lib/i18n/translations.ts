@@ -21,15 +21,15 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     landingHeroDescription:
       "SwasthyaSetu connects rural patients, frontline health workers, doctors and healthcare facilities through one coordinated care journey—even in low-connectivity areas.",
     corePurposeTag: "Core Purpose",
-    corePurposeStatement: "From first symptom to completed care request and follow-up visit.",
+    corePurposeStatement: "CONNECTED & COMPLETE CARE JOURNEY",
     fourStakeholders: "Four Healthcare Stakeholders",
     selectRoleSub: "Select a role to view the intended workflow responsibilities",
     demoPathwayTag: "Demonstration Pathway: High-Risk Maternal Care",
 
     // Homepage Redesign Keys
-    heroHeadline: "Right care. Right language. Right time.",
+    heroHeadline: "From Symptom to Solution-We’ve Got You Connected",
     heroDescription:
-      "SwasthyaSetu helps rural patients and health workers continue care from the first symptom to referral and follow-up—even when internet access is weak.",
+      "SwasthyaSetu brings patients, health workers, doctors and healthcare facilities onto one connected journey — helping people move from their first concern to the right care, referrals, teleconsultation and continued support, while helping them get connected to ABHA.",
     getStarted: "Get started",
     tellSymptomsCta: "Tell your symptoms",
     tellSymptomsHeroHint: "Speak or type in your language. We will prepare a note for the health worker.",
@@ -661,15 +661,15 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     landingHeroDescription:
       "स्वास्थ्यसेतु ग्रामीण मरीजों, स्वास्थ्य कार्यकर्ताओं, डॉक्टरों और अस्पतालों को एक समन्वित देखभाल यात्रा से जोड़ता है—कम इंटरनेट वाले क्षेत्रों में भी।",
     corePurposeTag: "मुख्य उद्देश्य",
-    corePurposeStatement: "पहले लक्षण से लेकर अस्पताल रेफ़रल और अगली मुलाकात पूरा होने तक।",
+    corePurposeStatement: "जुड़ी हुई और संपूर्ण देखभाल यात्रा",
     fourStakeholders: "चार स्वास्थ्य सहभागी",
     selectRoleSub: "अपनी जिम्मेदारी का विवरण देखने के लिए भूमिका चुनें",
     demoPathwayTag: "प्रदर्शन मार्ग: उच्च-जोखिम मातृ देखभाल",
 
     // Homepage Redesign Keys
-    heroHeadline: "सही देखभाल। सही भाषा। सही समय।",
+    heroHeadline: "लक्षण से समाधान तक—हम आपको सही देखभाल से जोड़ते हैं",
     heroDescription:
-      "स्वास्थ्यसेतु ग्रामीण मरीजों और स्वास्थ्यकर्मियों को पहले लक्षण से लेकर रेफ़रल और अगली मुलाकात तक देखभाल जारी रखने में मदद करता है—कम इंटरनेट में भी।",
+      "स्वास्थ्यसेतु मरीजों, स्वास्थ्य कार्यकर्ताओं, डॉक्टरों और स्वास्थ्य सुविधाओं को एक जुड़ी हुई यात्रा पर लाता है—लोगों को पहली चिंता से सही देखभाल, रेफ़रल, टेलीपरामर्श और निरंतर सहायता तक पहुँचने में मदद करते हुए, साथ ही उन्हें ABHA से जुड़ने में सहायता करता है।",
     getStarted: "शुरू करें",
     tellSymptomsCta: "अपने लक्षण बताएं",
     tellSymptomsHeroHint: "अपनी भाषा में बोलें या लिखें। स्वास्थ्य कार्यकर्ता के लिए एक संक्षिप्त नोट तैयार होगा।",
@@ -1262,15 +1262,15 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     landingHeroDescription:
       "स्वास्थ्यसेतु ग्रामीण भागातील रुग्ण, आरोग्य सेविका, डॉक्टर आणि रुग्णालयांना एकाच समन्वित आरोग्य प्रवासाने जोडते—कमी इंटरनेट क्षेत्रातही.",
     corePurposeTag: "मुख्य उद्देश",
-    corePurposeStatement: "पहिल्या लक्षणापासून ते हॉस्पिटल रेफरल आणि पुढील भेट पूर्ण होईपर्यंत.",
+    corePurposeStatement: "जोडलेला आणि संपूर्ण आरोग्यसेवेचा प्रवास",
     fourStakeholders: "चार आरोग्य सहभागी",
     selectRoleSub: "आपली जबाबदारी पाहण्यासाठी भूमिका निवडा",
     demoPathwayTag: "प्रात्यक्षिक मार्ग: उच्च-धोका माता काळजी",
 
     // Homepage Redesign Keys
-    heroHeadline: "योग्य काळजी. योग्य भाषा. योग्य वेळ.",
+    heroHeadline: "लक्षणांपासून समाधानापर्यंत—आम्ही तुम्हाला योग्य सेवेशी जोडतो",
     heroDescription:
-      "स्वास्थ्यसेतु ग्रामीण भागातील रुग्ण आणि आरोग्य सेविकांना पहिल्या लक्षणापासून ते रेफरल आणि पुढील भेटीपर्यंत सेवा सुरू ठेवण्यास मदत करते—कमी इंटरनेटमध्येही.",
+      "स्वास्थ्यसेतु रुग्ण, आरोग्य कर्मचारी, डॉक्टर आणि आरोग्य सुविधांना एका जोडलेल्या प्रवासात आणते—पहिल्या चिंतेपासून योग्य सेवा, रेफरल, टेलिकन्सल्टेशन आणि पुढील मदतीपर्यंत पोहोचण्यास मदत करते, तसेच ABHA शी जोडण्यास सहाय्य करते.",
     getStarted: "सुरू करा",
     tellSymptomsCta: "तुमची लक्षणे सांगा",
     tellSymptomsHeroHint: "तुमच्या भाषेत बोला किंवा लिहा. आरोग्य सेवकासाठी एक छोटी नोंद तयार होईल.",
@@ -1736,15 +1736,15 @@ export const translationDictionary: Record<LanguageOption, Record<string, string
     landingHeroDescription:
       "SwasthyaSetu connects rural patients, ASHA workers, doctors and hospitals ek sath.",
     corePurposeTag: "Main Purpose",
-    corePurposeStatement: "Pehle symptom se hospital referral aur follow-up complete karne tak.",
+    corePurposeStatement: "Connected aur complete care journey",
     fourStakeholders: "4 Healthcare Stakeholders",
     selectRoleSub: "Apna role select karke dashboard kholen",
     demoPathwayTag: "Maternal Care Pathway",
 
     // Homepage Redesign Keys
-    heroHeadline: "Right care. Right language. Right time.",
+    heroHeadline: "Symptom se solution tak—hum aapko care se connected rakhte hain",
     heroDescription:
-      "SwasthyaSetu rural patients aur health workers ki help karta hai symptom se lekar hospital referral aur follow-up tak.",
+      "SwasthyaSetu patients, health workers, doctors aur healthcare facilities ko ek connected journey par laata hai—pehli concern se sahi care, referrals, teleconsultation aur continued support tak pahunchne mein madad karta hai, aur ABHA se judne mein bhi support karta hai.",
     getStarted: "Get started (शुरू करें)",
     tellSymptomsCta: "Apne lakshan batayein",
     tellSymptomsHeroHint: "Apni bhasha me boliye ya likhiye. Health worker ke liye ek chhota note taiyar hoga.",
