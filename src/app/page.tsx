@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { FeedbackFormSection } from "@/components/FeedbackFormSection";
 import { TeamSection } from "@/components/TeamSection";
+import { SiteQRCode } from "@/components/SiteQRCode";
 
 export default function LandingPage() {
   const { t } = useLanguage();
@@ -382,9 +383,13 @@ export default function LandingPage() {
 
       <footer className="mt-auto bg-slate-900 text-slate-400 text-xs border-t border-slate-800 py-10 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center md:text-left">
-            <span className="font-extrabold text-white text-base block">{t("appName")}</span>
-            <p className="text-slate-400 text-xs">{t("tagline")}</p>
+          <div className="flex items-center gap-4">
+            <SiteQRCode size={76} />
+            <div className="space-y-1 text-center md:text-left">
+              <span className="font-extrabold text-white text-base block">{t("appName")}</span>
+              <p className="text-slate-400 text-xs">{t("tagline")}</p>
+              <p className="text-slate-500 text-[11px]">Scan to open on your phone</p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-6 font-semibold text-slate-300">
