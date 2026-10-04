@@ -72,6 +72,9 @@ import type {
   UnreadCountOut,
   ChatRequest,
   ChatResponse,
+SupportRequestOut,
+SupportRequestReason,
+SupportRequestStatus,
 } from "./types";
 
 const API_ROOT =
@@ -575,4 +578,30 @@ export { request as apiRequest };
 export const chatbotApi = {
   chat: (data: ChatRequest) =>
     request<ChatResponse>("/chatbot/chat", { method: "POST", body: data }),
+};
+export const supportRequestsApi = {
+  create: (data: { reason: SupportRequestReason; message?: string }) =>
+    request<SupportRequestOut>("/support-requests", {
+      method: "POST",
+      body: data,
+    }),
+
+  listForPatient: () =>
+    request<SupportRequestOut[]>("/support-requests/me"),
+
+  listForFacility: () =>
+    request<SupportRequestOut[]>("/support-requests"),
+
+  updateStatus: (
+    requestId: string,
+    baseVersion: number,
+    status: SupportRequestStatus
+  ) =>
+    request<SupportRequestOut>(`/support-requests/${requestId}/status`, {
+      method: "PATCH",
+      body: {
+        base_version: baseVersion,
+        status,
+      },
+    }),
 };

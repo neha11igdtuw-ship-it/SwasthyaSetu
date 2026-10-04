@@ -513,7 +513,34 @@ export interface PrescriptionOut {
   facility_name?: string | null;
   prescribed_by_name?: string | null;
 }
+export type SupportRequestReason =
+  | "HEALTH_CONCERN"
+  | "UNDERSTANDING_HELP"
+  | "CANNOT_TRAVEL"
+  | "CALLBACK"
+  | "OTHER";
 
+export type SupportRequestStatus =
+  | "SUBMITTED"
+  | "ASSIGNED"
+  | "CALLBACK_PENDING"
+  | "CONTACTED"
+  | "RESOLVED";
+
+export interface SupportRequestOut {
+  id: string;
+  patient_id: string;
+  facility_id: string | null;
+  reason: SupportRequestReason;
+  message: string | null;
+  status: SupportRequestStatus;
+  assigned_to_id: string | null;
+  related_message_id: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  version: number;
+  patient_name: string | null;
+}
 // ---- Maternal: pregnancies ----
 
 export interface PregnancyOut {
