@@ -378,7 +378,7 @@ export default function LandingPage() {
             </svg>
 
            <div className="w-full flex justify-center py-6 overflow-x-auto">
-                <img 
+                <Image
                 src="/care-journey-flow.svg" 
                 alt="SwasthyaSetu 8-Step Care Journey Flow" 
                 className="w-full max-w-6xl h-auto object-contain min-w-[768px]" 
@@ -746,64 +746,6 @@ function EcosystemNode({
       >
         {label}
       </p>
-    </div>
-  );
-}
-
-function RoadmapColumn({
-  step,
-  title,
-  desc,
-}: {
-  step: RoadmapStep;
-  title: string;
-  desc: string;
-}) {
-  const styles = accentStyles[step.accent];
-  const Icon = step.icon;
-
-  const card = (
-    <div className="text-left max-w-[200px] mx-auto space-y-2">
-      <div className={`px-4 py-2 rounded-lg text-white font-extrabold text-sm shadow-sm ${styles.circle}`}>
-        {title}
-      </div>
-      <div className="flex items-start gap-1.5 pl-1">
-        <span className={`mt-1 w-1.5 h-1.5 rounded-full shrink-0 ${styles.circle}`} aria-hidden="true" />
-        <p className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">{desc}</p>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="flex flex-col items-center">
-      <div className="min-h-[132px] flex flex-col items-center justify-end pb-2">
-        {step.place === "top" ? (
-          <>
-            {card}
-            <div className={`w-[2px] h-6 mt-2 ${styles.stem}`} />
-          </>
-        ) : (
-          <Icon className={`w-6 h-6 ${styles.icon}`} aria-hidden="true" />
-        )}
-      </div>
-      <div
-        className={`relative z-10 rounded-full bg-white dark:bg-slate-900 border-4 flex items-center justify-center font-black ${styles.icon} ${
-          step.featured ? "w-16 h-16 text-2xl shadow-lg shadow-violet-800/20" : "w-14 h-14 text-xl shadow-md"
-        }`}
-        style={{ borderColor: "currentColor" }}
-      >
-        {step.n}
-      </div>
-      <div className="min-h-[132px] flex flex-col items-center justify-start pt-2">
-        {step.place === "bottom" ? (
-          <>
-            <div className={`w-[2px] h-6 mb-2 ${styles.stem}`} />
-            {card}
-          </>
-        ) : (
-          <Icon className={`w-6 h-6 ${styles.icon}`} aria-hidden="true" />
-        )}
-      </div>
     </div>
   );
 }
