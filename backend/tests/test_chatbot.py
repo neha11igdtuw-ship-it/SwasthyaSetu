@@ -8,7 +8,12 @@ from app.core.config import get_settings
 from app.models.enums import Role
 from app.schemas.auth import UserRegister
 from app.services.auth import AuthService
-from app.services.chatbot_service import SYSTEM_PROMPT, UNAVAILABLE_MESSAGE
+from app.services.chatbot_service import (
+    SYSTEM_PROMPT,
+    UNAVAILABLE_MESSAGE,
+    language_instruction,
+    normalize_ui_language,
+)
 
 pytestmark = pytest.mark.asyncio
 
@@ -190,3 +195,62 @@ def test_system_prompt_enforces_scope_and_safety():
     lowered = SYSTEM_PROMPT.lower()
     for phrase in ("never diagnose", "not a doctor", "myth", "hinglish", "emergency help"):
         assert phrase in lowered
+
+
+@pytest.mark.parametrize(
+    "code,expected",
+    [
+        ("en", "English"),
+        ("hi", "Hindi"),
+        ("ta", "Tamil"),
+        ("local", "Hinglish"),
+    ],
+)
+async def test_selected_ui_language_is_sent_to_the_model(client, auth_headers, code, expected):
+    with patch(GEN, return_value="ok") as gen:
+        resp = await client.post(
+            URL, json={"message": "What is anemia?", "ui_language": code}, headers=auth_headers
+        )
+    assert resp.status_code == 200
+    _key, system, _history, _message = gen.call_args.args
+    assert "RESPONSE LANGUAGE" in system
+    assert expected in system
+    assert f"code: {code}" in system
+
+
+async def test_unknown_ui_language_is_not_injected_into_prompt(client, auth_headers):
+    with patch(GEN, return_value="ok") as gen:
+        await client.post(
+            URL,
+            json={"message": "What is anemia?", "ui_language": "xx!"},
+            headers=auth_headers,
+        )
+    _key, system, _history, _message = gen.call_args.args
+    assert "RESPONSE LANGUAGE" not in system
+    assert "xx!" not in system
+
+
+def test_language_helpers():
+    assert normalize_ui_language(" HI ") == "hi"
+    assert normalize_ui_language("zz") is None
+    assert normalize_ui_language(None) is None
+    assert language_instruction(None) == ""
+
+
+async def test_redirect_text_follows_selected_language(client, auth_headers):
+    with patch(GEN) as gen:
+        hi = await client.post(
+            URL, json={"message": "Book me a doctor", "ui_language": "hi"}, headers=auth_headers
+        )
+        local = await client.post(
+            URL, json={"message": "Book me a doctor", "ui_language": "local"}, headers=auth_headers
+        )
+        en = await client.post(
+            URL, json={"message": "Book me a doctor", "ui_language": "en"}, headers=auth_headers
+        )
+    assert "अपॉइंटमेंट" in hi.json()["response"]
+    assert "kripya" in local.json()["response"].lower()
+    assert "Appointments section" in en.json()["response"]
+    for r in (hi, local, en):
+        assert r.json()["redirect"]["path"] == "/patient/appointments"
+    gen.assert_not_called()

@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bot, Loader2, Mic, MicOff, Plus, Send, Trash2, User as UserIcon, ArrowRight } from "lucide-react";
+import { ArrowRight, Bot, Loader2, Mic, MicOff, Plus, Send, Trash2, User as UserIcon, X } from "lucide-react";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { chatbotApi, ApiError } from "@/lib/api/client";
 import { useCurrentUser } from "@/lib/auth/useCurrentUser";
@@ -19,33 +19,41 @@ import {
 const MAX_INPUT_CHARS = 6000;
 const HISTORY_TURNS_SENT = 24;
 
-const DISCLAIMER_TEXT =
-  "AI Health Assistant provides general health information for educational purposes. It does not diagnose conditions or replace professional medical advice. In an emergency, use Emergency Help or call 108.";
-
-const STARTER_PROMPTS = [
-  "What is diabetes?",
-  "Explain BP simply",
-  "What is a balanced diet?",
-  "Explain anemia",
-  "Give me a health myth",
+/** Translation keys (see aiChatText in translations.ts) for the starter questions. */
+const STARTER_KEYS = [
+  "aiChat.starter1",
+  "aiChat.starter2",
+  "aiChat.starter3",
+  "aiChat.starter4",
+  "aiChat.starter5",
 ] as const;
 
-/** Follow-up shortcuts; they continue the current conversation. */
-const QUICK_ACTIONS: ReadonlyArray<{ label: string; prompt: string }> = [
-  { label: "Explain Simply", prompt: "Please explain that again in very simple words." },
-  { label: "Hindi", prompt: "Please explain the above in Hindi." },
-  { label: "Give Example", prompt: "Please give a simple example." },
-  { label: "Step by step", prompt: "Please explain that step by step." },
+/** Follow-up shortcuts; they continue the current conversation in the selected language. */
+const QUICK_ACTIONS: ReadonlyArray<{ labelKey: string; promptKey: string }> = [
+  { labelKey: "aiChat.quickSimple", promptKey: "aiChat.quickSimplePrompt" },
+  { labelKey: "aiChat.quickExample", promptKey: "aiChat.quickExamplePrompt" },
+  { labelKey: "aiChat.quickSteps", promptKey: "aiChat.quickStepsPrompt" },
 ];
 
-function friendlyError(err: unknown): string {
+/** Existing nav translation keys, so redirect buttons use the app's own section names. */
+const REDIRECT_LABEL_KEYS: Record<string, string> = {
+  "/patient/appointments": "appointments",
+  "/patient/facilities": "nearbyFacilities",
+  "/patient/referrals": "referrals",
+  "/patient/medicines": "medicines",
+  "/patient/emergency-help": "emergencyHelp",
+  "/patient/records": "records",
+  "/patient/symptoms": "symptoms",
+};
+
+function friendlyError(err: unknown, t: (key: string) => string): string {
   if (err instanceof ApiError) {
     if (err.code === "DEMO_READ_ONLY") return err.message;
-    if (err.status === 429) return "You are sending messages too quickly. Please wait a moment and try again.";
-    if (err.status === 0) return "Network problem. Please check your connection and try again.";
-    if (err.status === 401) return "Your session has expired. Please sign in again.";
+    if (err.status === 429) return t("aiChat.errorRateLimit");
+    if (err.status === 0) return t("aiChat.errorNetwork");
+    if (err.status === 401) return t("aiChat.errorSession");
   }
-  return "Sorry, I'm unable to respond right now. Please try again.";
+  return t("aiChat.errorGeneric");
 }
 
 /** Minimal, safe rendering: **bold** and "* "/"- " bullets. No raw HTML. */
@@ -69,8 +77,21 @@ function FormattedText({ text }: { text: string }) {
   );
 }
 
+/**
+ * Floating AI Health Assistant: a small round button fixed to the bottom-right
+ * that opens a compact chatbox on the current page. It is the ONLY chatbot
+ * implementation; it stays mounted while closed, so the conversation (also
+ * mirrored to per-user sessionStorage) survives closing and reopening.
+ *
+ * The language always comes from the app's single language context, so the
+ * UI strings, the speech language and the `ui_language` sent to the backend
+ * all follow the language picked in the main language selector, including
+ * changes made while the chatbox is open.
+ */
 export function AIHealthAssistant() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const launcherRef = useRef<HTMLButtonElement | null>(null);
   const user = useCurrentUser();
   const userId = user?.id ?? null;
 
@@ -81,6 +102,8 @@ export function AIHealthAssistant() {
   const [error, setError] = useState<{ message: string; retryText: string } | null>(null);
   const [ready, setReady] = useState(false);
 
+  const openRef = useRef(false);
+  openRef.current = open;
   const inputRef = useRef("");
   inputRef.current = input;
   const loadingRef = useRef(false);
@@ -107,8 +130,14 @@ export function AIHealthAssistant() {
   }, [userId, ready, conversationId, messages]);
 
   useEffect(() => {
+    if (!open) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, loading, error]);
+  }, [messages, loading, error, open]);
+
+  // Focus the input when the chatbox opens.
+  useEffect(() => {
+    if (open && ready) textareaRef.current?.focus();
+  }, [open, ready]);
 
   const { isRecording, speechError, start, stop } = useSpeechRecognition({
     language,
@@ -149,14 +178,14 @@ export function AIHealthAssistant() {
           { id: `${Date.now()}-a`, role: "assistant", content: res.response, redirect: res.redirect },
         ]);
       } catch (err) {
-        setError({ message: friendlyError(err), retryText: text });
+        setError({ message: friendlyError(err, t), retryText: text });
       } finally {
         loadingRef.current = false;
         setLoading(false);
-        textareaRef.current?.focus();
+        if (openRef.current) textareaRef.current?.focus();
       }
     },
-    [isRecording, language, ready, stop]
+    [isRecording, language, ready, stop, t]
   );
 
   const onSubmit = (e: React.FormEvent) => {
@@ -192,196 +221,253 @@ export function AIHealthAssistant() {
     !loading && !error && lastMessage?.role === "assistant" && !lastMessage.redirect;
   const started = messages.length > 0;
 
+  const closeChat = useCallback(() => {
+    if (isRecording) stop();
+    setOpen(false);
+    launcherRef.current?.focus();
+  }, [isRecording, stop]);
+
+  const onPanelKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      closeChat();
+    }
+  };
+
+  const redirectLabel = (r: NonNullable<ChatMessage["redirect"]>) => {
+    const key = REDIRECT_LABEL_KEYS[r.path];
+    const translated = key ? t(key) : "";
+    return translated && translated !== key ? translated : r.label;
+  };
+
+  const focusRing =
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-1";
+
   return (
-    <div className="flex flex-col gap-3">
-      <DisclaimerCard variant="info" compact text={DISCLAIMER_TEXT} />
-
-      <section
-        aria-label="AI Health Assistant chat"
-        className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden"
-      >
-        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700">
-              <Bot className="w-5 h-5" aria-hidden="true" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-sm font-extrabold text-slate-900 dark:text-white truncate">
-                SwasthyaSetu AI Health Assistant
-              </h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                General health information &amp; education
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={newChat}
-              className="min-h-11 inline-flex items-center gap-1 px-3 rounded-xl text-xs font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" aria-hidden="true" />
-              <span>New chat</span>
-            </button>
-            <button
-              type="button"
-              onClick={clearChat}
-              disabled={!started}
-              className="min-h-11 inline-flex items-center gap-1 px-3 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" aria-hidden="true" />
-              <span>Clear</span>
-            </button>
-          </div>
-        </div>
-
-        <div
-          role="log"
-          aria-live="polite"
-          aria-label="Conversation"
-          className="h-[55vh] min-h-72 overflow-y-auto px-4 py-4 space-y-3 bg-slate-50/60 dark:bg-slate-900/30"
+    <>
+      {open && (
+        <section
+          role="dialog"
+          aria-modal="false"
+          aria-label={t("aiChat.tooltip")}
+          onKeyDown={onPanelKeyDown}
+          className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-2xl bottom-[76px] left-3 right-3 h-[min(70vh,560px)] md:left-auto md:right-6 md:bottom-[90px] md:w-[380px] md:h-[min(580px,calc(100vh-120px))]"
         >
-          {!ready ? (
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-              <span>Loading…</span>
+          <header className="flex items-center justify-between gap-2 px-3 py-2.5 bg-teal-700 text-white">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="p-1.5 rounded-lg bg-white/15">
+                <Bot className="w-4 h-4" aria-hidden="true" />
+              </span>
+              <h2 className="text-sm font-extrabold truncate">{t("aiChat.tooltip")}</h2>
             </div>
-          ) : (
-            <>
-              <Bubble role="assistant">
-                <p>Hello! How can I help you today? Ask me about health topics, medical terms, nutrition or health myths.</p>
-              </Bubble>
+            <button
+              type="button"
+              onClick={closeChat}
+              aria-label={t("aiChat.close")}
+              title={t("aiChat.close")}
+              className="min-h-10 min-w-10 inline-flex items-center justify-center rounded-lg hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
+            >
+              <X className="w-5 h-5" aria-hidden="true" />
+            </button>
+          </header>
 
-              {!started && (
-                <div className="pt-1">
-                  <p className="text-[11px] font-bold text-slate-500 mb-2">Try asking:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {STARTER_PROMPTS.map((prompt) => (
-                      <button
-                        key={prompt}
-                        type="button"
-                        onClick={() => void send(prompt)}
-                        disabled={loading}
-                        className="min-h-11 px-3.5 rounded-full border border-teal-200 dark:border-teal-800 bg-white dark:bg-slate-800 text-xs font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-50 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 cursor-pointer"
+          <div className="px-3 pt-2 pb-1 space-y-2 border-b border-slate-100 dark:border-slate-700">
+            <DisclaimerCard variant="info" compact text={t("aiChat.disclaimer")} />
+            <div className="flex items-center gap-2 pb-1">
+              <button
+                type="button"
+                onClick={newChat}
+                className={`min-h-9 inline-flex items-center gap-1 px-2.5 rounded-lg text-[11px] font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 cursor-pointer ${focusRing}`}
+              >
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{t("aiChat.newChat")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={clearChat}
+                disabled={!started}
+                className={`min-h-9 inline-flex items-center gap-1 px-2.5 rounded-lg text-[11px] font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 disabled:opacity-50 cursor-pointer ${focusRing}`}
+              >
+                <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{t("aiChat.clear")}</span>
+              </button>
+            </div>
+          </div>
+
+          <div
+            role="log"
+            aria-live="polite"
+            aria-label={t("aiChat.conversation")}
+            className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3 bg-slate-50/60 dark:bg-slate-900/30"
+          >
+            {!ready ? (
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                <span>{t("aiChat.loading")}</span>
+              </div>
+            ) : (
+              <>
+                <Bubble role="assistant">
+                  <p>{t("aiChat.greeting")}</p>
+                </Bubble>
+
+                {!started && (
+                  <div className="pt-1">
+                    <p className="text-[11px] font-bold text-slate-500 mb-2">{t("aiChat.tryAsking")}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {STARTER_KEYS.map((key) => {
+                        const prompt = t(key);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => void send(prompt)}
+                            disabled={loading}
+                            className={`min-h-10 px-3 rounded-full border border-teal-200 dark:border-teal-800 bg-white dark:bg-slate-800 text-xs font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-50 disabled:opacity-60 cursor-pointer ${focusRing}`}
+                          >
+                            {prompt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {messages.map((m) => (
+                  <Bubble key={m.id} role={m.role}>
+                    <FormattedText text={m.content} />
+                    {m.redirect && (
+                      <Link
+                        href={m.redirect.path}
+                        onClick={() => setOpen(false)}
+                        className="mt-2 min-h-10 inline-flex items-center gap-1.5 px-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
                       >
-                        {prompt}
+                        <span className="sr-only">{t("aiChat.open.section")} </span>
+                        <span>{redirectLabel(m.redirect)}</span>
+                        <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                      </Link>
+                    )}
+                  </Bubble>
+                ))}
+
+                {loading && (
+                  <Bubble role="assistant">
+                    <span className="inline-flex items-center gap-2 text-slate-500" role="status">
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                      <span>{t("aiChat.thinking")}</span>
+                    </span>
+                  </Bubble>
+                )}
+
+                {error && (
+                  <div
+                    role="alert"
+                    className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-900 dark:text-rose-100 text-xs font-semibold space-y-2"
+                  >
+                    <p>{error.message}</p>
+                    <button
+                      type="button"
+                      onClick={() => void send(error.retryText, true)}
+                      disabled={loading}
+                      className="min-h-10 px-3 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-extrabold disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 cursor-pointer"
+                    >
+                      {t("aiChat.retry")}
+                    </button>
+                  </div>
+                )}
+
+                {showQuickActions && (
+                  <div className="flex flex-wrap gap-2" aria-label={t("aiChat.followUpOptions")}>
+                    {QUICK_ACTIONS.map((a) => (
+                      <button
+                        key={a.labelKey}
+                        type="button"
+                        onClick={() => void send(t(a.promptKey))}
+                        className={`min-h-10 px-3 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 cursor-pointer ${focusRing}`}
+                      >
+                        {t(a.labelKey)}
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
-
-              {messages.map((m) => (
-                <Bubble key={m.id} role={m.role}>
-                  <FormattedText text={m.content} />
-                  {m.redirect && (
-                    <Link
-                      href={m.redirect.path}
-                      className="mt-2 min-h-11 inline-flex items-center gap-1.5 px-3.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-extrabold focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
-                    >
-                      <span>Open {m.redirect.label}</span>
-                      <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
-                    </Link>
-                  )}
-                </Bubble>
-              ))}
-
-              {loading && (
-                <Bubble role="assistant">
-                  <span className="inline-flex items-center gap-2 text-slate-500" role="status">
-                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                    <span>Thinking...</span>
-                  </span>
-                </Bubble>
-              )}
-
-              {error && (
-                <div
-                  role="alert"
-                  className="p-3 rounded-xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-900 dark:text-rose-100 text-xs font-semibold space-y-2"
-                >
-                  <p>{error.message}</p>
-                  <button
-                    type="button"
-                    onClick={() => void send(error.retryText, true)}
-                    disabled={loading}
-                    className="min-h-11 px-3.5 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-extrabold disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:ring-offset-2 cursor-pointer"
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
-
-              {showQuickActions && (
-                <div className="flex flex-wrap gap-2" aria-label="Follow-up options">
-                  {QUICK_ACTIONS.map((a) => (
-                    <button
-                      key={a.label}
-                      type="button"
-                      onClick={() => void send(a.prompt)}
-                      className="min-h-11 px-3.5 rounded-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 cursor-pointer"
-                    >
-                      {a.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-          <div ref={bottomRef} />
-        </div>
-
-        <form onSubmit={onSubmit} className="border-t border-slate-100 dark:border-slate-700 p-3 space-y-2">
-          {speechError && (
-            <p role="alert" className="text-[11px] font-semibold text-amber-700">
-              {speechError}
-            </p>
-          )}
-          <div className="flex items-end gap-2">
-            <label htmlFor="ai-assistant-input" className="sr-only">
-              Ask a health question
-            </label>
-            <textarea
-              id="ai-assistant-input"
-              ref={textareaRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={onKeyDown}
-              maxLength={MAX_INPUT_CHARS}
-              rows={2}
-              placeholder={isRecording ? "Listening… speak now" : "Ask a question..."}
-              disabled={!ready}
-              className="flex-1 resize-none p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
-            />
-            <button
-              type="button"
-              onClick={() => (isRecording ? stop() : start())}
-              disabled={!ready || loading}
-              aria-pressed={isRecording}
-              aria-label={isRecording ? "Stop voice input" : "Start voice input"}
-              className={`min-h-12 min-w-12 inline-flex items-center justify-center rounded-xl border focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 disabled:opacity-60 cursor-pointer ${
-                isRecording
-                  ? "bg-rose-600 border-rose-600 text-white animate-pulse"
-                  : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-              }`}
-            >
-              {isRecording ? <MicOff className="w-5 h-5" aria-hidden="true" /> : <Mic className="w-5 h-5" aria-hidden="true" />}
-            </button>
-            <button
-              type="submit"
-              disabled={!ready || loading || input.trim().length === 0}
-              className="min-h-12 inline-flex items-center justify-center gap-1.5 px-4 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-extrabold disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 cursor-pointer"
-            >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Send className="w-4 h-4" aria-hidden="true" />}
-              <span>Send</span>
-            </button>
+                )}
+              </>
+            )}
+            <div ref={bottomRef} />
           </div>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400">
-            Press Enter to send, Shift+Enter for a new line. For appointments, hospitals, referrals, medicines or emergencies, use those sections of SwasthyaSetu.
-          </p>
-        </form>
-      </section>
-    </div>
+
+          <form onSubmit={onSubmit} className="border-t border-slate-100 dark:border-slate-700 p-2.5 space-y-1.5">
+            {speechError && (
+              <p role="alert" className="text-[11px] font-semibold text-amber-700">
+                {speechError}
+              </p>
+            )}
+            <div className="flex items-end gap-2">
+              <label htmlFor="ai-assistant-input" className="sr-only">
+                {t("aiChat.placeholder")}
+              </label>
+              <textarea
+                id="ai-assistant-input"
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={onKeyDown}
+                maxLength={MAX_INPUT_CHARS}
+                rows={2}
+                placeholder={isRecording ? t("aiChat.listening") : t("aiChat.placeholder")}
+                disabled={!ready}
+                className="flex-1 min-w-0 resize-none p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+              />
+              <button
+                type="button"
+                onClick={() => (isRecording ? stop() : start())}
+                disabled={!ready || loading}
+                aria-pressed={isRecording}
+                aria-label={isRecording ? t("aiChat.voiceStop") : t("aiChat.voiceStart")}
+                title={isRecording ? t("aiChat.voiceStop") : t("aiChat.voiceStart")}
+                className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-xl border disabled:opacity-60 cursor-pointer ${focusRing} ${
+                  isRecording
+                    ? "bg-rose-600 border-rose-600 text-white animate-pulse"
+                    : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200"
+                }`}
+              >
+                {isRecording ? <MicOff className="w-5 h-5" aria-hidden="true" /> : <Mic className="w-5 h-5" aria-hidden="true" />}
+              </button>
+              <button
+                type="submit"
+                aria-label={t("aiChat.send")}
+                disabled={!ready || loading || input.trim().length === 0}
+                className="min-h-11 inline-flex items-center justify-center gap-1.5 px-3.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-sm font-extrabold disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 cursor-pointer"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" /> : <Send className="w-4 h-4" aria-hidden="true" />}
+                <span>{t("aiChat.send")}</span>
+              </button>
+            </div>
+            <p className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">{t("aiChat.hint")}</p>
+          </form>
+        </section>
+      )}
+
+      <div className="fixed z-50 right-3 md:right-6 bottom-[136px] md:bottom-6 group">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute right-full mr-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-bold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 hidden md:block"
+        >
+          {t("aiChat.tooltip")}
+        </span>
+        <button
+          ref={launcherRef}
+          type="button"
+          onClick={() => (open ? closeChat() : setOpen(true))}
+          aria-label={open ? t("aiChat.close") : t("aiChat.open")}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          title={t("aiChat.tooltip")}
+          className="w-[50px] h-[50px] md:w-14 md:h-14 inline-flex items-center justify-center rounded-full bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white shadow-lg ring-2 ring-white/70 dark:ring-slate-900/70 transition-colors cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-teal-300"
+        >
+          {open ? <X className="w-6 h-6" aria-hidden="true" /> : <Bot className="w-6 h-6 md:w-7 md:h-7" aria-hidden="true" />}
+        </button>
+      </div>
+    </>
   );
 }
 
