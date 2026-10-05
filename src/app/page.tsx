@@ -377,16 +377,13 @@ export default function LandingPage() {
               <line x1="666" y1="2" x2="1000" y2="2" stroke="#4d7c0f" strokeWidth="4" />
             </svg>
 
-            <div className="grid grid-cols-4 relative">
-              {roadmapSteps.map((step) => (
-                <RoadmapColumn
-                  key={step.n}
-                  step={step}
-                  title={t(step.titleKey)}
-                  desc={t(step.descKey)}
+           <div className="w-full flex justify-center py-6 overflow-x-auto">
+                <img 
+                src="/care-journey-flow.svg" 
+                alt="SwasthyaSetu 8-Step Care Journey Flow" 
+                className="w-full max-w-6xl h-auto object-contain min-w-[768px]" 
                 />
-              ))}
-            </div>
+           </div>
           </div>
 
           <div className="lg:hidden space-y-0">
