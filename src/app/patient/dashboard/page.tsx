@@ -22,6 +22,7 @@ import { QuickActionCard } from "@/components/patient/QuickActionCard";
 import { EmergencyHelpCard, GeneralEmergencyHelpCard } from "@/components/patient/EmergencyHelpCard";
 import { QueueCard } from "@/components/patient/QueueCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { useAppState } from "@/lib/store/AppStateProvider";
 import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
 import { Loader2 } from "lucide-react";
 import {
@@ -39,6 +40,7 @@ import {
 
 export default function PatientDashboardPage() {
   const { t } = useLanguage();
+  const { triggerSyncNow } = useAppState();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [patient, setPatient] = useState<PatientOut | null>(null);
@@ -50,6 +52,10 @@ export default function PatientDashboardPage() {
   const [nextVisit, setNextVisit] = useState<string | null>(null);
   const [careInfoUpdatedAt, setCareInfoUpdatedAt] = useState<string | null>(null);
   const [showingSavedCareInfo, setShowingSavedCareInfo] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.onLine) void triggerSyncNow();
+  }, [triggerSyncNow]);
 
   useEffect(() => {
     let cancelled = false;

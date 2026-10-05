@@ -17,6 +17,8 @@ import type {
   InventoryItemOut,
   MatchCandidate,
   PatientCreate,
+  PhoneOtpRequest,
+  PhoneOtpRequestOut,
   PatientOut,
   PatientUpdate,
   PregnancyOut,
@@ -182,6 +184,7 @@ interface RequestOptions {
   body?: unknown;
   auth?: boolean; // default true
   retry?: boolean; // internal: prevents infinite refresh loops
+  headers?: Record<string, string>;
 }
 
 async function refreshAccessToken(): Promise<boolean> {
@@ -210,6 +213,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   const headers: Record<string, string> = { "Content-Type": "application/json" };
+  Object.assign(headers, options.headers);
   if (auth) {
     const token = getAccessToken();
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -268,6 +272,13 @@ export const authApi = {
     setTokens(tokens);
     return tokens;
   },
+  requestPhoneOtp: (data: PhoneOtpRequest) =>
+    request<PhoneOtpRequestOut>("/auth/phone-otp/request", { method: "POST", body: data, auth: false }),
+  verifyPhoneOtp: async (data: PhoneOtpRequest & { code: string }): Promise<TokenPair> => {
+    const tokens = await request<TokenPair>("/auth/phone-otp/verify", { method: "POST", body: data, auth: false });
+    setTokens(tokens);
+    return tokens;
+  },
   // Accounts are active immediately — no email-verification step. Callers
   // (see the register page) follow this with login() to establish a session.
   register: (data: UserRegister) =>
@@ -305,8 +316,12 @@ export const referralsApi = {
   me: () => request<ReferralOut[]>("/referrals/me"),
   get: (id: string) => request<ReferralOut>(`/referrals/${id}`),
   create: (data: ReferralCreate) => request<ReferralOut>("/referrals", { method: "POST", body: data }),
-  requestCare: (data: CareRequestCreate) =>
-    request<ReferralOut>("/referrals/request-care", { method: "POST", body: data }),
+  requestCare: (data: CareRequestCreate, requestId?: string) =>
+    request<ReferralOut>("/referrals/request-care", {
+      method: "POST",
+      body: data,
+      headers: requestId ? { "Idempotency-Key": requestId } : undefined,
+    }),
   transition: (id: string, data: ReferralStatusUpdate) =>
     request<ReferralOut>(`/referrals/${id}/transition`, { method: "POST", body: data }),
   updateStatus: (id: string, data: ReferralStatusUpdate) =>
@@ -438,8 +453,12 @@ export const appointmentsApi = {
     request<AppointmentOut[]>(`/appointments/facility/${facilityId}`),
   doctorMe: (history = false) =>
     request<AppointmentOut[]>(`/appointments/doctor/me?history=${history}`),
-  create: (data: AppointmentCreate) =>
-    request<AppointmentOut>("/appointments", { method: "POST", body: data }),
+  create: (data: AppointmentCreate, requestId?: string) =>
+    request<AppointmentOut>("/appointments", {
+      method: "POST",
+      body: data,
+      headers: requestId ? { "Idempotency-Key": requestId } : undefined,
+    }),
   updateStatus: (id: string, data: AppointmentStatusUpdate) =>
     request<AppointmentOut>(`/appointments/${id}/status`, { method: "PATCH", body: data }),
   updateFallbackOption: (id: string, data: AppointmentFallbackUpdate) =>

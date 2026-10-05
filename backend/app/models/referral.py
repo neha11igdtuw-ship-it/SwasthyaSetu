@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -32,6 +32,7 @@ class Referral(SyncableMixin, Base):
     created_by_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(), ForeignKey("users.id"), nullable=True
     )
+    client_request_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     screening_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID(),
         ForeignKey("screenings.id"),
@@ -48,3 +49,14 @@ class Referral(SyncableMixin, Base):
     outcome_reported_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     patient = relationship("Patient", back_populates="referrals")
+
+    __table_args__ = (
+        Index(
+            "uq_referrals_creator_client_request",
+            "created_by_id",
+            "client_request_id",
+            unique=True,
+            sqlite_where=client_request_id.is_not(None),
+            postgresql_where=client_request_id.is_not(None),
+        ),
+    )

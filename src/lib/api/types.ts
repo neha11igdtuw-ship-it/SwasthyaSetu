@@ -10,7 +10,7 @@ export type Role =
 
 export interface UserOut {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string;
   role: Role;
   phone: string | null;
@@ -46,7 +46,7 @@ export interface UserLogin {
 }
 
 export interface UserRegister {
-  email: string;
+  email?: string | null;
   password: string;
   full_name: string;
   role: Role;
@@ -55,6 +55,15 @@ export interface UserRegister {
   village?: string | null;
   preferred_language?: string | null;
   address: AddressInput;
+}
+
+export interface PhoneOtpRequest {
+  phone: string;
+}
+
+export interface PhoneOtpRequestOut {
+  message: string;
+  development_code?: string | null;
 }
 
 export interface VerifyEmailRequest {

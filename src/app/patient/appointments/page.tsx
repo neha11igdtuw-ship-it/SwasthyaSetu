@@ -7,7 +7,8 @@ import { RoleBadge } from "@/components/RoleBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { usePatientDraft } from "@/lib/offline/usePatientDraft";
-import { appointmentsApi, facilitiesApi, doctorAvailabilityApi, ApiError } from "@/lib/api/client";
+import { appointmentsApi, facilitiesApi, doctorAvailabilityApi, ApiError, getCurrentUserId } from "@/lib/api/client";
+import { db, type PatientBookingCacheRecord } from "@/lib/offline/db";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import type {
   AppointmentOut,
@@ -163,18 +164,56 @@ export default function PatientAppointmentsPage() {
   }, [draftReady, showForm, facilityId, mode, fallbackOption, reason, customReason, date, notes, step, saveDraft]);
 
   const load = useCallback(async () => {
+    const userId = getCurrentUserId();
+    let saved: PatientBookingCacheRecord | undefined;
+    if (userId) {
+      try { saved = await db.patientBookingCache.get(userId); } catch { saved = undefined; }
+    }
     const own = await loadOwnPatient();
     if (!own) {
-      setError("No patient record linked to this login yet.");
+      if (!saved) {
+        setError("No patient record linked to this login yet.");
+        return;
+      }
+      setPatient(saved.patient);
+      setAppointments(saved.appointments);
+      setFacilities(saved.facilities);
+      const cachedNames: Record<string, string> = {};
+      for (const facility of saved.facilities) cachedNames[facility.id] = facility.name;
+      setFacilityNames(cachedNames);
+      setFacilityId((current) => current || saved!.patient.facility_id || saved!.facilities[0]?.id || "");
       return;
     }
-    const [list, facs] = await Promise.all([appointmentsApi.me(), facilitiesApi.list()]);
+    let bookingDataRefreshed = true;
+    const [list, facs] = await Promise.all([
+      appointmentsApi.me().catch(() => {
+        bookingDataRefreshed = false;
+        return saved?.appointments ?? [];
+      }),
+      facilitiesApi.list().catch(() => {
+        bookingDataRefreshed = false;
+        return saved?.facilities ?? [];
+      }),
+    ]);
     const names: Record<string, string> = {};
     for (const f of facs) names[f.id] = f.name;
     setPatient(own);
     setAppointments(list);
     setFacilities(facs);
     setFacilityNames(names);
+    if (userId && bookingDataRefreshed) {
+      try {
+        await db.patientBookingCache.put({
+          id: userId,
+          cachedAt: new Date().toISOString(),
+          patient: own,
+          facilities: facs,
+          appointments: list,
+        });
+      } catch (cacheError) {
+        console.warn("Could not save booking details on this device:", cacheError);
+      }
+    }
 
     let defaultFacilityId = "";
     if (isValidCoordinate(own.latitude, own.longitude)) {
@@ -329,34 +368,54 @@ export default function PatientAppointmentsPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!patient || !selectedSlot) return;
+    const requestId = crypto.randomUUID();
+    const request = {
+      patient_id: patient.id,
+      facility_id: facilityId || null,
+      availability_id: selectedSlot.id || null,
+      mode,
+      scheduled_at: selectedSlot.start_time,
+      reason: finalReason || "Clinic visit",
+      notes: notes.trim() || null,
+      fallback_option: mode === "TELECONSULT" ? fallbackOption : null,
+    };
+    const queueRequest = async () => {
+      await db.outbox.add({
+        type: "appointment_request",
+        title: request.reason,
+        payload: { request, requestId },
+        status: "queued",
+        createdAt: new Date().toISOString(),
+        clientChangeId: requestId,
+        ownerUserId: getCurrentUserId(),
+      });
+      window.dispatchEvent(new Event("ss-outbox-updated"));
+      await clearDraft();
+      closeForm();
+      setSuccess(t("requestQueuedOffline"));
+    };
     if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setError(t("offlineDraftNeedsInternet"));
+      setError(null);
+      await queueRequest();
       return;
     }
     setSubmitting(true);
     setError(null);
     setSuccess(null);
     try {
-      await appointmentsApi.create({
-        patient_id: patient.id,
-        facility_id: facilityId || null,
-        availability_id: selectedSlot.id || null,
-        mode,
-        scheduled_at: selectedSlot.start_time,
-        reason: finalReason || "Clinic visit",
-        notes: notes.trim() || null,
-        fallback_option: mode === "TELECONSULT" ? fallbackOption : null,
-      });
+      await appointmentsApi.create(request, requestId);
       await clearDraft();
       closeForm();
       setSuccess(
-        mode === "TELECONSULT"
-          ? "Teleconsultation requested. You'll be notified once the doctor accepts."
-          : "Appointment requested. The facility will confirm the slot."
+        t("appointmentRequestSent")
       );
       await load();
     } catch (err) {
-      setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not book appointment.");
+      if (!navigator.onLine || (err instanceof ApiError && err.status === 0)) {
+        await queueRequest();
+      } else {
+        setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not book appointment.");
+      }
     } finally {
       setSubmitting(false);
     }

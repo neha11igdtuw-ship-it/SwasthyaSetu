@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import {
   // Demo dataset used ONLY to power health-worker / facility demo screens
   // (see each field's usage note below). Never surfaced as a logged-in
@@ -18,7 +18,7 @@ import {
 } from "../mockData";
 import { db, OutboxItem } from "../offline/db";
 import { matchReferralFacility } from "../referralMatching";
-import { syncApi, symptomsApi } from "../api/client";
+import { appointmentsApi, authApi, getCurrentUserId, getCurrentUserRole, referralsApi, syncApi, symptomsApi } from "../api/client";
 import type { SyncChange, SymptomSummarizeRequest, SymptomSummarizeResponse } from "../api/types";
 
 // The patient-facing screening result for the CURRENTLY LOGGED-IN patient,
@@ -113,6 +113,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
   const [outboxItems, setOutboxItems] = useState<OutboxItem[]>([]);
+  const syncInProgress = useRef(false);
 
   // Load outbox items from Dexie on mount
   const refreshOutbox = useCallback(async () => {
@@ -126,6 +127,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshOutbox();
+    const onOutboxChanged = () => void refreshOutbox();
+    window.addEventListener("ss-outbox-updated", onOutboxChanged);
+    return () => window.removeEventListener("ss-outbox-updated", onOutboxChanged);
   }, [refreshOutbox]);
 
   const outboxCount = outboxItems.filter((i) => i.status === "queued").length;
@@ -152,6 +156,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         operation: sync?.operation,
         entityId: sync?.entityId ?? null,
         baseVersion: sync?.baseVersion ?? null,
+        ownerUserId: getCurrentUserId(),
       });
       await refreshOutbox();
     } catch (e) {
@@ -268,7 +273,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   // 4. Dexie Offline Sync — real POST /api/v1/sync/push + GET-equivalent
   // POST /api/v1/sync/pull against the backend (see backend/app/api/routes/sync.py).
-  const triggerSyncNow = async () => {
+  const triggerSyncNow = useCallback(async () => {
     const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
     if (!isOnline) {
@@ -277,12 +282,81 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         message: "Network offline — Records safely queued in phone memory.",
       };
     }
+    if (syncInProgress.current) {
+      return { success: true, message: "Sync is already in progress." };
+    }
+    syncInProgress.current = true;
 
     try {
       const queued = await db.outbox.where("status").equals("queued").toArray();
 
+      if (getCurrentUserRole() === "PATIENT") {
+        const me = await authApi.me();
+        let sent = 0;
+        let errors = 0;
+        const pendingRequests = queued.filter(
+          (item) => item.type === "referral_creation" || item.type === "appointment_request"
+        );
+        for (const item of pendingRequests) {
+          if (!item.id || item.ownerUserId !== me.id || !item.clientChangeId) continue;
+          try {
+            const payload = item.payload as {
+              request: unknown;
+              requestId: string;
+            };
+            if (item.type === "referral_creation") {
+              await referralsApi.requestCare(
+                payload.request as Parameters<typeof referralsApi.requestCare>[0],
+                item.clientChangeId
+              );
+            } else {
+              await appointmentsApi.create(
+                payload.request as Parameters<typeof appointmentsApi.create>[0],
+                item.clientChangeId
+              );
+            }
+            await db.outbox.update(item.id, { status: "sent", resultMessage: null });
+            sent += 1;
+          } catch (error) {
+            await db.outbox.update(item.id, {
+              status: "queued",
+              resultMessage: error instanceof Error ? error.message : "Will retry when connected.",
+            });
+            errors += 1;
+          }
+        }
+
+        for (const item of queued.filter((entry) => entry.type === "symptom_summary")) {
+          if (!item.id || item.ownerUserId !== me.id) continue;
+          try {
+            const result = await symptomsApi.summarize(item.payload as SymptomSummarizeRequest);
+            await db.outbox.update(item.id, { status: "sent", resultMessage: result.ai_summary_error || null });
+            sent += 1;
+          } catch (error) {
+            await db.outbox.update(item.id, {
+              status: "queued",
+              resultMessage: error instanceof Error ? error.message : "Will retry when connected.",
+            });
+            errors += 1;
+          }
+        }
+
+        await refreshOutbox();
+        setLastSyncedTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+        return {
+          success: errors === 0,
+          message: errors
+            ? `${sent} patient requests sent. ${errors} will retry when connected.`
+            : `${sent} patient requests sent.`,
+        };
+      }
+
       const syncable = queued.filter((i) => i.entityType && i.operation && i.clientChangeId);
-      const legacy = queued.filter((i) => !(i.entityType && i.operation && i.clientChangeId));
+      const legacy = queued.filter(
+        (i) => !(i.entityType && i.operation && i.clientChangeId) &&
+          !(i.clientChangeId && i.type === "referral_creation") &&
+          i.type !== "appointment_request"
+      );
 
       let applied = 0;
       let conflicts = 0;
@@ -379,8 +453,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         success: false,
         message: e instanceof Error ? `Sync failed: ${e.message}` : "Sync failed. Records remain safely saved on device.",
       };
+    } finally {
+      syncInProgress.current = false;
     }
-  };
+  }, [refreshOutbox]);
+
+  useEffect(() => {
+    const syncWhenOnline = () => {
+      if (navigator.onLine && getCurrentUserRole() === "PATIENT") void triggerSyncNow();
+    };
+    window.addEventListener("online", syncWhenOnline);
+    if (navigator.onLine && getCurrentUserRole() === "PATIENT") void triggerSyncNow();
+    return () => {
+      window.removeEventListener("online", syncWhenOnline);
+    };
+  }, [triggerSyncNow]);
 
   // 5. AI symptom summary (Gemini pipeline). Same offline pattern as the
   // rest of the outbox: if the device is offline, queue the request in the

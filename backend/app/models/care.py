@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
@@ -46,6 +46,7 @@ class Appointment(SyncableMixin, Base):
         default=AppointmentMode.IN_PERSON,
     )
     reason: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    client_request_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     fallback_option: Mapped[TeleconsultFallback | None] = mapped_column(
         Enum(TeleconsultFallback, name="teleconsult_fallback_enum"),
         nullable=True,
@@ -54,6 +55,17 @@ class Appointment(SyncableMixin, Base):
 
     patient = relationship("Patient")
     doctor = relationship("User")
+
+    __table_args__ = (
+        Index(
+            "uq_appointments_patient_client_request",
+            "patient_id",
+            "client_request_id",
+            unique=True,
+            sqlite_where=client_request_id.is_not(None),
+            postgresql_where=client_request_id.is_not(None),
+        ),
+    )
 
 
 class DiagnosticOrder(SyncableMixin, Base):

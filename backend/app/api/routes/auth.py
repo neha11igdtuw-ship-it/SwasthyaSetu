@@ -8,6 +8,9 @@ from app.models.enums import Role
 from app.models.user import User
 from app.schemas.auth import (
     AdminCreateUser,
+    PhoneOtpRequest,
+    PhoneOtpRequestOut,
+    PhoneOtpVerify,
     PublicUserRegister,
     RefreshRequest,
     ResendVerificationRequest,
@@ -18,6 +21,7 @@ from app.schemas.auth import (
     VerifyEmailRequest,
 )
 from app.services.auth import AuthService
+from app.services.phone_otp import PhoneOtpService
 from app.services.verification import VerificationService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -26,6 +30,8 @@ _login_limiter = RateLimiter(limit=10, window_seconds=900, name="login")
 _register_limiter = RateLimiter(limit=5, window_seconds=3600, name="register")
 _verify_limiter = RateLimiter(limit=20, window_seconds=3600, name="verify-email")
 _resend_limiter = RateLimiter(limit=3, window_seconds=3600, name="resend-verification")
+_phone_otp_request_limiter = RateLimiter(limit=3, window_seconds=900, name="phone-otp-request")
+_phone_otp_verify_limiter = RateLimiter(limit=10, window_seconds=900, name="phone-otp-verify")
 
 
 @router.post(
@@ -51,6 +57,27 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     service = AuthService(db)
     user = await service.authenticate(data.email, data.password)
     return service.issue_tokens(user)
+
+
+@router.post(
+    "/phone-otp/request",
+    response_model=PhoneOtpRequestOut,
+    status_code=202,
+    dependencies=[Depends(rate_limit(_phone_otp_request_limiter, by_field="phone"))],
+)
+async def request_phone_otp(data: PhoneOtpRequest, db: AsyncSession = Depends(get_db)):
+    development_code, message = await PhoneOtpService(db).request(data.phone)
+    return PhoneOtpRequestOut(message=message, development_code=development_code)
+
+
+@router.post(
+    "/phone-otp/verify",
+    response_model=TokenPair,
+    dependencies=[Depends(rate_limit(_phone_otp_verify_limiter, by_field="phone"))],
+)
+async def verify_phone_otp(data: PhoneOtpVerify, db: AsyncSession = Depends(get_db)):
+    user = await PhoneOtpService(db).verify(data.phone, data.code)
+    return AuthService.issue_tokens(user)
 
 
 @router.post("/refresh", response_model=TokenPair)

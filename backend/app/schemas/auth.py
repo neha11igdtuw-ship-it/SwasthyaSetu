@@ -48,7 +48,7 @@ class AddressOut(BaseModel):
 
 
 class UserRegister(BaseModel):
-    email: EmailStr
+    email: EmailStr | None = None
     password: str
     full_name: str
     role: Role
@@ -74,7 +74,8 @@ class UserRegister(BaseModel):
 class PublicUserRegister(UserRegister):
     """Stricter contract enforced only on the public self-registration
     endpoint: role restricted to patient/health-worker, phone + address
-    required, and email domain checked against the role's allow-list."""
+    required, and any provided email checked against the role's allow-list.
+    Health worker accounts still require an email; patient accounts do not."""
 
     phone: str
     address: AddressIn
@@ -88,7 +89,10 @@ class PublicUserRegister(UserRegister):
 
     @model_validator(mode="after")
     def _email_domain_allowed(self) -> "PublicUserRegister":
-        self.email = assert_email_allowed(self.email, self.role)
+        if self.role != Role.PATIENT and self.email is None:
+            raise ValueError("Email is required for health worker accounts")
+        if self.email is not None:
+            self.email = assert_email_allowed(self.email, self.role)
         return self
 
     @model_validator(mode="after")
@@ -130,9 +134,29 @@ class UserLogin(BaseModel):
     password: str
 
 
+class PhoneOtpRequest(BaseModel):
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def _normalize_phone(cls, value: str) -> str:
+        return normalize_indian_phone(value)
+
+
+class PhoneOtpVerify(PhoneOtpRequest):
+    code: str
+
+    @field_validator("code")
+    @classmethod
+    def _six_digit_code(cls, value: str) -> str:
+        if not value.isdigit() or len(value) != 6:
+            raise ValueError("Enter the 6-digit code")
+        return value
+
+
 class UserOut(ORMBase):
     id: uuid.UUID
-    email: str
+    email: str | None
     full_name: str
     role: Role
     phone: str | None = None
@@ -167,3 +191,7 @@ class ResendVerificationRequest(BaseModel):
 
 class SimpleMessage(BaseModel):
     message: str
+
+
+class PhoneOtpRequestOut(SimpleMessage):
+    development_code: str | None = None

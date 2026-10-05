@@ -1,6 +1,7 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import (
@@ -9,9 +10,10 @@ from app.api.deps import (
     get_current_user,
     get_own_patient,
 )
-from app.core.errors import ForbiddenError
+from app.core.errors import ForbiddenError, ValidationAppError
 from app.db.session import get_db
 from app.models.enums import Role
+from app.models.referral import Referral
 from app.models.user import User
 from app.repositories.facilities import FacilityRepository
 from app.repositories.patients import PatientRepository
@@ -71,8 +73,23 @@ async def request_care(
     data: CareRequestCreate,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    client_request_id: str | None = Header(default=None, alias="Idempotency-Key", max_length=64),
 ):
     patient = await get_own_patient(db, user)
+    if client_request_id:
+        try:
+            client_request_id = str(uuid.UUID(client_request_id))
+        except ValueError as exc:
+            raise ValidationAppError("Invalid request identifier") from exc
+        existing = await db.execute(
+            select(Referral).where(
+                Referral.created_by_id == user.id,
+                Referral.client_request_id == client_request_id,
+            )
+        )
+        found = existing.scalar_one_or_none()
+        if found is not None:
+            return found
     note_parts = []
     if data.symptoms:
         note_parts.append(f"Symptoms: {data.symptoms}")
@@ -89,7 +106,9 @@ async def request_care(
         urgency=_URGENCY_MAP.get(data.urgency.upper(), "MEDIUM"),
         notes=" | ".join(note_parts) or None,
     )
-    return await ReferralService(db).create(payload, created_by_id=user.id)
+    return await ReferralService(db).create(
+        payload, created_by_id=user.id, client_request_id=client_request_id
+    )
 
 
 @router.get("/match/candidates", response_model=list[MatchCandidate])

@@ -67,19 +67,25 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def rate_limit(limiter: RateLimiter, *, by_email: bool = False):
-    """FastAPI dependency factory. Keys by client IP, optionally combined
-    with the lowercased `email` field from the JSON request body."""
+def rate_limit(limiter: RateLimiter, *, by_email: bool = False, by_field: str | None = None):
+    """Rate limit by client IP, optionally combined with a normalized body field."""
 
     async def _checker(request: Request) -> None:
         key = client_ip(request)
-        if by_email:
+        field_name = by_field or ("email" if by_email else None)
+        if field_name:
             try:
                 body = await request.json()
-                email = str(body.get("email", "")).strip().lower()
+                field_value = str(body.get(field_name, "")).strip().lower()
+                if by_field == "phone" and field_value:
+                    from app.core.validators import normalize_indian_phone
+
+                    field_value = normalize_indian_phone(field_value)
             except Exception:
-                email = ""
-            key = f"{key}:{email}"
+                field_value = ""
+            if by_field and field_value:
+                limiter.check(f"{field_name}:{field_value}")
+            key = f"{key}:{field_value}"
         limiter.check(key)
 
     return _checker

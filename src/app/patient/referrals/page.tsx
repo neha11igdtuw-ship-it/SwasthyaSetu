@@ -11,7 +11,8 @@ import { ReferralOutcomeCard } from "@/components/care/ReferralOutcomeCard";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
 import { usePatientDraft } from "@/lib/offline/usePatientDraft";
-import { facilitiesApi, referralsApi, ApiError } from "@/lib/api/client";
+import { facilitiesApi, referralsApi, ApiError, getCurrentUserId } from "@/lib/api/client";
+import { db } from "@/lib/offline/db";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import type { ReferralOut } from "@/lib/api/types";
 import { stepsFromReferralStatus, currentStepLabel } from "@/lib/referral/stepper";
@@ -97,30 +98,52 @@ export default function PatientReferralsPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const requestId = crypto.randomUUID();
+    const request = {
+      main_concern: concern.trim(),
+      symptoms: symptoms.trim() || null,
+      preferred_language: language,
+      urgency,
+      notes: notes.trim() || null,
+    };
+    const queueRequest = async () => {
+      await db.outbox.add({
+        type: "referral_creation",
+        title: concern.trim(),
+        payload: { request, requestId },
+        status: "queued",
+        createdAt: new Date().toISOString(),
+        clientChangeId: requestId,
+        ownerUserId: getCurrentUserId(),
+      });
+      window.dispatchEvent(new Event("ss-outbox-updated"));
+      await clearDraft();
+      setShowForm(false);
+      setSuccess(t("requestQueuedOffline"));
+    };
     if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setError(t("offlineDraftNeedsInternet"));
+      setError(null);
+      await queueRequest();
       return;
     }
     setSubmitting(true);
     setError(null);
     setSuccess(null);
     try {
-      await referralsApi.requestCare({
-        main_concern: concern.trim(),
-        symptoms: symptoms.trim() || null,
-        preferred_language: language,
-        urgency,
-        notes: notes.trim() || null,
-      });
+      await referralsApi.requestCare(request, requestId);
       setShowForm(false);
       setConcern("");
       setSymptoms("");
       setNotes("");
       await clearDraft();
-      setSuccess("Care request sent. Your health worker and the facility can now update progress.");
+      setSuccess(t("careRequestSent"));
       await load();
     } catch (err) {
-      setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not start care request.");
+      if (!navigator.onLine || (err instanceof ApiError && err.status === 0)) {
+        await queueRequest();
+      } else {
+        setError(err instanceof ApiError || err instanceof Error ? err.message : "Could not start care request.");
+      }
     } finally {
       setSubmitting(false);
     }

@@ -79,7 +79,7 @@ export default function RegisterPage() {
   const validate = (): FieldErrors => {
     const errs: FieldErrors = {};
     if (!fullName.trim()) errs.full_name = t("fullNameRequired");
-    if (!email.trim()) errs.email = t("emailRequired");
+    if (!email.trim()) errs.email = t("emailRequiredUntilOtp");
     const pwIssues = passwordIssues(password);
     if (pwIssues.length) errs.password = `${t("passwordMustContain")} ${pwIssues.map((key) => t(key)).join(", ")}`;
     if (password !== confirmPassword) errs.confirm_password = t("passwordsDoNotMatch");
@@ -95,16 +95,16 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
     const errs = validate();
     setFieldErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    if (Object.keys(errs).length > 0) { setLoading(false); return; }
 
-    setLoading(true);
     try {
       const role = ROLE_TO_API[selectedRole];
       const phone = normalizePhone(mobile) as string;
       await authApi.register({
-        email,
+        email: email.trim(),
         password,
         full_name: fullName,
         role,
@@ -119,10 +119,7 @@ export default function RegisterPage() {
           landmark: landmark || null,
         },
       });
-      // Signup succeeds without an email-verification step, so log the new
-      // user in immediately and send them straight into their dashboard —
-      // the same session-establishing flow the login page uses.
-      await authApi.login({ email, password });
+      await authApi.login({ email: email.trim(), password });
       const me = await authApi.me();
       router.push(ROLE_HOME[me.role] ?? "/patient/dashboard");
     } catch (err) {
@@ -161,6 +158,7 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleRegister} className="space-y-6">
+            <>
             {/* Role Cards */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
@@ -247,6 +245,9 @@ export default function RegisterPage() {
                 />
                 {fieldErrors.email && <p className="text-rose-600 mt-1">{fieldErrors.email}</p>}
               </div>
+              {selectedRole === "patient" && (
+                <p className="text-xs text-slate-600 dark:text-slate-300" role="note">{t("phoneOtpFutureScope")}</p>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -429,6 +430,7 @@ export default function RegisterPage() {
                 </>
               )}
             </button>
+            </>
           </form>
 
           {/* Links & Demo Note */}

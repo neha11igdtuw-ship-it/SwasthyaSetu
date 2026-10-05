@@ -28,7 +28,12 @@ class ReferralService:
         self.db = db
         self.repo = ReferralRepository(db)
 
-    async def create(self, data: ReferralCreate, created_by_id: uuid.UUID | None) -> Referral:
+    async def create(
+        self,
+        data: ReferralCreate,
+        created_by_id: uuid.UUID | None,
+        client_request_id: str | None = None,
+    ) -> Referral:
         referral = await self.repo.create(
             patient_id=data.patient_id,
             from_facility_id=data.from_facility_id,
@@ -39,6 +44,7 @@ class ReferralService:
             notes=data.notes,
             status=ReferralStatus.CREATED,
             created_by_id=created_by_id,
+            client_request_id=client_request_id,
         )
         await self.db.commit()
         return referral

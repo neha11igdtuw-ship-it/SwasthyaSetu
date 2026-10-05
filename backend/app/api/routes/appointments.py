@@ -1,6 +1,7 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import assert_patient_access, get_current_user, get_own_patient
@@ -125,17 +126,34 @@ async def create_appointment(
     data: AppointmentCreate,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
+    client_request_id: str | None = Header(default=None, alias="Idempotency-Key", max_length=64),
 ):
     patient = await PatientRepository(db).get_or_404(data.patient_id)
     if user.role == Role.PATIENT:
         own = await get_own_patient(db, user)
         if own.id != patient.id:
             raise ForbiddenError("Patients can only book for themselves")
+        if client_request_id:
+            try:
+                client_request_id = str(uuid.UUID(client_request_id))
+            except ValueError as exc:
+                raise ValidationAppError("Invalid request identifier") from exc
+            existing = await db.execute(
+                select(Appointment).where(
+                    Appointment.patient_id == patient.id,
+                    Appointment.client_request_id == client_request_id,
+                )
+            )
+            found = existing.scalar_one_or_none()
+            if found is not None:
+                return (await _enrich(db, [found]))[0]
     else:
         assert_patient_access(user, patient)
     if data.fallback_option is not None and data.mode != AppointmentMode.TELECONSULT:
         raise ValidationAppError("A fallback option can only be set on a teleconsultation")
     payload = data.model_dump(exclude={"notes"})
+    if user.role == Role.PATIENT:
+        payload["client_request_id"] = client_request_id
     if data.notes:
         extra = data.notes.strip()
         if extra:

@@ -30,14 +30,17 @@ class AuthService:
         self.users = UserRepository(db)
 
     async def _create_user(self, data: UserRegister, *, is_verified: bool) -> User:
-        existing = await self.users.get_by_email(data.email)
+        existing = await self.users.get_by_email(data.email) if data.email else None
+        if existing is None and data.role == Role.PATIENT and data.phone:
+            matches = await self.users.get_patients_by_phone(data.phone)
+            existing = matches[0] if matches else None
         if existing:
             raise ValidationAppError(
                 "An account with these details already exists. Please sign in instead."
             )
         address = data.address
         user = await self.users.create(
-            email=data.email,
+            email=str(data.email) if data.email else None,
             hashed_password=hash_password(data.password),
             full_name=data.full_name,
             role=data.role,

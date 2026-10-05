@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 type RoleType = "patient" | "hw" | "doctor" | "facility";
-type LoginMode = "password" | "abha";
+type LoginMode = "password" | "phone_otp" | "abha";
 
 const ROLE_TO_ROUTE: Record<Role, string> = {
   PATIENT: "/patient/dashboard",
@@ -103,6 +103,7 @@ function LoginForm() {
 
   const handleSelectRole = (roleId: RoleType) => {
     setSelectedRole(roleId);
+    if (roleId !== "patient" && loginMode === "phone_otp") setLoginMode("password");
     const creds = DEMO_CREDENTIALS[roleId];
     setIdentifier(creds.email);
     setAccessCode(creds.password);
@@ -137,6 +138,7 @@ function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loginMode === "phone_otp") return;
     if (loginMode === "abha") {
       return abhaOtpSent ? handleVerifyAbhaOtp(e) : handleSendAbhaOtp(e);
     }
@@ -261,7 +263,7 @@ function LoginForm() {
             </div>
 
             {/* Login mode switcher */}
-            <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/40">
+            <div className={`grid ${selectedRole === "patient" ? "grid-cols-3" : "grid-cols-2"} gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-900/40`}>
               <button
                 type="button"
                 onClick={() => setLoginMode("password")}
@@ -274,6 +276,15 @@ function LoginForm() {
                 <Mail className="w-3.5 h-3.5" />
                 {t("emailAndPassword")}
               </button>
+              {selectedRole === "patient" && (
+                <button
+                  type="button"
+                  onClick={() => { setLoginMode("phone_otp"); setError(null); }}
+                  className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${loginMode === "phone_otp" ? "bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-300 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+                >
+                  {t("phoneOtpFutureLabel")}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setLoginMode("abha")}
@@ -357,6 +368,11 @@ function LoginForm() {
                   )}
                 </button>
               </>
+            ) : loginMode === "phone_otp" ? (
+              <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 text-sm text-teal-950 dark:border-teal-800 dark:bg-teal-900/20 dark:text-teal-100" role="status">
+                <p className="font-bold">{t("phoneOtpFutureLabel")}</p>
+                <p className="mt-1">{t("phoneOtpFutureScope")}</p>
+              </div>
             ) : (
               <div className="space-y-4 text-xs">
                 <div>

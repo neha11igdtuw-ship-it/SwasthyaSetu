@@ -49,6 +49,17 @@ class Settings(BaseSettings):
     brevo_api_key: str = ""
     resend_api_key: str = ""
 
+    # Twilio SMS delivery for patient phone OTP login. Never expose or log these.
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from_number: str = ""
+    phone_otp_ttl_minutes: int = 5
+    phone_otp_allow_development_code: bool = False
+
+    @property
+    def phone_otp_sms_configured(self) -> bool:
+        return bool(self.twilio_account_sid and self.twilio_auth_token and self.twilio_from_number)
+
     # Legacy SMTP settings, kept as a fallback for local/dev environments
     # where outbound SMTP isn't blocked. Never log smtp_password. When
     # nothing is configured, EmailService logs a dev-only verification link
