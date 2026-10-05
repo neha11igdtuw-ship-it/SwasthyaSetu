@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { RoleBadge } from "@/components/RoleBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { usePatientDraft } from "@/lib/offline/usePatientDraft";
 import { appointmentsApi, facilitiesApi, doctorAvailabilityApi, ApiError } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import type {
@@ -44,6 +45,16 @@ const VISIT_REASONS = [
 
 const WIZARD_STEPS = ["Facility", "Reason", "Date", "Time slot", "Confirm"] as const;
 type Slot = { id: string | null; start_time: string; end_time: string };
+type AppointmentDraft = {
+  facilityId: string;
+  mode: "IN_PERSON" | "TELECONSULT";
+  fallbackOption: TeleconsultFallback;
+  reason: string;
+  customReason: string;
+  date: string;
+  notes: string;
+  step: number;
+};
 
 function toDateInputValue(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -111,7 +122,7 @@ function nextActor(status: AppointmentOut["status"]): string {
 }
 
 const inputClass =
-  "w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium text-slate-800 dark:text-slate-100";
+  "w-full min-h-12 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-800 dark:text-slate-100";
 
 export default function PatientAppointmentsPage() {
   const { t } = useLanguage();
@@ -140,6 +151,16 @@ export default function PatientAppointmentsPage() {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [usingSimulatedSlots, setUsingSimulatedSlots] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+  const { draft, ready: draftReady, saveDraft, clearDraft } = usePatientDraft<AppointmentDraft>("appointment");
+
+  useEffect(() => {
+    const hasProgress = Boolean(reason || customReason || date || notes || step > 0 || mode === "TELECONSULT");
+    if (!draftReady || !showForm || !hasProgress) return;
+    const timer = window.setTimeout(() => {
+      void saveDraft({ facilityId, mode, fallbackOption, reason, customReason, date, notes, step });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [draftReady, showForm, facilityId, mode, fallbackOption, reason, customReason, date, notes, step, saveDraft]);
 
   const load = useCallback(async () => {
     const own = await loadOwnPatient();
@@ -237,6 +258,23 @@ export default function PatientAppointmentsPage() {
     setShowForm(true);
   };
 
+  const restoreAppointmentDraft = () => {
+    if (!draft) return;
+    setFacilityId(draft.facilityId);
+    setMode(draft.mode);
+    setFallbackOption(draft.fallbackOption);
+    setReason(draft.reason);
+    setCustomReason(draft.customReason);
+    setDate(draft.date);
+    setNotes(draft.notes);
+    // Availability can change while the user is away. Return to the time
+    // selection step so a slot is refreshed before the booking is sent.
+    setStep(Math.min(draft.step, 3));
+    setSelectedSlot(null);
+    setSlots([]);
+    setShowForm(true);
+  };
+
   const closeForm = () => {
     setShowForm(false);
     resetWizard();
@@ -291,6 +329,10 @@ export default function PatientAppointmentsPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!patient || !selectedSlot) return;
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setError(t("offlineDraftNeedsInternet"));
+      return;
+    }
     setSubmitting(true);
     setError(null);
     setSuccess(null);
@@ -305,6 +347,7 @@ export default function PatientAppointmentsPage() {
         notes: notes.trim() || null,
         fallback_option: mode === "TELECONSULT" ? fallbackOption : null,
       });
+      await clearDraft();
       closeForm();
       setSuccess(
         mode === "TELECONSULT"
@@ -383,6 +426,19 @@ export default function PatientAppointmentsPage() {
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
           {error}
+        </div>
+      )}
+      {!showForm && draft && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="text-sm font-semibold">{t("savedDraftAvailable")}</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={restoreAppointmentDraft} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">
+              {t("restoreDraft")}
+            </button>
+            <button type="button" onClick={() => void clearDraft()} className="min-h-11 rounded-xl border border-amber-300 px-4 py-2 text-sm font-bold dark:border-amber-800">
+              {t("deleteDraft")}
+            </button>
+          </div>
         </div>
       )}
       {!loading && !error && appointments.length === 0 && (
@@ -499,6 +555,8 @@ export default function PatientAppointmentsPage() {
               </button>
             </div>
 
+            {draft && <p role="status" className="rounded-xl bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-900 dark:bg-teal-950/40 dark:text-teal-100">{t("savedDraftAvailable")}</p>}
+
             {/* ORS-style step progress */}
             <div className="flex items-center gap-1.5">
               {WIZARD_STEPS.map((label, idx) => (
@@ -530,7 +588,7 @@ export default function PatientAppointmentsPage() {
               ))}
             </div>
 
-            <form onSubmit={submit} className="space-y-4 text-xs">
+            <form onSubmit={submit} className="space-y-4 text-sm">
               {/* Step 1: Facility */}
               {step === 0 && (
                 <div className="space-y-4">
@@ -540,7 +598,7 @@ export default function PatientAppointmentsPage() {
                       <button
                         type="button"
                         onClick={() => setMode("IN_PERSON")}
-                        className={`flex-1 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
+                        className={`flex-1 min-h-11 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
                           mode === "IN_PERSON"
                             ? "border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200"
                             : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-teal-300"
@@ -551,7 +609,7 @@ export default function PatientAppointmentsPage() {
                       <button
                         type="button"
                         onClick={() => setMode("TELECONSULT")}
-                        className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
+                        className={`flex-1 min-h-11 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
                           mode === "TELECONSULT"
                             ? "border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200"
                             : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-teal-300"
@@ -617,7 +675,7 @@ export default function PatientAppointmentsPage() {
                         type="button"
                         key={r}
                         onClick={() => setReason(r)}
-                        className={`px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
+                        className={`min-h-11 px-3 py-2 rounded-xl border font-bold cursor-pointer transition-colors ${
                           reason === r
                             ? "border-teal-600 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200"
                             : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-teal-300"
@@ -678,7 +736,7 @@ export default function PatientAppointmentsPage() {
                           type="button"
                           key={s.start_time}
                           onClick={() => setSelectedSlot(s)}
-                          className={`px-2 py-2 rounded-lg border font-bold cursor-pointer transition-colors ${
+                          className={`min-h-11 px-2 py-2 rounded-lg border font-bold cursor-pointer transition-colors ${
                             selectedSlot?.start_time === s.start_time
                               ? "border-teal-600 bg-teal-700 text-white"
                               : "border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-teal-300"

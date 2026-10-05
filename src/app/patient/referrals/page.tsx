@@ -10,6 +10,7 @@ import { ReferralStatusStepper } from "@/components/care/ReferralStatusStepper";
 import { ReferralOutcomeCard } from "@/components/care/ReferralOutcomeCard";
 import { DisclaimerCard } from "@/components/shared/DisclaimerCard";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { usePatientDraft } from "@/lib/offline/usePatientDraft";
 import { facilitiesApi, referralsApi, ApiError } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
 import type { ReferralOut } from "@/lib/api/types";
@@ -26,7 +27,7 @@ function nextActor(status: ReferralOut["status"]): string {
 }
 
 const inputClass =
-  "w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-medium text-slate-800 dark:text-slate-100";
+  "w-full min-h-12 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-800 dark:text-slate-100";
 
 export default function PatientReferralsPage() {
   const { t } = useLanguage();
@@ -43,6 +44,17 @@ export default function PatientReferralsPage() {
   const [language, setLanguage] = useState("Hindi");
   const [urgency, setUrgency] = useState<"LOW" | "MEDIUM" | "HIGH">("MEDIUM");
   const [notes, setNotes] = useState("");
+  const { draft, ready: draftReady, saveDraft, clearDraft } = usePatientDraft<{
+    concern: string; symptoms: string; language: string; urgency: "LOW" | "MEDIUM" | "HIGH"; notes: string;
+  }>("care-request");
+
+  useEffect(() => {
+    if (!draftReady || !showForm || (!concern && !symptoms && !notes)) return;
+    const timer = window.setTimeout(() => {
+      void saveDraft({ concern, symptoms, language, urgency, notes });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [draftReady, showForm, concern, symptoms, language, urgency, notes, saveDraft]);
 
   const load = useCallback(async () => {
     const own = await loadOwnPatient();
@@ -85,6 +97,10 @@ export default function PatientReferralsPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      setError(t("offlineDraftNeedsInternet"));
+      return;
+    }
     setSubmitting(true);
     setError(null);
     setSuccess(null);
@@ -100,6 +116,7 @@ export default function PatientReferralsPage() {
       setConcern("");
       setSymptoms("");
       setNotes("");
+      await clearDraft();
       setSuccess("Care request sent. Your health worker and the facility can now update progress.");
       await load();
     } catch (err) {
@@ -128,10 +145,32 @@ export default function PatientReferralsPage() {
 
       <DisclaimerCard variant="rose" />
 
+      {!showForm && draft && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950 sm:flex-row sm:items-center sm:justify-between dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="text-sm font-semibold">{t("savedDraftAvailable")}</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => {
+              setConcern(draft.concern);
+              setSymptoms(draft.symptoms);
+              setLanguage(draft.language);
+              setUrgency(draft.urgency);
+              setNotes(draft.notes);
+              setError(null);
+              setShowForm(true);
+            }} className="min-h-11 rounded-xl bg-teal-700 px-4 py-2 text-sm font-bold text-white">
+              {t("restoreDraft")}
+            </button>
+            <button type="button" onClick={() => void clearDraft()} className="min-h-11 rounded-xl border border-amber-300 px-4 py-2 text-sm font-bold dark:border-amber-800">
+              {t("deleteDraft")}
+            </button>
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 text-slate-600 text-xs font-semibold flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin" />
-          Checking latest care request status on server…
+          {t("checkingCareRequest")}
         </div>
       )}
       {success && (
@@ -194,7 +233,7 @@ export default function PatientReferralsPage() {
               <span className="font-bold text-slate-900 dark:text-white">{referral.reason}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">Server status</span>
+                <span className="text-slate-500 block">{t("careStatusLabel")}</span>
               <span className="font-bold text-teal-800">{referral.status}</span>
             </div>
             {referral.notes && (
@@ -238,7 +277,12 @@ export default function PatientReferralsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={submit} className="space-y-3 text-xs">
+            {(concern || symptoms || notes) && (
+              <p role="status" className="rounded-xl bg-teal-50 px-3 py-2 text-sm font-semibold text-teal-900 dark:bg-teal-950/40 dark:text-teal-100">
+                {t("savedDraftAvailable")}
+              </p>
+            )}
+            <form onSubmit={submit} className="space-y-4 text-sm">
               <div>
                 <label className="font-bold block mb-1">Main concern</label>
                 <input value={concern} onChange={(e) => setConcern(e.target.value)} required className={inputClass} />
@@ -271,10 +315,10 @@ export default function PatientReferralsPage() {
               </div>
               <p className="text-[11px] text-slate-500">Your health worker will see this request. The facility can accept and update progress.</p>
               <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-bold cursor-pointer">
+                <button type="button" onClick={() => setShowForm(false)} className="min-h-11 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 font-bold cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-xl bg-teal-700 text-white font-extrabold disabled:opacity-60 cursor-pointer">
+                <button type="submit" disabled={submitting} className="min-h-11 px-5 py-2.5 rounded-xl bg-teal-700 text-white font-extrabold disabled:opacity-60 cursor-pointer">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit request"}
                 </button>
               </div>

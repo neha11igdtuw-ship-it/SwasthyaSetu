@@ -171,6 +171,12 @@ export function getCurrentUserRole(): string | null {
   return decodeJwtPayload<{ role?: string }>(token)?.role ?? null;
 }
 
+export function getCurrentUserId(): string | null {
+  const token = getAccessToken();
+  if (!token) return null;
+  return decodeJwtPayload<{ sub?: string }>(token)?.sub ?? null;
+}
+
 interface RequestOptions {
   method?: string;
   body?: unknown;

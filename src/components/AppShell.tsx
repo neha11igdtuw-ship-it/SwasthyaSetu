@@ -12,6 +12,7 @@ import { SupportProvider } from "@/components/support/SupportProvider";
 import { HelpButton } from "@/components/support/HelpButton";
 import { clearTokens, isDemoMode } from "@/lib/api/client";
 import { useLanguage } from "@/lib/i18n/languageContext";
+import { OfflinePill } from "@/components/shared/OfflinePill";
 
 interface AppShellProps {
   role: RoleType;
@@ -96,6 +97,11 @@ export function AppShell({
             showMobileNav ? "pb-20 md:pb-8" : ""
           }`}
         >
+          {role === "Patient" && (
+            <div className="mb-4 flex lg:hidden">
+              <OfflinePill />
+            </div>
+          )}
           {children}
         </main>
       </div>

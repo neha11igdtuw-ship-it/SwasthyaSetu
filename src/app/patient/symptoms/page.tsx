@@ -187,7 +187,7 @@ function PatientSymptomsContent() {
             <button
               type="button"
               onClick={toggleVoiceRecording}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1 cursor-pointer ${
+              className={`min-h-12 px-4 py-2 rounded-lg text-sm font-bold transition-colors inline-flex items-center gap-2 cursor-pointer ${
                 voiceRecording
                   ? "bg-rose-600 text-white animate-pulse"
                   : "bg-teal-700 text-white hover:bg-teal-800"
@@ -243,7 +243,7 @@ function PatientSymptomsContent() {
                   max="42"
                   value={pregnancyWeek}
                   onChange={(e) => setPregnancyWeek(e.target.value ? parseInt(e.target.value, 10) : "")}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
+                  className="w-full min-h-12 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-base"
                 />
               </div>
             )}
@@ -257,7 +257,7 @@ function PatientSymptomsContent() {
                 value={systolicBp}
                 onChange={(e) => setSystolicBp(e.target.value)}
                 placeholder="120"
-                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
+                className="w-full min-h-12 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-base"
               />
             </div>
 
@@ -270,7 +270,7 @@ function PatientSymptomsContent() {
                 value={diastolicBp}
                 onChange={(e) => setDiastolicBp(e.target.value)}
                 placeholder="80"
-                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium"
+                className="w-full min-h-12 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500 font-medium text-base"
               />
             </div>
           </div>
@@ -284,12 +284,12 @@ function PatientSymptomsContent() {
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800 cursor-pointer">
+            <label className="flex min-h-14 items-center gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={symptoms.headache}
                 onChange={() => handleCheckboxChange("headache")}
-                className="w-4 h-4 accent-teal-700"
+                className="w-5 h-5 accent-teal-700"
               />
               <span className="font-semibold text-slate-800 dark:text-slate-100">{t("severeContinuousHeadache")}</span>
             </label>

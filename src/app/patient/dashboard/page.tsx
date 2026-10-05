@@ -7,8 +7,10 @@ import {
   careGapsApi,
   facilitiesApi,
   referralsApi,
+  getCurrentUserId,
 } from "@/lib/api/client";
 import { loadOwnPatient } from "@/lib/api/ownPatient";
+import { db, type PatientCareCacheRecord } from "@/lib/offline/db";
 import { isMaternalCarePathway } from "@/lib/carePathway";
 import type { CareGapOut, PatientOut, ReferralOut } from "@/lib/api/types";
 import { PatientHeader } from "@/components/patient/PatientHeader";
@@ -46,16 +48,47 @@ export default function PatientDashboardPage() {
   // referral that points to one — never a hardcoded maternal facility.
   const [facilityName, setFacilityName] = useState<string | null>(null);
   const [nextVisit, setNextVisit] = useState<string | null>(null);
+  const [careInfoUpdatedAt, setCareInfoUpdatedAt] = useState<string | null>(null);
+  const [showingSavedCareInfo, setShowingSavedCareInfo] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      const userId = getCurrentUserId();
+      let savedCareInfo: PatientCareCacheRecord | undefined;
       try {
+        if (userId) {
+          try {
+            savedCareInfo = await db.patientCareCache.get(userId);
+          } catch (cacheError) {
+            console.warn("Could not read the saved care plan on this device:", cacheError);
+          }
+          if (savedCareInfo && !cancelled) {
+            setPatient(savedCareInfo.patient);
+            setReferrals(savedCareInfo.referrals);
+            setCareGaps(savedCareInfo.careGaps);
+            setFacilityName(savedCareInfo.facilityName);
+            setNextVisit(savedCareInfo.nextVisit);
+            setCareInfoUpdatedAt(savedCareInfo.cachedAt);
+            setShowingSavedCareInfo(typeof navigator !== "undefined" && !navigator.onLine);
+            setLoading(false);
+          }
+        }
+
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+          if (!savedCareInfo && !cancelled) setError("careInformationUnavailable");
+          return;
+        }
+
         const me = await loadOwnPatient();
         if (cancelled) return;
-        setPatient(me);
         if (!me) {
-          setError("No patient record is linked to this login yet.");
+          if (savedCareInfo) {
+            setShowingSavedCareInfo(true);
+            setError(null);
+          } else {
+            setError("No patient record is linked to this login yet.");
+          }
           return;
         }
         const [refs, gaps, appointments] = await Promise.all([
@@ -64,17 +97,51 @@ export default function PatientDashboardPage() {
           appointmentsApi.list(me.id).catch(() => []),
         ]);
         if (cancelled) return;
-        setReferrals(refs.filter((r) => r.status !== "CANCELLED" && r.status !== "REJECTED"));
-        setCareGaps(gaps.filter((g) => g.status === "OPEN"));
-        const active = refs[0];
+        const currentReferrals = refs.filter((r) => r.status !== "CANCELLED" && r.status !== "REJECTED");
+        const currentCareGaps = gaps.filter((g) => g.status === "OPEN");
+        const active = currentReferrals[0];
+        let currentFacilityName: string | null = null;
         if (active?.to_facility_id) {
           const fac = await facilitiesApi.get(active.to_facility_id).catch(() => null);
-          if (fac && !cancelled) setFacilityName(fac.name);
+          if (fac) currentFacilityName = fac.name;
         }
         const upcoming = appointments.find((a) => a.status === "SCHEDULED");
-        if (upcoming) setNextVisit(new Date(upcoming.scheduled_at).toLocaleString());
+        const currentNextVisit = upcoming ? new Date(upcoming.scheduled_at).toLocaleString() : null;
+        if (cancelled) return;
+
+        setPatient(me);
+        setReferrals(currentReferrals);
+        setCareGaps(currentCareGaps);
+        setFacilityName(currentFacilityName);
+        setNextVisit(currentNextVisit);
+        setError(null);
+        setShowingSavedCareInfo(false);
+        const cachedAt = new Date().toISOString();
+        setCareInfoUpdatedAt(cachedAt);
+        if (userId) {
+          try {
+            await db.patientCareCache.put({
+              id: userId,
+              cachedAt,
+              patient: me,
+              referrals: currentReferrals,
+              careGaps: currentCareGaps,
+              facilityName: currentFacilityName,
+              nextVisit: currentNextVisit,
+            });
+          } catch (cacheError) {
+            console.warn("Could not save the latest care plan on this device:", cacheError);
+          }
+        }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Could not load dashboard.");
+        if (!cancelled) {
+          if (savedCareInfo) {
+            setShowingSavedCareInfo(true);
+            setError(null);
+          } else {
+            setError(err instanceof Error ? err.message : "Could not load dashboard.");
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -108,7 +175,13 @@ export default function PatientDashboardPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       {error && (
         <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-900/30 border border-rose-200 text-rose-800 text-xs font-semibold">
-          {error}
+          {error === "careInformationUnavailable" ? t(error) : error}
+        </div>
+      )}
+
+      {showingSavedCareInfo && (
+        <div role="status" className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+          <span className="text-sm font-semibold">{t("lastUpdated")}: {careInfoUpdatedAt ? new Date(careInfoUpdatedAt).toLocaleString() : "—"}</span>
         </div>
       )}
 
@@ -125,7 +198,13 @@ export default function PatientDashboardPage() {
           }
         />
         <div className="flex justify-end">
-          <LastSyncedBadge lastSyncedText="Live from server" />
+          <LastSyncedBadge
+            lastSyncedText={
+              showingSavedCareInfo
+                ? `${t("lastUpdated")}: ${careInfoUpdatedAt ? new Date(careInfoUpdatedAt).toLocaleString() : "—"}`
+                : t("latestInfoReceived")
+            }
+          />
         </div>
       </div>
 
