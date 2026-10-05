@@ -24,8 +24,8 @@ class ChatRequest(BaseModel):
     message: str = Field(max_length=MAX_MESSAGE_CHARS)
     conversation_id: str | None = None
     history: list[ChatTurn] = Field(default_factory=list, max_length=40)
-    # The app's selected UI language (e.g. "en", "hi"), used only as a soft
-    # hint when the message's own language is ambiguous.
+    # The app's selected UI language code (e.g. "en", "hi", "local"). The
+    # assistant answers in this language unless the message asks otherwise.
     ui_language: str | None = Field(default=None, max_length=8)
 
     @field_validator("message")

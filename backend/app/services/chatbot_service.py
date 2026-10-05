@@ -57,10 +57,12 @@ diagnosis for the person and do not suggest treatment.
 
 HOW YOU WRITE
 - Use simple, short sentences and everyday words. Explain any technical word you must use.
-- Reply in the language the user writes in or asks for. Supported: English, Hindi (Devanagari) \
-and Hinglish (Hindi in English letters). If the user writes Hinglish, reply in Hinglish. \
-If they ask "explain in Hindi", reply in Hindi. If they ask for simple English, use very \
-simple English. Only if the message language is unclear, use the app language hint.
+- Reply in the language the user selected in the SwasthyaSetu app, as stated at the end of \
+these instructions (when present). Supported: English, \
+Hindi (Devanagari), Hinglish (Hindi in English letters) and the other Indian languages the \
+app offers. Only if the user's message explicitly asks for another language (for example \
+"explain in Hindi") or for simple English, use that for that reply. Keep medical terms \
+accurate; you may add the common English term in brackets when it helps.
 - If asked to "explain simply", "give an example" or "explain step by step", do that for the \
 topic just discussed.
 - Be concise: usually under 200 words. Short paragraphs or a few bullet points.
@@ -91,6 +93,54 @@ store names, phone numbers or ID numbers.
 doctor.
 """
 
+# The app's selected UI language codes (see src/lib/i18n/translations.ts).
+# Only these known codes are ever placed in the prompt; anything else is ignored.
+_APP_LANGUAGES: dict[str, str] = {
+    "en": "English",
+    "hi": "Hindi (Devanagari script)",
+    "kn": "Kannada (Kannada script)",
+    "ta": "Tamil (Tamil script)",
+    "ml": "Malayalam (Malayalam script)",
+    "te": "Telugu (Telugu script)",
+    "mr": "Marathi (Devanagari script)",
+    "gu": "Gujarati (Gujarati script)",
+    "as": "Assamese (Assamese script)",
+    "or": "Odia (Odia script)",
+    "bn": "Bengali (Bengali script)",
+    "pa": "Punjabi (Gurmukhi script)",
+    "ur": "Urdu (Urdu script)",
+    "mni": "Manipuri / Meitei (Meitei Mayek or Bengali script)",
+    "kok": "Konkani (Devanagari script)",
+    # The app's "Multilingual / Local" option is Hindi written in English letters.
+    "local": "Hinglish (natural Hindi written in English/Roman letters)",
+}
+
+
+def normalize_ui_language(code: str | None) -> str | None:
+    """Return a supported app-language code, or None if absent/unknown."""
+    if not code:
+        return None
+    code = code.strip().lower()
+    return code if code in _APP_LANGUAGES else None
+
+
+def language_instruction(code: str | None) -> str:
+    """Prompt section telling the model to answer in the user's selected app language."""
+    code = normalize_ui_language(code)
+    if code is None:
+        return ""
+    name = _APP_LANGUAGES[code]
+    return (
+        "\nRESPONSE LANGUAGE (highest priority for wording)\n"
+        f"- The user selected {name} as their SwasthyaSetu app language (code: {code}).\n"
+        f"- Respond in {name}, in the user's selected application language, even when the "
+        "question itself is written in English.\n"
+        "- Exception: if the user's message explicitly asks for a different language for "
+        "this reply, use the language they asked for.\n"
+        "- Every safety rule above still applies in that language.\n"
+    )
+
+
 # --------------------------------------------------------------------------
 # Redirects: requests for existing SwasthyaSetu workflows are never answered
 # by recreating the workflow here; the user is pointed to the right section.
@@ -104,6 +154,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "SwasthyaSetu. Please use that section to book a consultation.",
         "hi": "डॉक्टर की अपॉइंटमेंट स्वास्थ्यसेतु के अपॉइंटमेंट सेक्शन में उपलब्ध है। "
         "परामर्श बुक करने के लिए कृपया उसी सेक्शन का उपयोग करें।",
+        "local": "Doctor appointment SwasthyaSetu ke Appointments section mein available hai. Consultation book karne ke liye kripya wahi section use karein.",
     },
     "facilities": {
         "label": "Nearby Hospitals",
@@ -111,6 +162,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "en": "Nearby facilities can be found through the Nearby Facilities section of "
         "SwasthyaSetu.",
         "hi": "पास के अस्पताल और स्वास्थ्य केंद्र स्वास्थ्यसेतु के नज़दीकी अस्पताल सेक्शन में " "मिल जाएँगे।",
+        "local": "Nazdeeki hospital aur health centre SwasthyaSetu ke Nearby Hospitals section mein mil jayenge.",
     },
     "referrals": {
         "label": "Care Requests",
@@ -119,6 +171,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "Care Requests section of SwasthyaSetu. Please use that section.",
         "hi": "देखभाल अनुरोध (रेफ़रल), उनकी प्रगति और नतीजे की जानकारी स्वास्थ्यसेतु के "
         "केयर रिक्वेस्ट सेक्शन में है। कृपया उसी सेक्शन का उपयोग करें।",
+        "local": "Care request (referral), unki progress aur outcome ki jaankari SwasthyaSetu ke Care Requests section mein hai. Kripya wahi section use karein.",
     },
     "medicines": {
         "label": "Medicines",
@@ -126,6 +179,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "en": "Medicine details and availability are shown in the Medicines section of "
         "SwasthyaSetu. Please check that section.",
         "hi": "दवाओं की जानकारी और उपलब्धता स्वास्थ्यसेतु के दवाइयाँ सेक्शन में दिखती है। " "कृपया वही सेक्शन देखें।",
+        "local": "Dawaiyon ki jaankari aur availability SwasthyaSetu ke Medicines section mein dikhti hai. Kripya wahi section dekhein.",
     },
     "emergency": {
         "label": "Emergency Help",
@@ -134,6 +188,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "If someone is in danger, get medical help immediately.",
         "hi": "आपातकाल में कृपया स्वास्थ्यसेतु के इमरजेंसी हेल्प सेक्शन का उपयोग करें। "
         "अगर किसी की जान को ख़तरा है तो तुरंत चिकित्सा सहायता लें।",
+        "local": "Emergency mein kripya SwasthyaSetu ke Emergency Help section ka use karein. Agar kisi ki jaan ko khatra hai to turant medical help lein.",
     },
     "records": {
         "label": "My Health Records",
@@ -142,6 +197,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "SwasthyaSetu. I can't see them, but I can explain any medical term for you.",
         "hi": "आपके रिकॉर्ड, वाइटल्स और इतिहास स्वास्थ्यसेतु के माय हेल्थ रिकॉर्ड्स सेक्शन में हैं। "
         "मैं उन्हें नहीं देख सकता, लेकिन किसी भी मेडिकल शब्द को समझा सकता हूँ।",
+        "local": "Aapke records, vitals aur history SwasthyaSetu ke My Health Records section mein hain. Main unhe dekh nahin sakta, lekin kisi bhi medical term ko samjha sakta hoon.",
     },
     "symptoms": {
         "label": "Tell Symptoms",
@@ -150,6 +206,7 @@ _REDIRECTS: dict[str, dict[str, str]] = {
         "SwasthyaSetu and consult a qualified healthcare professional.",
         "hi": "मैं लक्षणों की जाँच या निदान नहीं कर सकता। कृपया स्वास्थ्यसेतु के लक्षण बताएँ सेक्शन का "
         "उपयोग करें और किसी योग्य स्वास्थ्यकर्मी से सलाह लें।",
+        "local": "Main symptoms ki jaanch ya diagnosis nahin kar sakta. Kripya SwasthyaSetu ke Tell Symptoms section ka use karein aur kisi qualified healthcare professional se salah lein.",
     },
 }
 
@@ -257,11 +314,21 @@ def _match_redirect(message: str) -> tuple[ChatRedirect | None, str | None]:
     return None, None
 
 
-def redirect_reply(message: str) -> ChatResponse | None:
+def redirect_reply(message: str, ui_language: str | None = None) -> ChatResponse | None:
     redirect, key = _match_redirect(message)
     if redirect is None or key is None:
         return None
-    lang = "hi" if _DEVANAGARI.search(message) else "en"
+    # Follow the user's selected app language where a pointer text exists
+    # (English, Hindi, Hinglish); a Devanagari message is answered in Hindi;
+    # any other language falls back to English (the UI button label is
+    # localized client-side).
+    selected = normalize_ui_language(ui_language)
+    if _DEVANAGARI.search(message) and selected in (None, "en"):
+        lang = "hi"
+    elif selected in ("hi", "local"):
+        lang = selected
+    else:
+        lang = "en"
     return ChatResponse(
         response=_REDIRECTS[key][lang],
         conversation_id="",  # filled in by the caller
@@ -318,7 +385,7 @@ class ChatbotService:
     async def chat(self, data: ChatRequest) -> ChatResponse:
         conversation_id = data.conversation_id or uuid.uuid4().hex
 
-        redirected = redirect_reply(data.message)
+        redirected = redirect_reply(data.message, data.ui_language)
         if redirected is not None:
             return redirected.model_copy(update={"conversation_id": conversation_id})
 
@@ -327,9 +394,7 @@ class ChatbotService:
             logger.error("chatbot: GEMINI_API_KEY is not configured")
             raise ServiceUnavailableError(UNAVAILABLE_MESSAGE)
 
-        system_prompt = SYSTEM_PROMPT
-        if data.ui_language:
-            system_prompt += f"\nApp language hint (use only if unclear): {data.ui_language}\n"
+        system_prompt = SYSTEM_PROMPT + language_instruction(data.ui_language)
 
         try:
             text = await asyncio.wait_for(
