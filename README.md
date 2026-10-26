@@ -4,7 +4,7 @@ AI-powered, multilingual and offline-first continuity-of-care platform connectin
 
 ## Live Demo
 
-**Prototype:** [swasthya-setu-iota.vercel.app](https://swasthya-setu-iota.vercel.app/)
+**Prototype:** [https://swasthya-setu-5y8x.vercel.app/)
 
 <img src="docs/live_link_qr.png" alt="Scan to open the live SwasthyaSetu prototype" width="180" />
 
